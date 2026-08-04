@@ -62,7 +62,11 @@ gramática — por eso la página se siente como un producto y no como secciones
   rings, y el **nodo de contexto** de la tríada.
 - **Azul Profundo** (`#4A9EF5`) — exclusivamente el hover del azul de acción.
 - **Lavanda de Señal** (`#A7A9EB`) — decorativo y estructural: hilos, halos, pulsos,
-  y el **nodo de señal**. Nunca en elementos interactivos.
+  y el **nodo de señal**. Nunca en elementos interactivos. Da 2.05:1 sobre Niebla
+  Verde, así que **no se usa para texto** — solo para trazos y formas.
+- **Lavanda Legible** (`#8285D2`) — la variante del lavanda para texto: 3.13:1 sobre
+  Niebla Verde, el mínimo AA para texto grande. Se usa en los números de pilar, que
+  son marcadores estructurales pero siguen siendo texto que alguien debe poder leer.
 - **Verde Fibra** (`#7AD8AD`) — sanciona exactamente tres usos: confirmaciones, el
   **nodo de acción** (el nodo terminal de la tríada, el tercer tiempo del recorrido),
   y enunciados de tranquilidad sobre una afirmación del producto (p. ej. la frase de

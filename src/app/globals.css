@@ -9,6 +9,7 @@
   --color-blue: #5aabff;
   --color-blue-deep: #4a9ef5; /* único hover del azul de acción */
   --color-lavender: #a7a9eb;
+  --color-lavender-deep: #8285d2; /* variante legible del lavanda — 3.13:1 sobre fog, mínimo AA para texto grande */
   --color-fiber: #7ad8ad;
   --color-coral: #e78668;
   --color-coral-deep: #c2451f; /* AA text variant of coral — 5.04:1 on white, see final-review-fixes.md */

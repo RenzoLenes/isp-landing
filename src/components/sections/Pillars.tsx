@@ -90,7 +90,9 @@ export function Pillars() {
                 }`}
               >
                 <div>
-                  <p className="font-serif text-6xl text-lavender">{pillar.number}</p>
+                  <p className="font-serif text-6xl text-lavender-deep">
+                    {pillar.number}
+                  </p>
                   <h3 className="mt-3 font-serif text-3xl leading-tight text-balance md:text-4xl">
                     {pillar.title}
                   </h3>
