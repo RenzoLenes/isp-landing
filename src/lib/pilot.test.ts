@@ -4,7 +4,9 @@ import { validatePilotForm, type PilotFormData } from "./pilot";
 const VALID: PilotFormData = {
   nombre: "Carla Mendoza",
   isp: "Red Andina",
-  ciudad: "Arequipa",
+  sistema: "MikroWisp",
+  clientes: "300–1000",
+  reto: "Soporte",
   whatsapp: "+51 999 888 777",
 };
 
@@ -14,10 +16,18 @@ describe("validatePilotForm", () => {
   });
 
   it("exige cada campo requerido con mensaje en español", () => {
-    const errors = validatePilotForm({ nombre: "", isp: "  ", ciudad: "", whatsapp: "" });
+    const errors = validatePilotForm({
+      nombre: "",
+      isp: "  ",
+      sistema: "",
+      clientes: "",
+      reto: "",
+      whatsapp: "",
+    });
     expect(errors.nombre).toBe("Ingresa tu nombre.");
     expect(errors.isp).toBe("Ingresa el nombre de tu ISP.");
-    expect(errors.ciudad).toBe("Ingresa tu ciudad.");
+    expect(errors.sistema).toBe("Ingresa el sistema que usas hoy.");
+    expect(errors.clientes).toBe("Selecciona un rango de clientes.");
     expect(errors.whatsapp).toBe("Ingresa un número de WhatsApp.");
   });
 
@@ -48,5 +58,25 @@ describe("validatePilotForm", () => {
     expect(
       validatePilotForm({ ...VALID, whatsapp: "+1234567890123456" }).whatsapp,
     ).toBe("Ingresa un número válido (solo dígitos, espacios, + y -).");
+  });
+
+  it("rechaza un rango de clientes fuera de la lista permitida", () => {
+    expect(
+      validatePilotForm({ ...VALID, clientes: "5000" }).clientes,
+    ).toBe("Selecciona un rango de clientes.");
+  });
+
+  it("no exige el sistema si está vacío tras recortar espacios", () => {
+    expect(validatePilotForm({ ...VALID, sistema: "   " }).sistema).toBe(
+      "Ingresa el sistema que usas hoy.",
+    );
+  });
+
+  it("no produce error cuando reto está vacío (es opcional)", () => {
+    expect(validatePilotForm({ ...VALID, reto: "" }).reto).toBeUndefined();
+  });
+
+  it("no produce error cuando reto tiene un valor", () => {
+    expect(validatePilotForm({ ...VALID, reto: "Cobranza" }).reto).toBeUndefined();
   });
 });
