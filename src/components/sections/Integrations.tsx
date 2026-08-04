@@ -26,15 +26,30 @@ function SystemCard({
   );
 }
 
-/** El nodo de convergencia — el clímax visual de la sección, con halo lavanda. */
+/**
+ * The convergence node — the section's visual climax, with a lavender halo.
+ *
+ * Shape ruling (chunk C, spec Part 3): this was a circle under the old name.
+ * "Nexo" means nexus/convergence point, so a circle — everything collapsing
+ * to a single dot — was the literal shape of the word. Two earlier chunks flagged
+ * that the shape stopped agreeing with the brand once it became "Gantry": a
+ * gantry is a structural frame that things pass *through* and are carried
+ * *by* (a crane's portal, a launch tower), not a point things collapse into.
+ * A frame shape reads truer to that: squaring off the corners (a generous
+ * `rounded-[1.75rem]`, not a hard right angle — this is still a calm,
+ * editorial mark, not a technical diagram) turns the node into a portal the
+ * four systems' threads run through on their way to the output, rather than
+ * a point they converge into and vanish. Same size, same halo, same
+ * position in the diagram — only the geometry changed.
+ */
 function HubNode({ label }: { label: string }) {
   return (
     <div className="relative flex shrink-0 flex-col items-center">
       <div
         aria-hidden
-        className="absolute inset-0 -z-10 rounded-full bg-lavender/40 blur-2xl"
+        className="absolute inset-0 -z-10 rounded-[1.75rem] bg-lavender/40 blur-2xl"
       />
-      <div className="flex size-24 items-center justify-center rounded-full border border-lavender/50 bg-surface shadow-float lg:size-28">
+      <div className="flex size-24 items-center justify-center rounded-[1.75rem] border border-lavender/50 bg-surface shadow-float lg:size-28">
         <span className="text-lg font-semibold text-ink">{label}</span>
       </div>
     </div>

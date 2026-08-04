@@ -32,7 +32,7 @@ export function ProductConsole() {
     <div
       role="img"
       aria-label="Captura ilustrativa de la consola de Gantry: lista de conversaciones de WhatsApp, la conversación abierta con Marisol Quispe, y su ficha de cliente con la decisión y el ticket resueltos."
-      className="mx-auto w-full max-w-content overflow-hidden rounded-[1.75rem] border border-whisper bg-surface shadow-float max-h-[560px] sm:max-h-[600px] lg:max-h-[460px]"
+      className="w-full overflow-hidden rounded-[1.75rem] border border-whisper bg-surface shadow-float max-h-[560px] sm:max-h-[600px] lg:max-h-[460px]"
     >
       <div className="grid grid-cols-1 font-sans lg:grid-cols-[200px_minmax(0,1fr)_260px]">
         {/* Sidebar — wordmark + nav, desktop only */}

@@ -1,17 +1,37 @@
 # Design System: Gantry — Landing
 
+> **Nota de reversión (2026-08-04, spec `docs/superpowers/specs/2026-08-04-gantry-realineamiento.md`):**
+> este documento prohibió durante un tiempo el hero centrado y las «capturas
+> literales de dashboard», y llamaba a los titulares serif. Esas tres reglas
+> venían del **texto** del brief original. Cuando el cliente compartió por fin
+> las **capturas** de sus cuatro referencias (Qipeline, TwelveMei, Voice Agents,
+> Nexchat), las imágenes contradecían el texto en esos tres puntos exactos —
+> las cuatro tienen hero centrado, tres tienen una captura de producto grande y
+> recortada por el fold, y ninguna usa serif. El cliente confirmó: las imágenes
+> mandan. Este documento se reescribió para reflejar eso, no para esconder el
+> giro — un sistema de diseño que contradice en silencio el producto que
+> describe es peor que no tener sistema. Las secciones §1, §4, §6 y §9 abajo lo
+> dicen explícitamente donde aplica.
+
 ## 1. Visual Theme & Atmosphere
 
 Una marca de IA calmada, editorial y premium para pequeños ISPs de Latinoamérica.
 La sensación es la de un estudio bien iluminado, no la de una sala de servidores:
-fondos claros con niebla suave, mucho espacio negativo, titulares serif con gran
-presencia y piezas de interfaz flotando como objetos de galería.
+fondos claros con un **campo de gradiente atmosférico real** (no una niebla casi
+invisible — ver §5), mucho espacio negativo, titulares **sans grandes y apretados**
+con presencia dominante, y piezas de interfaz flotando como objetos de galería.
 
 **Lo que cambió respecto de la primera versión:** el espacio negativo se ganó, pero
 la página se volvió plana después del hero. La corrección no es añadir adornos — es
 subir la **densidad de evidencia**. Cada sección debe mostrar producto, no una
 etiqueta centrada dentro de una caja. Si un bloque no enseña un dato, una decisión o
 un resultado concreto, no se ha ganado su lugar.
+
+**Lo que cambió en el realineamiento con las referencias (Qipeline como esqueleto
+líder):** el hero pasó de un split asimétrico a un layout centrado con una consola
+de producto grande y recortada por el fold, el titular pasó de serif a sans, y el
+campo de gradiente de fondo pasó de una insinuación casi imperceptible a una
+presencia real que se mide y se protege con contraste — ver §6 y §5.
 
 - **Densidad:** 5/10 — aireada en el eje vertical, densa dentro de cada artefacto.
   El vacío vive *entre* las piezas, nunca *dentro* de ellas.
@@ -37,7 +57,7 @@ Tres arquetipos de tarjeta, visualmente distintos y siempre los mismos:
   Nodo lavanda. Es lo que el cliente escribió.
 - **Tarjeta de contexto** — filas de datos: etiqueta a la izquierda, valor a la
   derecha en números tabulares, separadas por líneas susurro. Nodo azul. Es lo que
-  Nexo consultó en el sistema del ISP. **Nunca una etiqueta suelta centrada.**
+  Gantry consultó en el sistema del ISP. **Nunca una etiqueta suelta centrada.**
 - **Tarjeta de acción** — resultado con punto verde fibra y metadatos. Nodo fibra.
   Es lo que quedó hecho.
 
@@ -56,10 +76,26 @@ gramática — por eso la página se siente como un producto y no como secciones
 - **Niebla Profunda** (`#EAEEEA`) — burbujas del bot, superficies hundidas.
 - **Superficie Pura** (`#FFFFFF`) — relleno de tarjetas y contenedores.
 - **Tinta Bosque** (`#17201B`) — texto principal y titulares. Nunca negro puro.
-- **Gris Musgo** (`#647168`) — texto secundario, etiquetas de campo, metadatos.
+  Desde el realineamiento con las referencias también es el **relleno del CTA
+  primario del hero** (píldora oscura sólida, texto Superficie Pura — como
+  Qipeline) y, a menor opacidad (`ink/70`–`ink/75`), el color del eyebrow y el
+  subtítulo del hero — ver la nota de contraste en la entrada de Azul
+  Inteligente, abajo.
+- **Gris Musgo** (`#647168`) — texto secundario, etiquetas de campo, metadatos,
+  en cualquier zona **fuera** del campo de gradiente del hero (navegación,
+  cuerpo de las secciones bajo el hero). Dentro del hero, ver arriba: el
+  eyebrow y el subtítulo usan `ink/70`–`ink/75` en vez de Gris Musgo — el campo
+  de gradiente ahí es lo bastante fuerte como para que Musgo (4.75:1 sobre
+  Niebla Verde lisa, ya al límite) no tenga margen suficiente.
 - **Borde Susurro** (`rgb(23 32 27 / 0.08)`) — bordes de 1px, separadores de filas de datos.
-- **Azul Inteligente** (`#5AABFF`) — único acento de acción: CTAs, enlaces, focus
-  rings, y el **nodo de contexto** de la tríada.
+- **Azul Inteligente** (`#5AABFF`) — acento de acción: enlaces, focus rings, el
+  CTA de la navegación y del footer, y el **nodo de contexto** de la tríada.
+  **Ya no es el CTA primario del hero** — ese rol pasó a Tinta Bosque (arriba)
+  en el realineamiento con las referencias: tres de las cuatro referencias del
+  cliente combinan una píldora oscura sólida como primario con una fantasma
+  clara como secundario, y Azul quedó como el acento de acción que sigue
+  presente en el resto de la página (nav, links, focus, tríada). Sigue siendo
+  el **único** azul de la paleta — no se introduce un segundo tono de acción.
 - **Azul Profundo** (`#4A9EF5`) — exclusivamente el hover del azul de acción.
 - **Lavanda de Señal** (`#A7A9EB`) — decorativo y estructural: hilos, halos, pulsos,
   y el **nodo de señal**. Nunca en elementos interactivos. Da 2.05:1 sobre Niebla
@@ -76,13 +112,34 @@ gramática — por eso la página se siente como un producto y no como secciones
   final de un recorrido de señal ya mostrado en la página.
 - **Coral Suave** (`#E78668`) — exclusivamente alertas y errores de formulario.
 
-Gradientes permitidos: transiciones muy suaves entre Niebla Verde, Lavanda al ~20%
-y blanco. Nunca gradientes saturados ni neón.
+Gradientes permitidos: transiciones muy suaves entre Niebla Verde, Lavanda y Azul,
+sobre blanco. Nunca gradientes saturados ni neón. **El campo de gradiente del hero
+(`GradientField`, §5) debe leerse como una presencia real** — no una insinuación:
+las cuatro referencias del cliente tienen un cielo atmosférico con peso visible en
+el tercio superior de la página, y la primera versión de este campo (~4% de opacidad
+de pico) era casi imperceptible a distancia normal de lectura. El límite no es "qué
+tan sutil", es "qué tan fuerte sin romper AA" — cualquier cambio de opacidad debe
+volver a medirse muestreando la captura renderizada (no aritmética CSS) contra el
+texto que quede encima, y documentarse igual que en `chunk-c-report.md`.
 
 ## 4. Typography Rules
 
-- **Display:** Instrument Serif — titulares editoriales, jerarquía por tamaño y
-  color (solo tiene regular). Escala con `clamp()`.
+- **Display:** Instrument Sans (`next/font/google`) — titulares grandes y
+  apretados (`tracking-tight`), con más carácter que un grotesco neutro.
+  Reemplazó a Instrument Serif en el realineamiento con las referencias: las
+  cuatro comparten titulares sans, y el brief original (que sí pedía serif) fue
+  el que se revocó — ver la nota de reversión al inicio del documento. El
+  titular del hero es deliberadamente **enorme** (hasta `5.25rem`/84px en
+  escritorio, con `clamp()`) y domina el viewport como en Qipeline; el resto
+  de los titulares de sección escalan más moderado, siempre con `clamp()` y
+  nunca `text-balance` si eso reordena las palabras de forma que rompa una
+  frase a mitad — preferir el ajuste de línea normal (greedy) cuando el
+  balanceado del navegador produce un corte peor (ver el titular del hero,
+  cuyo ancho de contenedor se calculó a partir del ancho medido de cada
+  palabra para que el corte caiga en límites de frase, no a mitad).
+- **Instrument Serif no existe en el proyecto.** Ningún import, ninguna clase
+  `font-serif`, ningún archivo se descarga. Si vuelve a aparecer en cualquier
+  `git grep`, es una regresión.
 - **Body/UI:** Geist — párrafos con leading relajado (máx. 65ch), botones,
   navegación, y **todo el contenido de los artefactos**.
 - **Números:** tabulares (`[font-variant-numeric:tabular-nums]`) en toda fila de
@@ -96,9 +153,30 @@ y blanco. Nunca gradientes saturados ni neón.
 
 ## 5. Component Stylings
 
-- **Botones:** primario relleno Azul Inteligente, texto Superficie Pura, radio de
-  píldora, hover a Azul Profundo, feedback `-1px` en activo, sin glow externo.
-  Secundario fantasma: borde susurro + texto Tinta. Target táctil ≥ 44px siempre.
+- **Botones:** tres variantes, no dos. **`ink`** — relleno Tinta Bosque, texto
+  Superficie Pura, radio de píldora, hover `ink/90`, feedback `-1px` en activo:
+  el CTA primario del hero, exclusivamente (§3). **`primary`** — relleno Azul
+  Inteligente, mismo tratamiento, hover Azul Profundo: el CTA de la navegación
+  y del footer. **`ghost`** — fantasma: borde susurro + texto Tinta, fondo
+  `surface/60`: el secundario del hero y cualquier acción de segundo orden. Sin
+  glow externo en ninguna. Target táctil ≥ 44px siempre, en las tres.
+- **Campo de gradiente (`GradientField`):** el fondo atmosférico del hero —
+  manchas grandes y difuminadas (`blur` 110–140px) de Lavanda y Azul sobre
+  Niebla Verde, más intensas arriba y a la derecha, disolviéndose hacia abajo
+  con una máscara antes de la sección Problema. Server Component, `aria-hidden`,
+  `-z-10`, `pointer-events-none` — es atmósfera, no contenido. Debe leerse como
+  luz real desde una distancia de lectura normal (§1), y su intensidad está
+  acotada únicamente por el contraste del texto que queda encima (eyebrow,
+  titular, subtítulo del hero) — nunca al revés.
+- **Consola de producto (`ProductConsole`):** el artefacto más grande de la
+  página — una maqueta densa de la aplicación real (barra lateral,
+  conversaciones, contexto), recortada por el fold dentro del hero. Marco con
+  radio grande, borde susurro, sombra difusa, fondo superficie; se lee como una
+  ventana de aplicación, no como una tarjeta de la tríada. Es deliberadamente
+  ancha — corre por fuera del contenedor de 1220px del texto (§6) para leerse
+  como una captura de producto dominante, no como una ilustración flotando en
+  el margen. Ver §9: esto es una excepción explícita, y la única, a "nunca
+  captura literal de dashboard."
 - **Tarjetas de vidrio (señal):** `backdrop-blur` + blanco 80%, radio 1.5–2rem,
   borde susurro, sombra difusa teñida al fondo.
 - **Tarjetas de contexto (filas de datos):** blanco sólido, radio 1.5rem, cabecera
@@ -117,8 +195,18 @@ y blanco. Nunca gradientes saturados ni neón.
 
 ## 6. Layout Principles
 
-- Contenido a **1220px** máx., centrado, padding lateral `clamp()`.
-- Hero split asimétrico — nunca centrado.
+- Contenido a **1220px** máx., centrado, padding lateral `clamp()`. **Excepción
+  explícita:** la consola de producto del hero (§5) rompe este máximo a
+  propósito — corre casi hasta el borde del viewport (≥85% de su ancho desde
+  320px, ≥95% desde 1280px, medido, no estimado) porque leerse como una
+  captura dominante es el punto. Sigue viviendo dentro del padding de la
+  sección — cero scroll horizontal no es negociable ni para esta excepción.
+- **Hero centrado — nunca split asimétrico.** Esto es lo inverso de lo que
+  decía este documento antes del realineamiento con las referencias: el brief
+  en texto pedía un split asimétrico, y las capturas del cliente (las cuatro)
+  lo contradicen con un hero centrado. Badge → titular → subtítulo → CTAs,
+  todo centrado, seguido de la consola de producto. Ver la nota de reversión
+  al inicio del documento.
 - Pilares y casos en zig-zag de 2 columnas. **Prohibida la fila de 3 tarjetas idénticas.**
 - Espaciado vertical entre secciones: `clamp(5rem, 10vw, 9rem)`.
 - Colapso estricto a una columna bajo 768px; cero scroll horizontal en cualquier ancho.
@@ -165,9 +253,21 @@ y blanco. Nunca gradientes saturados ni neón.
 - Robots, fotos de call center, íconos tecnológicos genéricos, neón.
 - Negro puro (`#000000`), sombras con glow, gradientes saturados.
 - Métricas inventadas, logos de clientes ficticios, testimonios fabricados.
-- 3 tarjetas idénticas en fila; hero centrado; listas de 12 funcionalidades.
+- 3 tarjetas idénticas en fila; listas de 12 funcionalidades.
 - Clichés de copy de IA ("revoluciona", "potencia", "sin fricciones", "next-gen").
 - Emojis en la interfaz; "Scroll para explorar"; chevrons rebotando.
 - Nombres placeholder genéricos ("Juan Pérez", "Acme") — nombres y barrios
   peruanos verosímiles.
-- Capturas literales de dashboard como decoración.
+- **Capturas literales de dashboard *genéricas o decorativas*** — un
+  screenshot de una app cualquiera metido para simular sofisticación. **Ya no
+  incluye** la consola de producto del hero (§5): esa es una maqueta propia,
+  construida con los artefactos reales de la tríada (DataCard, ChatBubble,
+  DecisionChain, ResultCard), con datos de ejemplo declarados como tales — es
+  evidencia del producto, no decoración. La distinción es intención y
+  procedencia: ¿es una captura ajena puesta para parecer creíble, o es nuestra
+  propia interfaz mostrada honestamente? Esto revierte la prohibición anterior
+  de este documento, que las cuatro referencias del cliente contradicen — ver
+  la nota de reversión al inicio.
+- **Hero centrado** ya no está en esta lista — era la regla anterior de este
+  documento (brief en texto) y las referencias del cliente la revocaron. Ver
+  §6: ahora es obligatorio, no prohibido.
