@@ -5,7 +5,15 @@ import { SignalThread } from "@/components/ui/SignalThread";
 
 function SystemCard({ name }: { name: string }) {
   return (
-    <div className="w-full rounded-2xl border border-whisper bg-surface px-4 py-3 text-sm font-medium text-ink shadow-card">
+    // No `w-full`: in the desktop row this is a flex sibling of the thread
+    // stub (`flex-1`, basis 0). `w-full` would resolve this item's flex-basis
+    // to 100% of the row (via flex-basis:auto → width), leaving zero leftover
+    // space for the stub to grow into. Letting flex own the sizing here gives
+    // this card a content-based basis, so the thread claims the remainder.
+    // `min-w-0` guards against a future long system name forcing overflow
+    // instead of shrinking. In the `<lg` stacked list the parent `<li>` is a
+    // plain block box, so this div still fills it via normal block sizing.
+    <div className="min-w-0 rounded-2xl border border-whisper bg-surface px-4 py-3 text-sm font-medium text-ink shadow-card">
       {name}
     </div>
   );
@@ -117,7 +125,10 @@ export function Integrations() {
         </Reveal>
 
         <Reveal delay={0.3}>
-          <div className="mx-auto mt-14 max-w-xl rounded-2xl border border-whisper bg-surface px-6 py-5 text-center shadow-card">
+          {/* Objection-handler: a tinted fiber accent gives the claim more
+              weight than ordinary body copy, without borrowing the vocabulary
+              of a live status indicator (no dot, no chip, no "activo"). */}
+          <div className="mx-auto mt-14 max-w-xl rounded-2xl border border-fiber/30 bg-fiber/10 px-6 py-5 text-center shadow-card">
             <p className="text-lg font-medium leading-relaxed text-ink md:text-xl">
               {trust}
             </p>

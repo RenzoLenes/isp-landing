@@ -8,10 +8,12 @@ import { StatusChip } from "@/components/ui/StatusChip";
 
 /**
  * The ticket artifact reuses `DataCard`'s row/footer rhythm but replaces its
- * header: the ticket id sits alone on a raised top bar in a tabular/monospace
- * treatment, visually separated from the data rows below. Pillars 1 and 3
- * both render "ficha"-shaped data, so this keeps them from reading as the
- * same card with a different chip.
+ * header: the ticket id sits alone on a raised top bar, visually separated
+ * from the data rows below by its own `bg-fog-deep` fill and `border-b`.
+ * Pillars 1 and 3 both render "ficha"-shaped data, so this header treatment —
+ * not typeface — is what keeps them from reading as the same card with a
+ * different chip. The id is set in Geist (this project loads no mono face)
+ * with tabular numerals and loosened tracking to read as a distinct record.
  */
 function TicketCard({
   artifact,
@@ -21,7 +23,7 @@ function TicketCard({
   return (
     <div className="overflow-hidden rounded-3xl border border-whisper bg-surface shadow-card">
       <div className="flex items-center justify-between gap-3 border-b border-whisper bg-fog-deep px-6 py-4">
-        <p className="font-mono text-sm tracking-tight text-ink [font-variant-numeric:tabular-nums]">
+        <p className="text-sm font-medium tracking-wide text-ink [font-variant-numeric:tabular-nums]">
           {artifact.title}
         </p>
         <StatusChip label={artifact.status} tone="neutral" />
