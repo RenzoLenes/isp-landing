@@ -1,13 +1,17 @@
 import type { ReactNode } from "react";
 
 const VARIANTS = {
+  // Blue filled pill. No call site uses this for a CTA anymore (hero-fixes-
+  // report.md, Fix 4): the navbar CTA moved from `primary` to `ink` to match
+  // the hero, since the references pair one dark CTA treatment across the
+  // whole page rather than blue-for-nav/dark-for-hero. Kept as a variant —
+  // blue remains the accent color elsewhere (links, focus rings, the
+  // triad's context node) — in case a future secondary action wants it.
   primary:
     "bg-blue text-surface hover:bg-blue-deep active:translate-y-px shadow-card",
-  // Dark filled pill — the hero's primary CTA (§4). Blue stays the sole
-  // action accent everywhere else (links, focus rings, the triad's context
-  // node); this is the one call site that swaps it for `ink`, per three of
-  // the four client references pairing a black primary with a light ghost
-  // secondary.
+  // Dark filled pill — the hero's primary CTA and, since Fix 4, the navbar's
+  // too. Blue stays the sole action accent everywhere else (links, focus
+  // rings, the triad's context node).
   ink: "bg-ink text-surface hover:bg-ink/90 active:translate-y-px shadow-card",
   ghost:
     "border border-whisper bg-surface/60 text-ink hover:border-ink/20 active:translate-y-px",

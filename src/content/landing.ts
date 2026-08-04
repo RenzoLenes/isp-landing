@@ -105,9 +105,9 @@ export const LANDING = {
 
   hero: {
     badge: "Piloto abierto · ISPs de Perú y Latinoamérica",
-    title: "Una operación más tranquila empieza con una conversación mejor atendida.",
+    title: "WhatsApp con el contexto real de cada cliente.",
     subtitle:
-      "Conecta WhatsApp a tu sistema ISP para responder pagos, soporte e instalaciones con el contexto real de cada cliente.",
+      "Responde pagos, soporte e instalaciones sabiendo quién escribe, qué plan tiene y qué le pasó la última vez.",
     ctaPrimary: { label: "Solicitar acceso al piloto", href: "#piloto" },
     ctaSecondary: { label: "Ver cómo funciona", href: "#como-funciona" },
     // The product console (§5): an illustrative, dense mock of the app
@@ -165,7 +165,7 @@ export const LANDING = {
   problem: {
     eyebrow: "El día a día",
     title: "Cincuenta chats abiertos, y todos preguntan lo mismo.",
-    body: "Cobranzas que se persiguen mensaje por mensaje, el mismo «no tengo internet» a toda hora, y técnicos que salen a campo sin saber qué van a encontrar. No es falta de esfuerzo: es falta de contexto.",
+    body: "Una operación más tranquila empieza con una conversación mejor atendida. Cobranzas que se persiguen mensaje por mensaje, el mismo «no tengo internet» a toda hora, y técnicos que salen a campo sin saber qué van a encontrar. No es falta de esfuerzo: es falta de contexto.",
     chaos: [
       "Señor, no tengo internet",
       "¿Hasta cuándo puedo pagar?",

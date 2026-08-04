@@ -44,44 +44,48 @@ export function Hero() {
       <div className="mx-auto flex max-w-content flex-col items-center gap-14">
         <div className="flex flex-col items-center text-center">
           <Beat delay={0}>
-            {/* Darkened from `text-moss` toward `ink` (chunk C, spec Part
-                1a): the gradient field got substantially stronger, and
-                `moss` on `fog` only starts at 4.75:1 — too little headroom
-                once the field intensified. `ink/75` keeps this visually
-                secondary to the full-`ink` headline while giving real
-                margin. Measured ratios are in chunk-c-report.md. */}
-            <span className="inline-flex items-center rounded-full border border-whisper bg-surface/80 px-4 py-1.5 text-xs font-medium text-ink/75 shadow-card backdrop-blur-md">
+            {/* Darkened from `text-moss` toward `ink` (chunk C), then again
+                from `ink/75` to `ink/85` in this fix round: the field got
+                substantially stronger again (hero-fixes-report.md, Fix 3),
+                and `ink/75` no longer cleared 4.5:1 with margin at the
+                field's most intense sampled point. `ink/85` keeps this
+                visually secondary to the full-`ink` headline while holding
+                real headroom. Measured ratios are in hero-fixes-report.md. */}
+            <span className="inline-flex items-center rounded-full border border-whisper bg-surface/80 px-4 py-1.5 text-xs font-medium text-ink/85 shadow-card backdrop-blur-md">
               {badge}
             </span>
           </Beat>
 
-          {/* No explicit `max-w` here — the headline fills the parent's
-              1220px content column (see below) rather than a narrower
-              sub-cap, which matters for where it naturally breaks: at the
-              chosen font-size ceiling (5.25rem/84px), "empieza con una
-              conversación" (the longest of the title's natural word-groups)
-              needs the full 1220px to land on one line — see
-              chunk-c-report.md for the word-measurement arithmetic.
+          {/* Hero fix round (2026-08-04, gantry-realineamiento): new,
+              shorter headline — "WhatsApp con el contexto real de cada
+              cliente." — replaces the four-line prose sentence. A `max-w`
+              is now needed (the old headline never fit on one line at any
+              tested width, so it never needed one): at this font-size
+              ceiling this exact string is short enough to sit on a single
+              line from ~900px up unless constrained, which reads as a flat
+              banner rather than the two-line "WhatsApp con el contexto
+              real / de cada cliente." break the references show. The
+              max-w below was tuned empirically (rendered and measured, not
+              hand-calculated — see hero-fixes-report.md) so the break
+              lands on that phrase boundary at every tested width down to
+              320px, never mid-phrase.
 
               Deliberately NOT `text-balance` here (unlike the subtitle
-              below): balance re-flows to equalise visual line width and, on
-              this exact title, that pulled "tranquila" onto line two and
-              split the adjectival phrase "más tranquila" across the break —
-              a mid-thought break the spec explicitly asks to avoid. Plain
-              greedy wrapping keeps "Una operación más tranquila" together
-              on line one (verified against the title's actual measured word
-              widths — see the report) and reads as three clean phrases. */}
-          <Beat delay={0.12} className="mt-6">
-            <h1 className="font-display text-[clamp(2.75rem,1.9rem+4.4vw,5.25rem)] leading-[1.02] tracking-tight text-ink">
+              below): balance re-flows to equalise visual line width, which
+              on a two-word second line ("de cada cliente.") can pull an
+              extra word up to even out the lines — greedy wrapping is what
+              keeps the break exactly on the phrase boundary. */}
+          <Beat delay={0.12} className="mt-6 max-w-[1160px]">
+            <h1 className="font-display text-[clamp(2.25rem,1.55rem+4.4vw,5.25rem)] font-bold leading-[1.02] tracking-tighter text-ink md:text-[3.25rem] lg:text-[clamp(2.25rem,1.55rem+4.4vw,5.25rem)]">
               {title}
             </h1>
           </Beat>
 
           <Beat delay={0.24} className="mt-6 max-w-[640px]">
-            {/* Same `moss` → `ink/70` move as the badge above, one notch
-                lighter since body-size text has a lower AA floor to clear
-                but sits in the same field. */}
-            <p className="text-balance text-lg leading-relaxed text-ink/70 md:text-xl">
+            {/* Same `ink/85` move as the badge above (was `ink/70`): the
+                strengthened field (Fix 3) left this short by itself under
+                the darkest overlap band. */}
+            <p className="text-balance text-lg leading-relaxed text-ink/85 md:text-xl">
               {subtitle}
             </p>
           </Beat>

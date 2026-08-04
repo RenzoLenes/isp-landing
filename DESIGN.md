@@ -78,24 +78,31 @@ gramática — por eso la página se siente como un producto y no como secciones
 - **Tinta Bosque** (`#17201B`) — texto principal y titulares. Nunca negro puro.
   Desde el realineamiento con las referencias también es el **relleno del CTA
   primario del hero** (píldora oscura sólida, texto Superficie Pura — como
-  Qipeline) y, a menor opacidad (`ink/70`–`ink/75`), el color del eyebrow y el
-  subtítulo del hero — ver la nota de contraste en la entrada de Azul
-  Inteligente, abajo.
+  Qipeline) y, a menor opacidad, el color del eyebrow y el subtítulo del hero
+  — ver la nota de contraste en la entrada de Azul Inteligente, abajo.
+  **Ronda de fixes del hero (2026-08-04, hero-fixes-report.md):** el CTA de
+  la navegación pasa de Azul a Tinta Bosque también — las dos CTAs primarias
+  de la página (hero y nav) ya no podían discrepar, y las referencias usan el
+  mismo tratamiento oscuro en ambas. El eyebrow y el subtítulo del hero
+  suben de `ink/70`–`ink/75` a `ink/85`, porque el campo de gradiente se
+  reforzó otra vez (ver §5) y esa opacidad ya no despegaba con margen real de
+  4.5:1 en el punto más intenso — ratios medidos en hero-fixes-report.md.
 - **Gris Musgo** (`#647168`) — texto secundario, etiquetas de campo, metadatos,
   en cualquier zona **fuera** del campo de gradiente del hero (navegación,
   cuerpo de las secciones bajo el hero). Dentro del hero, ver arriba: el
-  eyebrow y el subtítulo usan `ink/70`–`ink/75` en vez de Gris Musgo — el campo
-  de gradiente ahí es lo bastante fuerte como para que Musgo (4.75:1 sobre
+  eyebrow y el subtítulo usan `ink/85` en vez de Gris Musgo — el campo de
+  gradiente ahí es lo bastante fuerte como para que Musgo (4.75:1 sobre
   Niebla Verde lisa, ya al límite) no tenga margen suficiente.
 - **Borde Susurro** (`rgb(23 32 27 / 0.08)`) — bordes de 1px, separadores de filas de datos.
-- **Azul Inteligente** (`#5AABFF`) — acento de acción: enlaces, focus rings, el
-  CTA de la navegación y del footer, y el **nodo de contexto** de la tríada.
-  **Ya no es el CTA primario del hero** — ese rol pasó a Tinta Bosque (arriba)
-  en el realineamiento con las referencias: tres de las cuatro referencias del
-  cliente combinan una píldora oscura sólida como primario con una fantasma
-  clara como secundario, y Azul quedó como el acento de acción que sigue
-  presente en el resto de la página (nav, links, focus, tríada). Sigue siendo
-  el **único** azul de la paleta — no se introduce un segundo tono de acción.
+- **Azul Inteligente** (`#5AABFF`) — acento de acción: enlaces, focus rings, y
+  el **nodo de contexto** de la tríada. **Ya no es el CTA primario del hero**
+  — ese rol pasó a Tinta Bosque (arriba) en el realineamiento con las
+  referencias — **ni el de la navegación** desde la ronda de fixes del hero
+  de 2026-08-04 (arriba): las dos CTAs primarias de la página comparten
+  ahora el mismo tratamiento oscuro, y Azul quedó exclusivamente como acento
+  de acción (links, focus, tríada) — ya no rellena ningún botón CTA en la
+  página. Sigue siendo el **único** azul de la paleta — no se introduce un
+  segundo tono de acción.
 - **Azul Profundo** (`#4A9EF5`) — exclusivamente el hover del azul de acción.
 - **Lavanda de Señal** (`#A7A9EB`) — decorativo y estructural: hilos, halos, pulsos,
   y el **nodo de señal**. Nunca en elementos interactivos. Da 2.05:1 sobre Niebla
@@ -125,18 +132,27 @@ texto que quede encima, y documentarse igual que en `chunk-c-report.md`.
 ## 4. Typography Rules
 
 - **Display:** Instrument Sans (`next/font/google`) — titulares grandes y
-  apretados (`tracking-tight`), con más carácter que un grotesco neutro.
-  Reemplazó a Instrument Serif en el realineamiento con las referencias: las
-  cuatro comparten titulares sans, y el brief original (que sí pedía serif) fue
-  el que se revocó — ver la nota de reversión al inicio del documento. El
-  titular del hero es deliberadamente **enorme** (hasta `5.25rem`/84px en
-  escritorio, con `clamp()`) y domina el viewport como en Qipeline; el resto
-  de los titulares de sección escalan más moderado, siempre con `clamp()` y
-  nunca `text-balance` si eso reordena las palabras de forma que rompa una
-  frase a mitad — preferir el ajuste de línea normal (greedy) cuando el
-  balanceado del navegador produce un corte peor (ver el titular del hero,
-  cuyo ancho de contenedor se calculó a partir del ancho medido de cada
-  palabra para que el corte caiga en límites de frase, no a mitad).
+  apretados, con más carácter que un grotesco neutro. Reemplazó a Instrument
+  Serif en el realineamiento con las referencias: las cuatro comparten
+  titulares sans, y el brief original (que sí pedía serif) fue el que se
+  revocó — ver la nota de reversión al inicio del documento. El titular del
+  hero es deliberadamente **enorme** (hasta `5.25rem`/84px en escritorio, con
+  `clamp()`) y domina el viewport como en Qipeline; el resto de los titulares
+  de sección escalan más moderado, siempre con `clamp()` y nunca
+  `text-balance` si eso reordena las palabras de forma que rompa una frase a
+  mitad — preferir el ajuste de línea normal (greedy) cuando el balanceado
+  del navegador produce un corte peor (ver el titular del hero, cuyo ancho de
+  contenedor se calculó a partir del ancho medido de cada palabra para que el
+  corte caiga en límites de frase, no a mitad).
+  **Ronda de fixes del hero (2026-08-04, hero-fixes-report.md):** el titular
+  del hero sube de `font-normal`/`tracking-tight` a **`font-bold`
+  (700)/`tracking-tighter`** — a escala de héroe, Instrument Sans en regular
+  se leía delgado y suelto frente al peso de Qipeline. Instrument Sans es una
+  fuente variable vía `next/font/google` (sin `weight` explícito en la
+  llamada), así que el eje de peso completo ya estaba cargado — 700 no es un
+  peso sintetizado, se confirmó en `hero-fixes-report.md` con
+  `--font-weight-bold:700` presente en el CSS generado y `font-weight:700`
+  computado en el navegador.
 - **Instrument Serif no existe en el proyecto.** Ningún import, ninguna clase
   `font-serif`, ningún archivo se descarga. Si vuelve a aparecer en cualquier
   `git grep`, es una regresión.
@@ -155,19 +171,29 @@ texto que quede encima, y documentarse igual que en `chunk-c-report.md`.
 
 - **Botones:** tres variantes, no dos. **`ink`** — relleno Tinta Bosque, texto
   Superficie Pura, radio de píldora, hover `ink/90`, feedback `-1px` en activo:
-  el CTA primario del hero, exclusivamente (§3). **`primary`** — relleno Azul
-  Inteligente, mismo tratamiento, hover Azul Profundo: el CTA de la navegación
-  y del footer. **`ghost`** — fantasma: borde susurro + texto Tinta, fondo
+  el CTA primario del hero **y, desde la ronda de fixes del hero (2026-08-04,
+  hero-fixes-report.md), también el CTA de la navegación** — las dos CTAs
+  primarias de la página ya no pueden discrepar (Fix 4), y las referencias
+  del cliente usan el mismo tratamiento oscuro en ambas. **`primary`** —
+  relleno Azul Inteligente, mismo tratamiento, hover Azul Profundo: sin uso
+  actual como CTA en la página (ver arriba); se conserva como variante
+  disponible. **`ghost`** — fantasma: borde susurro + texto Tinta, fondo
   `surface/60`: el secundario del hero y cualquier acción de segundo orden. Sin
   glow externo en ninguna. Target táctil ≥ 44px siempre, en las tres.
 - **Campo de gradiente (`GradientField`):** el fondo atmosférico del hero —
-  manchas grandes y difuminadas (`blur` 110–140px) de Lavanda y Azul sobre
+  manchas grandes y difuminadas (`blur` 110–150px) de Lavanda y Azul sobre
   Niebla Verde, más intensas arriba y a la derecha, disolviéndose hacia abajo
   con una máscara antes de la sección Problema. Server Component, `aria-hidden`,
   `-z-10`, `pointer-events-none` — es atmósfera, no contenido. Debe leerse como
   luz real desde una distancia de lectura normal (§1), y su intensidad está
   acotada únicamente por el contraste del texto que queda encima (eyebrow,
-  titular, subtítulo del hero) — nunca al revés.
+  titular, subtítulo del hero) — nunca al revés. **Ronda de fixes del hero
+  (2026-08-04):** el cliente comparó la captura de 1440px con Qipeline y el
+  campo seguía leyéndose plano — chunk C ya lo había reforzado una vez pero
+  no lo suficiente. Las opacidades de pico suben otra vez (~+60-70% sobre
+  chunk C) y el eyebrow/subtítulo del hero pasan de `ink/70`–`ink/75` a
+  `ink/85` para sostener el piso AA bajo el campo más fuerte — ver §3 y
+  hero-fixes-report.md para los ratios muestreados antes/después.
 - **Consola de producto (`ProductConsole`):** el artefacto más grande de la
   página — una maqueta densa de la aplicación real (barra lateral,
   conversaciones, contexto), recortada por el fold dentro del hero. Marco con
