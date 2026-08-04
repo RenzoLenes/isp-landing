@@ -3,6 +3,12 @@ import type { ReactNode } from "react";
 const VARIANTS = {
   primary:
     "bg-blue text-surface hover:bg-blue-deep active:translate-y-px shadow-card",
+  // Dark filled pill — the hero's primary CTA (§4). Blue stays the sole
+  // action accent everywhere else (links, focus rings, the triad's context
+  // node); this is the one call site that swaps it for `ink`, per three of
+  // the four client references pairing a black primary with a light ghost
+  // secondary.
+  ink: "bg-ink text-surface hover:bg-ink/90 active:translate-y-px shadow-card",
   ghost:
     "border border-whisper bg-surface/60 text-ink hover:border-ink/20 active:translate-y-px",
 } as const;

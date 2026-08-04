@@ -83,6 +83,15 @@ export type PilotSelectField = {
   options: readonly string[];
 };
 
+export type ConsoleNavItem = { label: string; active?: boolean };
+
+export type ConsoleConversation = {
+  name: string;
+  status: string;
+  tone: "alert" | "neutral" | "ok";
+  active?: boolean;
+};
+
 export const LANDING = {
   nav: {
     brand: "Gantry",
@@ -95,28 +104,61 @@ export const LANDING = {
   },
 
   hero: {
-    eyebrow: "Para pequeños ISPs de Perú y Latinoamérica",
+    badge: "Piloto abierto · ISPs de Perú y Latinoamérica",
     title: "Una operación más tranquila empieza con una conversación mejor atendida.",
     subtitle:
       "Conecta WhatsApp a tu sistema ISP para responder pagos, soporte e instalaciones con el contexto real de cada cliente.",
     ctaPrimary: { label: "Solicitar acceso al piloto", href: "#piloto" },
     ctaSecondary: { label: "Ver cómo funciona", href: "#como-funciona" },
-    composition: {
-      chatHeader: "WhatsApp · Marisol Q.",
-      chatMessages: [
-        "Hola, no tengo internet desde el mediodía.",
-        "Ya reinicié el router y sigue igual.",
-      ],
-      contextTitle: "Servicio de Marisol",
-      contextStatus: "Al día",
-      contextRows: [
-        { label: "Plan", value: "100 Mbps" },
-        { label: "Estado", value: "Activo" },
-        { label: "Falla masiva", value: "No" },
-      ],
-      actionLabel: "Acción automática",
-      actionTitle: "Ticket #184 listo para asignar",
-      actionMeta: "Diagnóstico incluido · Técnico Luis A.",
+    // The product console (§5): an illustrative, dense mock of the app
+    // itself — three columns at desktop (sidebar / conversations / context),
+    // built from the same example client (Marisol Quispe) and ticket (#184)
+    // used elsewhere on the page, so the whole landing reads as one
+    // consistent demo rather than three unrelated fake datasets.
+    console: {
+      sidebarNav: [
+        { label: "Conversaciones", active: true },
+        { label: "Tickets" },
+        { label: "Cobranza" },
+        { label: "Integraciones" },
+      ] satisfies ConsoleNavItem[],
+      conversationsHeading: "Conversaciones",
+      contextHeading: "Contexto",
+      conversations: [
+        { name: "Marisol Q.", status: "Sin señal", tone: "alert", active: true },
+        { name: "Jorge R.", status: "Pago", tone: "neutral" },
+        { name: "Nuevo contacto", status: "Cobertura", tone: "neutral" },
+      ] satisfies ConsoleConversation[],
+      openConversation: {
+        header: "WhatsApp · Marisol Q.",
+        messages: [
+          { from: "cliente", text: "Hola, no tengo internet desde el mediodía." },
+          {
+            from: "bot",
+            text: "Hola, Marisol. Veo tu servicio activo y sin deuda pendiente. ¿Probamos reiniciar tu router?",
+          },
+        ] satisfies ChatMessage[],
+      },
+      client: {
+        title: "Marisol Quispe",
+        status: "Al día",
+        rows: [
+          { label: "Plan", value: "100 Mbps" },
+          { label: "Zona", value: "Sur · Nodo 4" },
+          { label: "Deuda", value: "S/ 0.00" },
+        ] satisfies ArtifactRow[],
+      },
+      decision: {
+        checks: [
+          { question: "¿Deuda pendiente?", answer: "No" },
+          { question: "¿Falla en la zona?", answer: "No" },
+        ],
+        outcome: "Sugerir reinicio de router",
+      },
+      ticket: {
+        title: "Ticket #184 listo para asignar",
+        meta: "Diagnóstico incluido · Técnico Luis A.",
+      },
     },
   },
 

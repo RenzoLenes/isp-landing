@@ -1,8 +1,8 @@
 import { test, expect } from "@playwright/test";
 
 // prefers-reduced-motion: reduce is implemented in 5 animated components
-// (SignalThread, Reveal, ChatScene, DecisionChain, HeroComposition's Piece)
-// but had never been exercised in an actual browser.
+// (SignalThread, Reveal, ChatScene, DecisionChain, Hero's Beat) but had
+// never been exercised in an actual browser.
 // `test.use({ reducedMotion: ... })` is not available in this Playwright
 // version's `PlaywrightTestOptions` type (only `page.emulateMedia()` exposes
 // it), so each test emulates the media feature directly before navigating.
@@ -73,17 +73,23 @@ test.describe("Reduced motion", () => {
     expect(opacity, "DecisionChain row opacity before any scroll").toBe("1");
   });
 
-  test("hero chat messages are visible immediately (no cascade to wait out)", async ({
+  test("hero headline and console are visible immediately (no cascade to wait out)", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("/");
 
-    const heroRoot = page.locator('[role="img"][aria-label*="Composición ilustrativa"]');
-    const pieces = heroRoot.locator(":scope > div:not([aria-hidden])");
-    const chatPiece = pieces.first();
-    const opacity = await chatPiece.evaluate((el) => getComputedStyle(el).opacity);
-    expect(opacity, "hero chat piece opacity immediately after load").toBe("1");
+    const heading = page.getByRole("heading", { level: 1 });
+    const headingOpacity = await heading.evaluate(
+      (el) => getComputedStyle(el.parentElement ?? el).opacity,
+    );
+    expect(headingOpacity, "hero headline opacity immediately after load").toBe("1");
+
+    const productConsole = page.locator('[role="img"][aria-label*="Captura ilustrativa"]');
+    const consoleOpacity = await productConsole.evaluate(
+      (el) => getComputedStyle(el.parentElement ?? el).opacity,
+    );
+    expect(consoleOpacity, "product console opacity immediately after load").toBe("1");
   });
 });

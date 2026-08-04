@@ -1,5 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
 import { getContrastInfo } from "./helpers/contrast";
+import { LANDING } from "../src/content/landing";
 
 // WCAG AA: >=4.5:1 for normal text, >=3:1 for "large" text (>=24px, or
 // >=18.66px + bold). `getContrastInfo` computes `requiredRatio` per element
@@ -44,8 +45,12 @@ test.describe("Contrast (computed, WCAG AA)", () => {
 
   test("secondary body text (moss on fog) — hero subtitle", async ({ page }) => {
     await page.goto("/");
+    // The rebuilt hero (spec §4) wraps the headline and subtitle in
+    // separate staggered-entrance wrappers, so they're no longer DOM
+    // siblings — target the subtitle by its exact copy instead, same
+    // pattern `screenshots.spec.ts` already uses.
     const info = await report("hero subtitle (text-moss)", page, () =>
-      page.locator("h1").locator("xpath=following-sibling::p[1]"),
+      page.getByText(LANDING.hero.subtitle, { exact: true }),
     );
     expect(info.ratio, `secondary text contrast ${info.ratio.toFixed(2)}:1`).toBeGreaterThanOrEqual(
       info.requiredRatio,
