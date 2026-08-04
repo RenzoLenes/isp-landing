@@ -2,6 +2,7 @@ import { Navbar } from "@/components/sections/Navbar";
 import { Hero } from "@/components/sections/Hero";
 import { Problem } from "@/components/sections/Problem";
 import { Pillars } from "@/components/sections/Pillars";
+import { UseCases } from "@/components/sections/UseCases";
 
 export default function Home() {
   return (
@@ -11,8 +12,9 @@ export default function Home() {
         <Hero />
         <Problem />
         <Pillars />
+        <UseCases />
         {/* Las secciones se agregan aquí en las tasks siguientes, en este orden:
-            UseCases, HowItWorks, Integrations, Pilot */}
+            HowItWorks, Integrations, Pilot */}
       </main>
     </>
   );
