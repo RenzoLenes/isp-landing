@@ -1281,22 +1281,22 @@ function Connector({ index }: { index: number }) {
   return (
     <div
       aria-hidden
-      className="relative mx-auto h-10 w-px bg-gradient-to-b from-lavender/60 to-lavender/20 md:mx-0 md:mt-5 md:h-px md:w-auto md:flex-1 md:bg-gradient-to-r"
+      className="relative mx-auto h-10 w-px bg-gradient-to-b from-lavender/60 to-lavender/20 lg:mx-0 lg:mt-5 lg:h-px lg:w-auto lg:flex-1 lg:bg-gradient-to-r"
     >
-      {/* Móvil: conector vertical, puntos distribuidos por `top`. */}
+      {/* Apilado: conector vertical, puntos distribuidos por `top`. */}
       {DOT_POSITIONS.map((position, dot) => (
         <SignalDot
           key={`v-${position}`}
-          className="left-1/2 md:hidden"
+          className="left-1/2 lg:hidden"
           style={{ top: `${position * 100}%` }}
           delay={index * 0.4 + dot * 0.3}
         />
       ))}
-      {/* Desktop: conector horizontal, puntos distribuidos por `left`. */}
+      {/* En fila: conector horizontal, puntos distribuidos por `left`. */}
       {DOT_POSITIONS.map((position, dot) => (
         <SignalDot
           key={`h-${position}`}
-          className="top-1/2 hidden md:block"
+          className="top-1/2 hidden lg:block"
           style={{ left: `${position * 100}%` }}
           delay={index * 0.4 + dot * 0.3}
         />
@@ -1308,15 +1308,15 @@ function Connector({ index }: { index: number }) {
 export function SignalFlow() {
   const { steps } = LANDING.flow;
   return (
-    <ol className="mt-16 flex flex-col md:flex-row md:items-start">
+    <ol className="mt-16 flex flex-col lg:flex-row lg:items-start">
       {steps.map((step, i) => (
         <li
           key={step.title}
-          className={`flex flex-col items-center md:flex-row md:items-start ${
-            i < steps.length - 1 ? "md:flex-1" : ""
+          className={`flex flex-col items-center lg:flex-row lg:items-start ${
+            i < steps.length - 1 ? "lg:flex-1" : ""
           }`}
         >
-          <div className="flex flex-col items-center text-center md:w-56 md:shrink-0">
+          <div className="flex flex-col items-center text-center lg:w-48">
             <span className="flex size-11 items-center justify-center rounded-full border border-blue/40 bg-blue/10 text-sm font-medium text-ink [font-variant-numeric:tabular-nums]">
               {i + 1}
             </span>
@@ -1336,6 +1336,8 @@ export function SignalFlow() {
 > El conector también necesita `md:w-auto` junto a `md:flex-1`: sin eso el `w-px` base sigue aplicando en desktop y la línea horizontal no crece.
 >
 > **Nota sobre el `<li>`:** un borrador anterior usaba `className="contents"` para que el bloque del paso y el conector fueran hermanos flex directos del `<ol>`. Se descartó: `display: contents` tiene un historial documentado de eliminar el elemento — y en algunas versiones de WebKit su subárbol completo — del árbol de accesibilidad, lo que dejaría a usuarios de lector de pantalla sin el texto de los pasos. Ahora el `<li>` conserva su caja y es él mismo un contenedor flex (columna en móvil, fila en desktop), con `md:flex-1` en todos menos el último para que los conectores repartan el espacio sobrante.
+>
+> **Nota sobre el breakpoint del flujo (desborde horizontal real):** el flujo pasa a fila en `lg`, no en `md`. Aritmética del contenedor: `section px-4` + `max-w-content` + `px-14` interno dejan ~624px útiles a 768px y ~880px a 1024px. Cuatro bloques de `w-56` (224px) suman 896px, así que a 768px desbordaban por 272px — scroll horizontal, prohibido por el spec — y a 1024px seguían pasándose por 16px. Con `lg:` + `lg:w-48` (192px) el total baja a 768px, dejando ~37px por conector a 1024px y ~113px a 1440px. Además se quitó `shrink-0`: si algún caso queda justo, los pasos se comprimen en vez de desbordar.
 >
 > **Nota sobre el badge del último paso:** el borrador lo pintaba con `fiber`. Se descartó: la restricción global reserva el verde fibra exclusivamente para confirmaciones, y "Tu equipo, cuando hace falta" es una escalación, no una confirmación. Los cuatro badges usan `blue`.
 
