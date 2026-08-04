@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 const VARIANTS = {
   primary:
-    "bg-blue text-white hover:bg-[#4a9ef5] active:translate-y-px shadow-card",
+    "bg-blue text-surface hover:bg-blue-deep active:translate-y-px shadow-card",
   ghost:
     "border border-whisper bg-surface/60 text-ink hover:border-ink/20 active:translate-y-px",
 } as const;
