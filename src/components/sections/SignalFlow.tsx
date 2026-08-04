@@ -34,22 +34,22 @@ function Connector({ index }: { index: number }) {
   return (
     <div
       aria-hidden
-      className="relative mx-auto h-10 w-px bg-gradient-to-b from-lavender/60 to-lavender/20 md:mx-0 md:mt-5 md:h-px md:w-auto md:flex-1 md:bg-gradient-to-r"
+      className="relative mx-auto h-10 w-px bg-gradient-to-b from-lavender/60 to-lavender/20 lg:mx-0 lg:mt-5 lg:h-px lg:w-auto lg:flex-1 lg:bg-gradient-to-r"
     >
-      {/* Móvil: conector vertical, puntos distribuidos por `top`. */}
+      {/* Apilado: conector vertical, puntos distribuidos por `top`. */}
       {DOT_POSITIONS.map((position, dot) => (
         <SignalDot
           key={`v-${position}`}
-          className="left-1/2 md:hidden"
+          className="left-1/2 lg:hidden"
           style={{ top: `${position * 100}%` }}
           delay={index * 0.4 + dot * 0.3}
         />
       ))}
-      {/* Desktop: conector horizontal, puntos distribuidos por `left`. */}
+      {/* En fila: conector horizontal, puntos distribuidos por `left`. */}
       {DOT_POSITIONS.map((position, dot) => (
         <SignalDot
           key={`h-${position}`}
-          className="top-1/2 hidden md:block"
+          className="top-1/2 hidden lg:block"
           style={{ left: `${position * 100}%` }}
           delay={index * 0.4 + dot * 0.3}
         />
@@ -61,15 +61,15 @@ function Connector({ index }: { index: number }) {
 export function SignalFlow() {
   const { steps } = LANDING.flow;
   return (
-    <ol className="mt-16 flex flex-col md:flex-row md:items-start">
+    <ol className="mt-16 flex flex-col lg:flex-row lg:items-start">
       {steps.map((step, i) => (
         <li
           key={step.title}
-          className={`flex flex-col items-center md:flex-row md:items-start ${
-            i < steps.length - 1 ? "md:flex-1" : ""
+          className={`flex flex-col items-center lg:flex-row lg:items-start ${
+            i < steps.length - 1 ? "lg:flex-1" : ""
           }`}
         >
-          <div className="flex flex-col items-center text-center md:w-56 md:shrink-0">
+          <div className="flex flex-col items-center text-center lg:w-48">
             <span className="flex size-11 items-center justify-center rounded-full border border-blue/40 bg-blue/10 text-sm font-medium text-ink [font-variant-numeric:tabular-nums]">
               {i + 1}
             </span>
