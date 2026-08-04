@@ -5,6 +5,7 @@ import { Pillars } from "@/components/sections/Pillars";
 import { UseCases } from "@/components/sections/UseCases";
 import { HowItWorks } from "@/components/sections/HowItWorks";
 import { Integrations } from "@/components/sections/Integrations";
+import { Faq } from "@/components/sections/Faq";
 import { Pilot } from "@/components/sections/Pilot";
 import { Footer } from "@/components/sections/Footer";
 
@@ -19,6 +20,7 @@ export default function Home() {
         <UseCases />
         <HowItWorks />
         <Integrations />
+        <Faq />
         <Pilot />
       </main>
       <Footer />

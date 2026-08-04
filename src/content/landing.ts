@@ -72,6 +72,8 @@ export type FlowStep =
     }
   | { kind: "resultado"; title: string; body: string; result: string };
 
+export type FaqItem = { question: string; answer: string };
+
 export type PilotTextField = {
   label: string;
   placeholder: string;
@@ -387,6 +389,44 @@ export const LANDING = {
     hub: "Gantry",
     output: "WhatsApp Business",
     trust: "Sin migrar clientes, facturación ni operación de red.",
+  },
+
+  faq: {
+    eyebrow: "Preguntas frecuentes",
+    title: "Las dudas que tendrías antes de decir que sí.",
+    body: "Esto es lo que sabemos con certeza hoy. Donde la respuesta honesta es «depende» o «lo acordamos contigo», lo decimos así.",
+    items: [
+      {
+        question: "¿Y si el bot responde mal?",
+        answer:
+          "Es la duda real, y la respuesta corta es: cuando no está seguro, Gantry no inventa un «tal vez», escala la conversación a una persona de tu equipo. Cada respuesta automática que sí entrega se arma con datos reales de tu sistema de gestión: plan, deuda, estado del servicio, nunca información inventada.",
+      },
+      {
+        question: "¿Tengo que cambiar mi sistema de gestión?",
+        answer:
+          "No. Gantry se conecta al que ya usas: lee tu información (plan, deuda, tickets) y también escribe en él (valida pagos, crea tickets, agenda visitas) a través de su API. No migras clientes ni cambias de herramienta para el piloto: conectamos lo que ya tienes.",
+      },
+      {
+        question: "¿Qué pasa con los datos de mis clientes?",
+        answer:
+          "Es una pregunta justa: nos estás confiando tu base de clientes. Hoy no tenemos una certificación que mostrarte, así que preferimos ser directos: acordamos por contrato con cada operador del piloto cómo se accede a esos datos y quién responde por ellos, antes de conectar nada.",
+      },
+      {
+        question: "¿Cuánto tarda la implementación?",
+        answer:
+          "Depende de tu sistema de gestión y de qué tan ordenados estén tus datos, no hay un número que sirva para todos. El piloto incluye la conexión guiada a tu sistema, la configuración de los flujos de soporte y cobranza, y acompañamiento de nuestro equipo hasta que funcione con tu operación real, no con datos de prueba.",
+      },
+      {
+        question: "¿Cuánto cuesta después del piloto?",
+        answer:
+          "Todavía no fijamos un precio de lista: preferimos definirlo con datos reales de tu operación, no con una tabla genérica. Los operadores del piloto acceden a un precio preferencial, y las condiciones se acuerdan contigo antes de que el piloto termine, nunca después.",
+      },
+      {
+        question: "¿Funciona si mi sistema no tiene API?",
+        answer:
+          "Si tu sistema no tiene una API disponible, es una limitación real y preferimos decirlo así: sin una vía para leer y escribir datos, Gantry no puede consultar tu información en tiempo real. Cuéntanos qué sistema usas al aplicar al piloto, lo evaluamos caso por caso antes de avanzar.",
+      },
+    ] satisfies FaqItem[],
   },
 
   pilot: {
