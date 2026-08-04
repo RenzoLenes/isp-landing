@@ -1249,30 +1249,55 @@ git commit -m "feat: casos de uso con escenas de conversación animadas"
 import { motion, useReducedMotion } from "motion/react";
 import { LANDING } from "@/content/landing";
 
-function Connector({ index }: { index: number }) {
+const DOT_POSITIONS = [0.25, 0.5, 0.75];
+
+function SignalDot({
+  className,
+  style,
+  delay,
+}: {
+  className: string;
+  style: React.CSSProperties;
+  delay: number;
+}) {
   const reduceMotion = useReducedMotion();
+  return (
+    <motion.span
+      className={`absolute size-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-lavender ${className}`}
+      style={style}
+      animate={reduceMotion ? undefined : { opacity: [0.2, 1, 0.2] }}
+      transition={{
+        duration: 1.8,
+        repeat: Infinity,
+        ease: "easeInOut",
+        delay,
+      }}
+    />
+  );
+}
+
+function Connector({ index }: { index: number }) {
   return (
     <div
       aria-hidden
-      className="relative mx-auto h-10 w-px bg-gradient-to-b from-lavender/60 to-lavender/20 md:mx-0 md:mt-5 md:h-px md:flex-1 md:bg-gradient-to-r"
+      className="relative mx-auto h-10 w-px bg-gradient-to-b from-lavender/60 to-lavender/20 md:mx-0 md:mt-5 md:h-px md:w-auto md:flex-1 md:bg-gradient-to-r"
     >
-      {[0.25, 0.5, 0.75].map((position, dot) => (
-        <motion.span
-          key={position}
-          className="absolute size-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-lavender max-md:left-1/2 md:top-1/2"
-          style={{
-            top: `${position * 100}%`,
-            left: undefined,
-          }}
-          // En md+ el conector es horizontal: posicionamos por left vía CSS var
-          data-position={position}
-          animate={reduceMotion ? undefined : { opacity: [0.2, 1, 0.2] }}
-          transition={{
-            duration: 1.8,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: index * 0.4 + dot * 0.3,
-          }}
+      {/* Móvil: conector vertical, puntos distribuidos por `top`. */}
+      {DOT_POSITIONS.map((position, dot) => (
+        <SignalDot
+          key={`v-${position}`}
+          className="left-1/2 md:hidden"
+          style={{ top: `${position * 100}%` }}
+          delay={index * 0.4 + dot * 0.3}
+        />
+      ))}
+      {/* Desktop: conector horizontal, puntos distribuidos por `left`. */}
+      {DOT_POSITIONS.map((position, dot) => (
+        <SignalDot
+          key={`h-${position}`}
+          className="top-1/2 hidden md:block"
+          style={{ left: `${position * 100}%` }}
+          delay={index * 0.4 + dot * 0.3}
         />
       ))}
     </div>
@@ -1306,7 +1331,9 @@ export function SignalFlow() {
 }
 ```
 
-> Nota sobre el `Connector`: en móvil es una línea vertical (dots posicionados con `top` %); en desktop es horizontal. Los dots usan `top: position*100%` que funciona en vertical; para el caso horizontal, en la implementación ajustar con clases responsive: `max-md:!left-1/2` ya centra en vertical, y en md+ usar `md:!top-1/2` con `left: position*100%`. Si el posicionamiento dual por style inline se complica, duplicar el marcador: un set `md:hidden` (vertical, `top`) y un set `hidden md:block` (horizontal, `left`) — misma animación de opacidad. Elegir la variante que quede más simple y legible.
+> Nota sobre el `Connector` (ambigüedad resuelta): un solo set de puntos no puede servir a las dos orientaciones, porque el `style` inline gana siempre sobre las clases responsive de Tailwind — con `style={{top}}` los puntos quedarían apilados en desktop en vez de distribuirse a lo largo de la línea horizontal. Por eso se renderizan **dos sets**: uno vertical (`md:hidden`, posicionado por `top`) y uno horizontal (`hidden md:block`, posicionado por `left`), compartiendo el componente `SignalDot` para no duplicar la animación. Solo un set es visible a la vez.
+>
+> El conector también necesita `md:w-auto` junto a `md:flex-1`: sin eso el `w-px` base sigue aplicando en desktop y la línea horizontal no crece.
 
 - [ ] **Step 2: Crear `src/components/sections/HowItWorks.tsx`**
 
