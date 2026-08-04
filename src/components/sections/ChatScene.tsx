@@ -1,10 +1,14 @@
 "use client";
 
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
 import type { ChatMessage } from "@/content/landing";
 import { ChatBubble } from "@/components/ui/ChatBubble";
 import { GlassCard } from "@/components/ui/GlassCard";
 
+// `initial` is a plain, unconditional object here too — see Hero.tsx's
+// `Beat` for why it's deliberately not gated on `useReducedMotion()`.
+// "Already settled" under reduced motion comes from the `data-motion-settle`
+// CSS rule in globals.css instead.
 export function ChatScene({
   label,
   chat,
@@ -12,7 +16,6 @@ export function ChatScene({
   label: string;
   chat: readonly ChatMessage[];
 }) {
-  const reduceMotion = useReducedMotion();
   return (
     <GlassCard>
       <p className="mb-4 text-xs font-medium text-moss">{label}</p>
@@ -20,7 +23,8 @@ export function ChatScene({
         {chat.map((message, i) => (
           <motion.div
             key={i}
-            initial={reduceMotion ? false : { opacity: 0, y: 14 }}
+            data-motion-settle
+            initial={{ opacity: 0, y: 14 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-60px" }}
             transition={{

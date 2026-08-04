@@ -1,7 +1,9 @@
+import type { Ref } from "react";
 import { LANDING } from "@/content/landing";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Reveal } from "@/components/ui/Reveal";
 import { SignalThread } from "@/components/ui/SignalThread";
+import { IntegrationsBeamDiagram } from "@/components/sections/IntegrationsBeamDiagram";
 
 // Nunca `w-full` aquí: en la fila de escritorio esta tarjeta es hermana flex del
 // stub del hilo (`flex-1`, basis 0). `w-full` resolvería su flex-basis al 100% de
@@ -10,15 +12,22 @@ import { SignalThread } from "@/components/ui/SignalThread";
 // da una basis concreta y deja el resto al stub. `className` permite que la fila
 // de escritorio imponga ese ancho uniforme sin afectar a la lista apilada de
 // móvil, donde la tarjeta llena su `<li>` por flujo normal.
-function SystemCard({
+//
+// Exported: the desktop diagram (`IntegrationsBeamDiagram`) needs the exact
+// same card so the four beams start at a uniform x — see that file for why
+// the uniform width still matters with Animated Beam.
+export function SystemCard({
   name,
   className = "",
+  ref,
 }: {
   name: string;
   className?: string;
+  ref?: Ref<HTMLDivElement>;
 }) {
   return (
     <div
+      ref={ref}
       className={`min-w-0 rounded-2xl border border-whisper bg-surface px-4 py-3 text-sm font-medium text-ink shadow-card ${className}`}
     >
       {name}
@@ -41,10 +50,22 @@ function SystemCard({
  * four systems' threads run through on their way to the output, rather than
  * a point they converge into and vanish. Same size, same halo, same
  * position in the diagram — only the geometry changed.
+ *
+ * Exported (and `ref`-forwardable, React 19 style — no `forwardRef` needed):
+ * `IntegrationsBeamDiagram` needs a measurable node to aim the four incoming
+ * beams and the one outgoing beam at. The halo div is `absolute inset-0` and
+ * out of flow, so the ref'd wrapper's rendered box is exactly the visible
+ * bordered square — the halo doesn't inflate it.
  */
-function HubNode({ label }: { label: string }) {
+export function HubNode({
+  label,
+  ref,
+}: {
+  label: string;
+  ref?: Ref<HTMLDivElement>;
+}) {
   return (
-    <div className="relative flex shrink-0 flex-col items-center">
+    <div ref={ref} className="relative flex shrink-0 flex-col items-center">
       <div
         aria-hidden
         className="absolute inset-0 -z-10 rounded-[1.75rem] bg-lavender/40 blur-2xl"
@@ -56,9 +77,18 @@ function HubNode({ label }: { label: string }) {
   );
 }
 
-function OutputNode({ label }: { label: string }) {
+export function OutputNode({
+  label,
+  ref,
+}: {
+  label: string;
+  ref?: Ref<HTMLDivElement>;
+}) {
   return (
-    <div className="flex w-full max-w-[12rem] items-center justify-center rounded-2xl border border-fiber/40 bg-fiber/15 px-4 py-3 text-center text-sm font-medium text-ink shadow-card lg:w-auto">
+    <div
+      ref={ref}
+      className="flex w-full max-w-[12rem] items-center justify-center rounded-2xl border border-fiber/40 bg-fiber/15 px-4 py-3 text-center text-sm font-medium text-ink shadow-card lg:w-auto"
+    >
       {label}
     </div>
   );
@@ -114,57 +144,11 @@ export function Integrations() {
           </ol>
         </Reveal>
 
-        {/* `lg` y más: convergencia horizontal — sistemas → Gantry → salida. */}
+        {/* `lg` y más: convergencia horizontal — sistemas → Gantry → salida,
+            ahora con Animated Beam (curvas animadas) en vez de los hilos
+            punteados rectos. Ver IntegrationsBeamDiagram.tsx. */}
         <Reveal delay={0.15}>
-          <div className="mt-16 hidden items-center justify-center lg:flex">
-            <div className="flex w-64 shrink-0 flex-col gap-3">
-              {systems.map((system) => (
-                <div key={system} className="flex items-center gap-3">
-                  {/* Ancho uniforme: sin él las tarjetas se dimensionan por
-                      contenido y los cuatro hilos arrancan en x distintos, con
-                      lo que la convergencia se lee desordenada. */}
-                  <SystemCard name={system} className="w-40 shrink-0" />
-                  <div className="h-px w-6 flex-1">
-                    <SignalThread orientation="horizontal" />
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/*
-              Trunk height, derived (not guessed) from the systems column's
-              actual box model, so the top/bottom stubs land exactly on the
-              outer cards' centres instead of overshooting past the visible
-              line:
-                - SystemCard: text-sm → 20px line-height, py-3 → 12px+12px
-                  padding, border → 1px+1px. Height = 20+24+2 = 46px.
-                - 4 cards, gap-3 (12px) between them, 3 gaps.
-                - Column height = 4×46 + 3×12 = 220px.
-                - First card centre = 46/2 = 23px from column top.
-                - Last card centre  = 220 - 23 = 197px from column top.
-                - Outer-centre-to-outer-centre span = 197 - 23 = 174px.
-              The trunk is centred (via `items-center`) inside a 220px-tall
-              row, so a 174px trunk sits at 23px..197px — exactly matching
-              the two stub y-positions above. h-44 (176px) is the nearest
-              step in the default scale but leaves a 1px gap each side, so
-              this uses the exact value instead.
-            */}
-            <div aria-hidden className="h-[174px] w-px shrink-0">
-              <SignalThread orientation="vertical" />
-            </div>
-
-            <div className="h-px w-12 shrink-0 xl:w-16">
-              <SignalThread orientation="horizontal" />
-            </div>
-
-            <HubNode label={hub} />
-
-            <div className="h-px w-12 shrink-0 xl:w-16">
-              <SignalThread orientation="horizontal" />
-            </div>
-
-            <OutputNode label={output} />
-          </div>
+          <IntegrationsBeamDiagram systems={systems} hub={hub} output={output} />
         </Reveal>
 
         <Reveal delay={0.3}>

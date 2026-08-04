@@ -38,7 +38,7 @@ test.describe("Reduced motion", () => {
     ).toEqual([]);
   });
 
-  test("SignalThread pulses are not rendered at all under reduced motion", async ({
+  test("SignalThread pulses are fully off (invisible, not just paused) under reduced motion", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
@@ -46,14 +46,43 @@ test.describe("Reduced motion", () => {
     await page.goto("/");
 
     // Each SignalThread renders a static dashed line (`absolute inset-0
-    // border-lavender ...`) plus, only when motion is allowed, a
-    // `motion.div` pulse holding the travelling dot — also `absolute
-    // inset-0` but without the `border-lavender` class. Under reduced
-    // motion that pulse node should not exist at all (not just be paused).
+    // border-lavender ...`) plus a `motion.div` pulse holding the travelling
+    // dot — also `absolute inset-0` but without the `border-lavender` class.
+    //
+    // That pulse node is now always mounted (conditionally *removing* it
+    // based on `useReducedMotion()` — which resolves synchronously on the
+    // client but returns `null` during SSR — made the server's and client's
+    // first-render child lists disagree, a structural hydration mismatch
+    // React surfaces as error #418 and recovers from by discarding the
+    // whole tree for a full client remount; see beam-hydration-report.md).
+    // What actually matters per DESIGN.md §7 ("apagan los loops por
+    // completo, no los ralentizan") is that it is fully inert, not that the
+    // DOM node itself is absent: opacity pinned at 0 (never visible) and no
+    // infinite-repeat animation ever created for it.
     const pulses = page.locator(
       'div[aria-hidden="true"] > div.absolute.inset-0:not(.border-lavender)',
     );
-    expect(await pulses.count()).toBe(0);
+    const count = await pulses.count();
+    expect(count, "expected every SignalThread's pulse wrapper to exist").toBeGreaterThan(0);
+
+    for (const pulse of await pulses.all()) {
+      await expect(pulse).toHaveCSS("opacity", "0");
+    }
+
+    const infiniteOnPulses = await page.evaluate(() => {
+      const nodes = document.querySelectorAll(
+        'div[aria-hidden="true"] > div.absolute.inset-0:not(.border-lavender)',
+      );
+      let count = 0;
+      for (const node of nodes) {
+        for (const anim of node.getAnimations()) {
+          const timing = (anim.effect as KeyframeEffect | null)?.getTiming();
+          if (timing?.iterations === Infinity) count++;
+        }
+      }
+      return count;
+    });
+    expect(infiniteOnPulses, "infinite animations on SignalThread pulses under reduced motion").toBe(0);
   });
 
   test("decision chain rows are already resolved without scrolling into view", async ({

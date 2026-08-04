@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
 import type { ReactNode } from "react";
 import { LANDING } from "@/content/landing";
 import { ButtonLink } from "@/components/ui/ButtonLink";
@@ -8,8 +8,27 @@ import { ProductConsole } from "@/components/sections/ProductConsole";
 
 /** One step of the hero's staggered entrance: badge → headline → subtitle →
  * CTAs → console. `transform`/`opacity` only, springs at ~100/20 per
- * DESIGN.md §7, fully off under `prefers-reduced-motion` (content renders
- * settled — `initial={false}`, no fallback animation). */
+ * DESIGN.md §7.
+ *
+ * `initial` is now a plain, unconditional object — deliberately NOT gated on
+ * `useReducedMotion()`. That hook returns `null` on the server and resolves
+ * the real answer synchronously on the client's first render, so gating
+ * `initial` on it made the server's HTML and the client's first render
+ * disagree whenever the device actually prefers reduced motion, which React
+ * treats as hydration error #418 (confirmed with a production build: this
+ * fired on every load under `prefers-reduced-motion: reduce`, not just
+ * intermittently — the intermittency Playwright observed was a race in
+ * when React's resulting full client remount landed relative to its
+ * assertions). Keeping `initial` identical on server and client removes the
+ * mismatch at the source. "Fully off under reduced motion, content renders
+ * already settled" is instead enforced by the `data-motion-settle` CSS rule
+ * in globals.css, which the browser applies from first paint — including
+ * the pre-hydration paint of the server's own HTML — and which overrides
+ * whatever inline style the animation writes, so no entrance animation is
+ * ever visible under `prefers-reduced-motion: reduce` regardless of
+ * hydration timing. See beam-hydration-report.md for the empirical
+ * comparison against the mounted-flag and `suppressHydrationWarning`
+ * alternatives that were tried and rejected. */
 function Beat({
   children,
   delay,
@@ -19,11 +38,11 @@ function Beat({
   delay: number;
   className?: string;
 }) {
-  const reduceMotion = useReducedMotion();
   return (
     <motion.div
+      data-motion-settle
       className={className}
-      initial={reduceMotion ? false : { opacity: 0, y: 16 }}
+      initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ type: "spring", stiffness: 100, damping: 20, delay }}
     >

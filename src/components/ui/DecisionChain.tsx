@@ -3,6 +3,16 @@
 import { motion, useReducedMotion } from "motion/react";
 import { StatusChip } from "@/components/ui/StatusChip";
 
+// `initial` below is a plain, unconditional object — deliberately NOT gated
+// on `useReducedMotion()`. See Hero.tsx's `Beat` for the full rationale:
+// gating it made server/client disagree (hydration error #418) whenever the
+// device actually prefers reduced motion. "Already settled" under reduced
+// motion is enforced by the `data-motion-settle` CSS rule in globals.css
+// instead. `reduceMotion` is still used below for `transition.delay` only —
+// that's safe: a transition's delay isn't reflected in any SSR-rendered DOM
+// attribute, so gating *it* on the hook can't cause a markup mismatch, and
+// dropping the stagger for reduced-motion users avoids pointless queued
+// animation work even though the CSS backstop already keeps them settled.
 export function DecisionChain({
   checks,
   outcome,
@@ -30,8 +40,9 @@ export function DecisionChain({
         {checks.map((check, index) => (
           <motion.li
             key={check.question}
+            data-motion-settle
             className={`flex items-center justify-between gap-4 border-t border-whisper first:pt-0 ${isCompact ? "py-2" : "py-2.5"}`}
-            initial={reduceMotion ? false : { opacity: 0, y: 12 }}
+            initial={{ opacity: 0, y: 12 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-80px" }}
             transition={{

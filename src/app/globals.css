@@ -30,6 +30,31 @@
   }
 }
 
+/*
+ * Backstop for `[data-motion-settle]` (see Hero.tsx's `Beat`, Reveal.tsx,
+ * ChatScene.tsx, DecisionChain.tsx): `useReducedMotion()` from `motion/react`
+ * returns `null` during SSR and resolves the *real* answer synchronously on
+ * the client's very first render — so whenever a component used that value
+ * to pick its `initial` prop, the server's HTML and the client's first
+ * render could disagree, and React would throw hydration error #418 and
+ * discard the whole tree for a full client-only remount (confirmed with a
+ * production build — this reproduced on every load under
+ * `prefers-reduced-motion: reduce`, not intermittently; the intermittency
+ * Playwright saw was a race in when that emergency remount landed relative
+ * to its assertions). The fix that removes the error is to stop computing
+ * `initial` from `reduceMotion` at all — it's now the same object
+ * regardless, so server and client never disagree — and enforce "already
+ * settled, no animating in" here instead, in CSS, which the browser applies
+ * from the very first paint (even pre-hydration) and which overrides any
+ * inline style the animation writes, `!important` beating inline style.
+ */
+@media (prefers-reduced-motion: reduce) {
+  [data-motion-settle] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
 ::selection {
   background: rgb(90 171 255 / 0.25);
 }
