@@ -51,6 +51,7 @@ npm install -D vitest
   --color-ink: #17201b;
   --color-moss: #647168;
   --color-blue: #5aabff;
+  --color-blue-deep: #4a9ef5; /* único hover del azul de acción */
   --color-lavender: #a7a9eb;
   --color-fiber: #7ad8ad;
   --color-coral: #e78668;
@@ -435,7 +436,7 @@ import type { ReactNode } from "react";
 
 const VARIANTS = {
   primary:
-    "bg-blue text-white hover:bg-[#4a9ef5] active:translate-y-px shadow-card",
+    "bg-blue text-surface hover:bg-blue-deep active:translate-y-px shadow-card",
   ghost:
     "border border-whisper bg-surface/60 text-ink hover:border-ink/20 active:translate-y-px",
 } as const;
@@ -1596,7 +1597,7 @@ export function PilotForm() {
       <button
         type="submit"
         disabled={sending}
-        className="mt-7 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-blue px-6 py-3 text-sm font-medium text-white shadow-card transition-[background-color,transform] duration-200 hover:bg-[#4a9ef5] active:translate-y-px disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue"
+        className="mt-7 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-blue px-6 py-3 text-sm font-medium text-surface shadow-card transition-[background-color,transform] duration-200 hover:bg-blue-deep active:translate-y-px disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue"
       >
         {sending ? "Enviando…" : form.submit}
       </button>
