@@ -226,6 +226,7 @@ export const LANDING = {
         whatsapp: { label: "WhatsApp de contacto", placeholder: "Ej. +51 999 888 777" },
       },
       submit: "Enviar solicitud",
+      sending: "Enviando…",
       success: {
         title: "Recibimos tu solicitud.",
         body: "Te escribimos por WhatsApp en menos de 48 horas para coordinar los siguientes pasos.",

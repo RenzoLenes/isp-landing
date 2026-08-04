@@ -36,4 +36,17 @@ describe("validatePilotForm", () => {
   it("acepta números con espacios, guiones y prefijo internacional", () => {
     expect(validatePilotForm({ ...VALID, whatsapp: "999-888-777" })).toEqual({});
   });
+
+  it("acepta los límites de 6 y 15 dígitos", () => {
+    expect(validatePilotForm({ ...VALID, whatsapp: "123456" })).toEqual({});
+    expect(
+      validatePilotForm({ ...VALID, whatsapp: "+123456789012345" }),
+    ).toEqual({});
+  });
+
+  it("rechaza más de 15 dígitos", () => {
+    expect(
+      validatePilotForm({ ...VALID, whatsapp: "+1234567890123456" }).whatsapp,
+    ).toBe("Ingresa un número válido (solo dígitos, espacios, + y -).");
+  });
 });
