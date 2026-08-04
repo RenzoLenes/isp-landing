@@ -61,17 +61,16 @@ function Connector({ index }: { index: number }) {
 export function SignalFlow() {
   const { steps } = LANDING.flow;
   return (
-    <ol className="mt-16 flex flex-col md:flex-row md:items-start md:gap-4">
+    <ol className="mt-16 flex flex-col md:flex-row md:items-start">
       {steps.map((step, i) => (
-        <li key={step.title} className="contents">
-          <div className="flex flex-col items-center text-center md:w-56">
-            <span
-              className={`flex size-11 items-center justify-center rounded-full border text-sm font-medium [font-variant-numeric:tabular-nums] ${
-                i === steps.length - 1
-                  ? "border-fiber/50 bg-fiber/15 text-ink"
-                  : "border-blue/40 bg-blue/10 text-ink"
-              }`}
-            >
+        <li
+          key={step.title}
+          className={`flex flex-col items-center md:flex-row md:items-start ${
+            i < steps.length - 1 ? "md:flex-1" : ""
+          }`}
+        >
+          <div className="flex flex-col items-center text-center md:w-56 md:shrink-0">
+            <span className="flex size-11 items-center justify-center rounded-full border border-blue/40 bg-blue/10 text-sm font-medium text-ink [font-variant-numeric:tabular-nums]">
               {i + 1}
             </span>
             <h3 className="mt-4 font-medium text-ink">{step.title}</h3>
