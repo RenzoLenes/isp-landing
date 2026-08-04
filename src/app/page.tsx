@@ -1,5 +1,7 @@
 import { Navbar } from "@/components/sections/Navbar";
 import { Hero } from "@/components/sections/Hero";
+import { Problem } from "@/components/sections/Problem";
+import { Pillars } from "@/components/sections/Pillars";
 
 export default function Home() {
   return (
@@ -7,8 +9,10 @@ export default function Home() {
       <Navbar />
       <main className="flex-1 overflow-x-clip">
         <Hero />
+        <Problem />
+        <Pillars />
         {/* Las secciones se agregan aquí en las tasks siguientes, en este orden:
-            Problem, Pillars, UseCases, HowItWorks, Integrations, Pilot */}
+            UseCases, HowItWorks, Integrations, Pilot */}
       </main>
     </>
   );
