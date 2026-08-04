@@ -5,17 +5,18 @@ import type { ReactNode } from "react";
 import { LANDING } from "@/content/landing";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { ChatBubble } from "@/components/ui/ChatBubble";
+import { DataCard } from "@/components/ui/DataCard";
+import { ResultCard } from "@/components/ui/ResultCard";
+import { SignalThread } from "@/components/ui/SignalThread";
 
-function FloatingPiece({
+function Piece({
   children,
-  className,
+  className = "",
   delay,
-  floatDuration,
 }: {
   children: ReactNode;
-  className: string;
+  className?: string;
   delay: number;
-  floatDuration: number;
 }) {
   const reduceMotion = useReducedMotion();
   return (
@@ -25,18 +26,35 @@ function FloatingPiece({
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ type: "spring", stiffness: 100, damping: 20, delay }}
     >
-      <motion.div
-        animate={reduceMotion ? undefined : { y: [0, -6, 0] }}
-        transition={{
-          duration: floatDuration,
-          repeat: Infinity,
-          ease: "easeInOut",
-          delay: delay + 0.6,
-        }}
-      >
-        {children}
-      </motion.div>
+      {children}
     </motion.div>
+  );
+}
+
+const SPINE_DOT = {
+  lavender: "bg-lavender",
+  blue: "bg-blue",
+  fiber: "bg-fiber",
+} as const;
+
+/** Segmento del hilo de señal entre dos piezas, con nodos de color en la tríada. */
+function Spine({
+  top,
+  bottom,
+}: {
+  top: keyof typeof SPINE_DOT;
+  bottom?: keyof typeof SPINE_DOT;
+}) {
+  return (
+    <div aria-hidden className="flex flex-col items-center gap-1 py-1.5">
+      <span className={`size-1.5 shrink-0 rounded-full ${SPINE_DOT[top]}`} />
+      <div className="h-9 w-px">
+        <SignalThread orientation="vertical" />
+      </div>
+      {bottom ? (
+        <span className={`size-1.5 shrink-0 rounded-full ${SPINE_DOT[bottom]}`} />
+      ) : null}
+    </div>
   );
 }
 
@@ -44,91 +62,54 @@ export function HeroComposition() {
   const c = LANDING.hero.composition;
   return (
     <div
-      className="relative mx-auto aspect-[3/5] w-full max-w-[420px] sm:aspect-[4/5] lg:mx-0"
+      className="relative mx-auto flex w-full max-w-[440px] flex-col lg:mx-0"
       role="img"
-      aria-label="Composición ilustrativa: un mensaje de WhatsApp se convierte en una consulta al sistema y en un ticket listo para asignar"
+      aria-label="Composición ilustrativa: dos mensajes de un cliente por WhatsApp, seguidos de la ficha de su servicio que Nexo consulta, y del ticket ya listo para asignar a un técnico."
     >
       {/* Halos de luz */}
       <div
         aria-hidden
-        className="absolute -left-16 top-8 -z-10 size-64 rounded-full bg-lavender/35 blur-3xl"
+        className="absolute -left-12 top-4 -z-10 size-64 rounded-full bg-lavender/35 blur-3xl"
       />
       <div
         aria-hidden
-        className="absolute -right-10 bottom-16 -z-10 size-56 rounded-full bg-blue/25 blur-3xl"
+        className="absolute -right-10 bottom-8 -z-10 size-56 rounded-full bg-blue/25 blur-3xl"
       />
 
-      {/* Hilos de conexión */}
-      <svg
-        aria-hidden
-        viewBox="0 0 400 500"
-        fill="none"
-        className="absolute inset-0 h-full w-full"
-      >
-        <path
-          d="M150 100 C 230 130, 300 170, 310 225"
-          className="stroke-lavender"
-          strokeWidth="1.5"
-          strokeDasharray="3 6"
-          opacity="0.7"
-        />
-        <path
-          d="M300 300 C 250 360, 180 390, 150 420"
-          className="stroke-lavender"
-          strokeWidth="1.5"
-          strokeDasharray="3 6"
-          opacity="0.7"
-        />
-        <circle cx="150" cy="100" r="4" className="fill-lavender" />
-        <circle cx="310" cy="225" r="4" className="fill-blue" />
-        <circle cx="150" cy="420" r="4" className="fill-fiber" />
-      </svg>
-
-      {/* 1. Conversación */}
-      <FloatingPiece className="absolute left-0 top-2 w-[78%]" delay={0.15} floatDuration={6}>
+      {/* 1. Conversación — pieza dominante, ancho completo */}
+      <Piece delay={0.15} className="w-full">
         <GlassCard>
           <p className="mb-3 text-xs font-medium text-moss">{c.chatHeader}</p>
-          <ChatBubble from="cliente">{c.chatMessage}</ChatBubble>
-        </GlassCard>
-      </FloatingPiece>
-
-      {/* 2. Estado del sistema */}
-      <FloatingPiece
-        className="absolute right-0 top-[38%] w-[72%]"
-        delay={0.45}
-        floatDuration={7}
-      >
-        <GlassCard>
-          <p className="text-xs font-medium uppercase tracking-[0.14em] text-moss">
-            {c.statusLabel}
-          </p>
-          <div className="mt-2 flex items-center gap-2.5">
-            <span aria-hidden className="size-2 rounded-full bg-blue" />
-            <p className="text-sm font-medium text-ink">{c.statusTitle}</p>
+          <div className="flex flex-col gap-2">
+            {c.chatMessages.map((message) => (
+              <ChatBubble key={message} from="cliente">
+                {message}
+              </ChatBubble>
+            ))}
           </div>
-          <p className="mt-1 pl-[18px] text-xs text-moss">{c.statusMeta}</p>
         </GlassCard>
-      </FloatingPiece>
+      </Piece>
 
-      {/* 3. Ticket */}
-      <FloatingPiece
-        className="absolute bottom-2 left-[4%] w-[76%]"
-        delay={0.75}
-        floatDuration={8}
-      >
-        <GlassCard>
-          <p className="text-xs font-medium uppercase tracking-[0.14em] text-moss">
-            {c.ticketLabel}
-          </p>
-          <div className="mt-2 flex items-center gap-2.5">
-            <span aria-hidden className="size-2 rounded-full bg-fiber" />
-            <p className="text-sm font-medium text-ink [font-variant-numeric:tabular-nums]">
-              {c.ticketTitle}
-            </p>
-          </div>
-          <p className="mt-1 pl-[18px] text-xs text-moss">{c.ticketMeta}</p>
-        </GlassCard>
-      </FloatingPiece>
+      <Spine top="lavender" />
+
+      {/* 2. Contexto — resultado derivado, desplazado a la derecha */}
+      <Piece delay={0.4} className="w-[72%] self-end">
+        <DataCard
+          title={c.contextTitle}
+          status={{ label: c.contextStatus, tone: "ok" }}
+          rows={c.contextRows}
+        />
+      </Piece>
+
+      <Spine top="blue" bottom="fiber" />
+
+      {/* 3. Acción — resultado derivado, desplazado a la izquierda */}
+      <Piece delay={0.65} className="w-[76%] self-start">
+        <p className="mb-2 text-xs font-medium uppercase tracking-[0.14em] text-moss">
+          {c.actionLabel}
+        </p>
+        <ResultCard title={c.actionTitle} meta={c.actionMeta} />
+      </Piece>
     </div>
   );
 }

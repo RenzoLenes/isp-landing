@@ -4,8 +4,11 @@ import { useEffect, useState } from "react";
 import { LANDING } from "@/content/landing";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 
+const SCROLL_THRESHOLD = 24;
+
 export function Navbar() {
   const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const { brand, links, cta } = LANDING.nav;
 
   useEffect(() => {
@@ -17,9 +20,26 @@ export function Navbar() {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [open]);
 
+  useEffect(() => {
+    function handleScroll() {
+      setScrolled(window.scrollY > SCROLL_THRESHOLD);
+    }
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
-    <header className="fixed inset-x-0 top-4 z-50 px-4">
-      <div className="mx-auto flex max-w-content items-center justify-between rounded-full border border-whisper bg-surface/75 py-2.5 pl-6 pr-2.5 shadow-card backdrop-blur-md md:max-w-3xl">
+    <header
+      className={`fixed inset-x-0 z-50 px-4 transition-[top] duration-300 ease-out motion-reduce:transition-none ${
+        scrolled ? "top-2" : "top-4"
+      }`}
+    >
+      <div
+        className={`mx-auto flex max-w-content items-center justify-between rounded-full border border-whisper bg-surface/60 pl-6 pr-2.5 shadow-[0_6px_16px_-10px_rgb(23_32_27/0.16)] backdrop-blur-md transition-transform duration-300 ease-out motion-reduce:transition-none md:max-w-3xl ${
+          scrolled ? "scale-[0.97] py-1" : "py-1.5"
+        }`}
+      >
         <a href="#" className="font-serif text-2xl leading-none text-ink">
           {brand}
         </a>
@@ -28,14 +48,16 @@ export function Navbar() {
             <a
               key={link.href}
               href={link.href}
-              className="text-sm text-moss transition-colors hover:text-ink"
+              className="text-[13px] text-moss/80 transition-colors hover:text-ink"
             >
               {link.label}
             </a>
           ))}
         </nav>
         <div className="hidden md:block">
-          <ButtonLink href={cta.href}>{cta.label}</ButtonLink>
+          <ButtonLink href={cta.href} className="bg-blue/90 px-4!">
+            {cta.label}
+          </ButtonLink>
         </div>
         <button
           type="button"
