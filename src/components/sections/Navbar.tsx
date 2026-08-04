@@ -26,9 +26,7 @@ export function Navbar() {
           ))}
         </nav>
         <div className="hidden md:block">
-          <ButtonLink href={cta.href} className="min-h-10 px-5 py-2">
-            {cta.label}
-          </ButtonLink>
+          <ButtonLink href={cta.href}>{cta.label}</ButtonLink>
         </div>
         <button
           type="button"
