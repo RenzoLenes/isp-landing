@@ -62,7 +62,7 @@ npm install -D vitest
   --shadow-float: 0 24px 60px -24px rgb(100 113 104 / 0.28);
   --shadow-card: 0 12px 32px -16px rgb(100 113 104 / 0.22);
 
-  --spacing-content: 76.25rem; /* 1220px */
+  --container-content: 76.25rem; /* 1220px */
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -80,7 +80,9 @@ body {
 }
 ```
 
-> Nota: `--spacing-content` habilita `max-w-content` (Tailwind 4 deriva `max-w-*` de la escala `--spacing-*`).
+> Nota: en Tailwind 4 las utilidades `max-w-<nombre>` derivan del namespace `--container-*` (verificado en `node_modules/tailwindcss/theme.css`, v4.3.3), **no** de `--spacing-*`. Por eso el token es `--container-content`, y habilita `max-w-content` = 1220px.
+>
+> **Verificación obligatoria de este paso:** tras el build, confirmar que la utilidad existe realmente — por ejemplo agregando temporalmente `max-w-content` a un elemento y comprobando en el CSS generado (`.next/static/css/*.css`) que aparece `max-width:76.25rem`. Si no aparece, el token está en el namespace equivocado y todas las secciones perderían el ancho máximo de 1220px sin error visible.
 
 - [ ] **Step 3: Reemplazar `src/app/layout.tsx` completo**
 
