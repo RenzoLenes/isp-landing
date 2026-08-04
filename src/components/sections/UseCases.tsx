@@ -43,7 +43,7 @@ export function UseCases() {
                   <span className="rounded-full border border-whisper bg-surface px-3 py-1 text-xs font-medium text-moss">
                     {useCase.tag}
                   </span>
-                  <h3 className="mt-4 font-serif text-3xl leading-tight text-balance md:text-4xl">
+                  <h3 className="mt-4 font-display text-3xl leading-tight text-balance md:text-4xl">
                     {useCase.title}
                   </h3>
                   <p className="mt-4 max-w-[58ch] leading-relaxed text-moss">

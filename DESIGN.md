@@ -1,4 +1,4 @@
-# Design System: Nexo — Landing
+# Design System: Gantry — Landing
 
 ## 1. Visual Theme & Atmosphere
 

@@ -99,7 +99,7 @@ export function Integrations() {
           </ol>
         </Reveal>
 
-        {/* `lg` y más: convergencia horizontal — sistemas → Nexo → salida. */}
+        {/* `lg` y más: convergencia horizontal — sistemas → Gantry → salida. */}
         <Reveal delay={0.15}>
           <div className="mt-16 hidden items-center justify-center lg:flex">
             <div className="flex w-64 shrink-0 flex-col gap-3">

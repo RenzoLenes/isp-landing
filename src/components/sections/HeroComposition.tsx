@@ -64,7 +64,7 @@ export function HeroComposition() {
     <div
       className="relative mx-auto flex w-full max-w-[440px] flex-col lg:mx-0"
       role="img"
-      aria-label="Composición ilustrativa: dos mensajes de un cliente por WhatsApp, seguidos de la ficha de su servicio que Nexo consulta, y del ticket ya listo para asignar a un técnico."
+      aria-label="Composición ilustrativa: dos mensajes de un cliente por WhatsApp, seguidos de la ficha de su servicio que Gantry consulta, y del ticket ya listo para asignar a un técnico."
     >
       {/* Halos de luz */}
       <div

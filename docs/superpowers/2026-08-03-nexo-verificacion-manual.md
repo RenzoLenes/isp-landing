@@ -1,4 +1,4 @@
-# Verificación de la landing de Nexo
+# Verificación de la landing de Gantry
 
 **Actualizado el 2026-08-04.** Lo que antes era una lista manual ahora está
 automatizado con Playwright. Este documento explica qué cubre la suite y qué sigue

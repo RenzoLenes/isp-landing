@@ -42,7 +42,7 @@ export function Navbar() {
       >
         <a
           href="#"
-          className="flex min-h-11 items-center font-serif text-2xl leading-none text-ink"
+          className="flex min-h-11 items-center font-display text-2xl leading-none text-ink"
         >
           {brand}
         </a>

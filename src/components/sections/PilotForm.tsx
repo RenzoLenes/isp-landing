@@ -72,7 +72,7 @@ export function PilotForm() {
         tabIndex={-1}
         className="rounded-3xl border border-fiber/40 bg-fiber/15 p-8"
       >
-        <p className="font-serif text-2xl text-ink">{form.success.title}</p>
+        <p className="font-display text-2xl text-ink">{form.success.title}</p>
         <p className="mt-2 leading-relaxed text-moss">{form.success.body}</p>
       </div>
     );
@@ -84,7 +84,7 @@ export function PilotForm() {
       noValidate
       className="rounded-3xl border border-whisper bg-surface p-6 shadow-float md:p-8"
     >
-      <h3 className="font-serif text-2xl text-ink">{form.title}</h3>
+      <h3 className="font-display text-2xl text-ink">{form.title}</h3>
       <div className="mt-6 flex flex-col gap-5">
         {FIELD_ORDER.map((name) => {
           const field = form.fields[name];

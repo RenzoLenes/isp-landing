@@ -85,7 +85,7 @@ export type PilotSelectField = {
 
 export const LANDING = {
   nav: {
-    brand: "Nexo",
+    brand: "Gantry",
     links: [
       { label: "Producto", href: "#producto" },
       { label: "Casos", href: "#casos" },
@@ -140,13 +140,13 @@ export const LANDING = {
   },
 
   pillars: {
-    eyebrow: "Qué hace Nexo",
+    eyebrow: "Qué hace Gantry",
     title: "Tres cosas, bien hechas.",
     items: [
       {
         number: "01",
         title: "Responde con el contexto real",
-        body: "Nexo saluda a cada cliente sabiendo quién es: su plan, su deuda, su zona y sus tickets anteriores. Nada de respuestas genéricas.",
+        body: "Gantry saluda a cada cliente sabiendo quién es: su plan, su deuda, su zona y sus tickets anteriores. Nada de respuestas genéricas.",
         artifact: {
           kind: "ficha",
           title: "Marisol Quispe",
@@ -202,7 +202,7 @@ export const LANDING = {
         tag: "Soporte técnico",
         title: "«No tengo internet», resuelto con contexto",
         description:
-          "Nexo verifica el estado del servicio antes de responder, guía una solución básica y, si no alcanza, deja el ticket listo para el técnico.",
+          "Gantry verifica el estado del servicio antes de responder, guía una solución básica y, si no alcanza, deja el ticket listo para el técnico.",
         chatLabel: "WhatsApp · Marisol Q.",
         chat: [
           { from: "cliente", text: "Hola, no tengo internet desde el mediodía." },
@@ -234,7 +234,7 @@ export const LANDING = {
         tag: "Cobranza",
         title: "La deuda se consulta sola, el pago se valida solo",
         description:
-          "El cliente pregunta, Nexo responde con el monto y la fecha reales de tu sistema, y valida el pago sin que nadie persiga capturas.",
+          "El cliente pregunta, Gantry responde con el monto y la fecha reales de tu sistema, y valida el pago sin que nadie persiga capturas.",
         chatLabel: "WhatsApp · Jorge R.",
         chat: [
           { from: "cliente", text: "¿Cuánto debo y hasta cuándo puedo pagar?" },
@@ -266,7 +266,7 @@ export const LANDING = {
         tag: "Ventas e instalaciones",
         title: "De «¿llegan a mi zona?» a instalación agendada",
         description:
-          "Nexo consulta cobertura real, cotiza el plan y coordina la instalación en la agenda de tus cuadrillas. Sin idas y vueltas.",
+          "Gantry consulta cobertura real, cotiza el plan y coordina la instalación en la agenda de tus cuadrillas. Sin idas y vueltas.",
         chatLabel: "WhatsApp · Nuevo contacto",
         chat: [
           { from: "cliente", text: "¿Tienen cobertura en el sector La Planicie?" },
@@ -298,7 +298,7 @@ export const LANDING = {
 
   chatSpeakers: {
     cliente: "Cliente",
-    bot: "Nexo",
+    bot: "Gantry",
   },
 
   flow: {
@@ -314,7 +314,7 @@ export const LANDING = {
       {
         kind: "consulta",
         title: "Consulta a tu sistema",
-        body: "Nexo revisa deuda, cortes, fallas y cobertura en tu sistema de gestión.",
+        body: "Gantry revisa deuda, cortes, fallas y cobertura en tu sistema de gestión.",
         system: "MikroWisp / WiMovil",
         rows: [
           { label: "Deuda", value: "Sin pendiente" },
@@ -340,9 +340,9 @@ export const LANDING = {
   integrations: {
     eyebrow: "Integraciones",
     title: "Diseñado para conectarse con lo que ya usas.",
-    body: "Nexo lee y escribe en tu sistema de gestión a través de su API. Durante el piloto integramos el que uses hoy, sin que cambies de herramienta.",
+    body: "Gantry lee y escribe en tu sistema de gestión a través de su API. Durante el piloto integramos el que uses hoy, sin que cambies de herramienta.",
     systems: ["MikroWisp", "WiMovil", "WispHub", "Tu propia API"],
-    hub: "Nexo",
+    hub: "Gantry",
     output: "WhatsApp Business",
     trust: "Sin migrar clientes, facturación ni operación de red.",
   },
@@ -350,7 +350,7 @@ export const LANDING = {
   pilot: {
     eyebrow: "Piloto",
     title: "Estamos abriendo un piloto con pocos ISPs.",
-    body: "Buscamos operadores de Perú y Latinoamérica para implementar Nexo acompañados por nuestro equipo. Sin permanencia: si no te ordena la operación, no sigues.",
+    body: "Buscamos operadores de Perú y Latinoamérica para implementar Gantry acompañados por nuestro equipo. Sin permanencia: si no te ordena la operación, no sigues.",
     bullets: [
       "Implementación guiada junto a tu sistema de gestión",
       "Cupos limitados por región",
@@ -396,7 +396,7 @@ export const LANDING = {
   },
 
   footer: {
-    brand: "Nexo",
+    brand: "Gantry",
     tagline: "WhatsApp con contexto real para ISPs de Latinoamérica.",
     ctaLabel: "Solicitar acceso al piloto",
     ctaHref: "#piloto",
