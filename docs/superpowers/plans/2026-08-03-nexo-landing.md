@@ -1307,17 +1307,16 @@ function Connector({ index }: { index: number }) {
 export function SignalFlow() {
   const { steps } = LANDING.flow;
   return (
-    <ol className="mt-16 flex flex-col md:flex-row md:items-start md:gap-4">
+    <ol className="mt-16 flex flex-col md:flex-row md:items-start">
       {steps.map((step, i) => (
-        <li key={step.title} className="contents">
-          <div className="flex flex-col items-center text-center md:w-56">
-            <span
-              className={`flex size-11 items-center justify-center rounded-full border text-sm font-medium [font-variant-numeric:tabular-nums] ${
-                i === steps.length - 1
-                  ? "border-fiber/50 bg-fiber/15 text-ink"
-                  : "border-blue/40 bg-blue/10 text-ink"
-              }`}
-            >
+        <li
+          key={step.title}
+          className={`flex flex-col items-center md:flex-row md:items-start ${
+            i < steps.length - 1 ? "md:flex-1" : ""
+          }`}
+        >
+          <div className="flex flex-col items-center text-center md:w-56 md:shrink-0">
+            <span className="flex size-11 items-center justify-center rounded-full border border-blue/40 bg-blue/10 text-sm font-medium text-ink [font-variant-numeric:tabular-nums]">
               {i + 1}
             </span>
             <h3 className="mt-4 font-medium text-ink">{step.title}</h3>
@@ -1334,6 +1333,10 @@ export function SignalFlow() {
 > Nota sobre el `Connector` (ambigüedad resuelta): un solo set de puntos no puede servir a las dos orientaciones, porque el `style` inline gana siempre sobre las clases responsive de Tailwind — con `style={{top}}` los puntos quedarían apilados en desktop en vez de distribuirse a lo largo de la línea horizontal. Por eso se renderizan **dos sets**: uno vertical (`md:hidden`, posicionado por `top`) y uno horizontal (`hidden md:block`, posicionado por `left`), compartiendo el componente `SignalDot` para no duplicar la animación. Solo un set es visible a la vez.
 >
 > El conector también necesita `md:w-auto` junto a `md:flex-1`: sin eso el `w-px` base sigue aplicando en desktop y la línea horizontal no crece.
+>
+> **Nota sobre el `<li>`:** un borrador anterior usaba `className="contents"` para que el bloque del paso y el conector fueran hermanos flex directos del `<ol>`. Se descartó: `display: contents` tiene un historial documentado de eliminar el elemento — y en algunas versiones de WebKit su subárbol completo — del árbol de accesibilidad, lo que dejaría a usuarios de lector de pantalla sin el texto de los pasos. Ahora el `<li>` conserva su caja y es él mismo un contenedor flex (columna en móvil, fila en desktop), con `md:flex-1` en todos menos el último para que los conectores repartan el espacio sobrante.
+>
+> **Nota sobre el badge del último paso:** el borrador lo pintaba con `fiber`. Se descartó: la restricción global reserva el verde fibra exclusivamente para confirmaciones, y "Tu equipo, cuando hace falta" es una escalación, no una confirmación. Los cuatro badges usan `blue`.
 
 - [ ] **Step 2: Crear `src/components/sections/HowItWorks.tsx`**
 
