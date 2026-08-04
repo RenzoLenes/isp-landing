@@ -380,6 +380,7 @@ export const LANDING = {
         whatsapp: { label: "WhatsApp de contacto", placeholder: "Ej. +51 999 888 777" },
       },
       submit: "Enviar solicitud",
+      sending: "Enviando…",
       success: {
         title: "Recibimos tu solicitud.",
         body: "Te escribimos por WhatsApp en menos de 48 horas para coordinar los siguientes pasos.",
@@ -1480,6 +1481,19 @@ describe("validatePilotForm", () => {
   it("acepta números con espacios, guiones y prefijo internacional", () => {
     expect(validatePilotForm({ ...VALID, whatsapp: "999-888-777" })).toEqual({});
   });
+
+  it("acepta los límites de 6 y 15 dígitos", () => {
+    expect(validatePilotForm({ ...VALID, whatsapp: "123456" })).toEqual({});
+    expect(
+      validatePilotForm({ ...VALID, whatsapp: "+123456789012345" }),
+    ).toEqual({});
+  });
+
+  it("rechaza más de 15 dígitos", () => {
+    expect(
+      validatePilotForm({ ...VALID, whatsapp: "+1234567890123456" }).whatsapp,
+    ).toBe("Ingresa un número válido (solo dígitos, espacios, + y -).");
+  });
 });
 ```
 
@@ -1606,9 +1620,15 @@ export function PilotForm() {
               placeholder={form.fields[field].placeholder}
               aria-invalid={Boolean(errors[field])}
               aria-describedby={errors[field] ? `pilot-${field}-error` : undefined}
-              onChange={(e) =>
-                setData((prev) => ({ ...prev, [field]: e.target.value }))
-              }
+              onChange={(e) => {
+                const value = e.target.value;
+                setData((prev) => ({ ...prev, [field]: value }));
+                // Limpia el error en cuanto el usuario corrige: si no, el mensaje
+                // y aria-invalid quedan obsoletos junto a un campo ya válido.
+                setErrors((prev) =>
+                  prev[field] ? { ...prev, [field]: undefined } : prev,
+                );
+              }}
               className="min-h-11 w-full rounded-xl border border-whisper bg-fog px-4 py-2.5 text-sm text-ink placeholder:text-moss/60 focus:outline-2 focus:outline-offset-1 focus:outline-blue"
             />
             {errors[field] ? (
@@ -1627,7 +1647,7 @@ export function PilotForm() {
         disabled={sending}
         className="mt-7 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-blue px-6 py-3 text-sm font-medium text-surface shadow-card transition-[background-color,transform] duration-200 hover:bg-blue-deep active:translate-y-px disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue"
       >
-        {sending ? "Enviando…" : form.submit}
+        {sending ? form.sending : form.submit}
       </button>
     </form>
   );
