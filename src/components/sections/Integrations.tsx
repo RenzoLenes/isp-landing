@@ -3,17 +3,24 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Reveal } from "@/components/ui/Reveal";
 import { SignalThread } from "@/components/ui/SignalThread";
 
-function SystemCard({ name }: { name: string }) {
+// Nunca `w-full` aquí: en la fila de escritorio esta tarjeta es hermana flex del
+// stub del hilo (`flex-1`, basis 0). `w-full` resolvería su flex-basis al 100% de
+// la fila (vía basis:auto → width) y dejaría al stub sin espacio que reclamar —
+// los cuatro hilos de convergencia colapsaban a 0px. Un ancho fijo sí es seguro:
+// da una basis concreta y deja el resto al stub. `className` permite que la fila
+// de escritorio imponga ese ancho uniforme sin afectar a la lista apilada de
+// móvil, donde la tarjeta llena su `<li>` por flujo normal.
+function SystemCard({
+  name,
+  className = "",
+}: {
+  name: string;
+  className?: string;
+}) {
   return (
-    // No `w-full`: in the desktop row this is a flex sibling of the thread
-    // stub (`flex-1`, basis 0). `w-full` would resolve this item's flex-basis
-    // to 100% of the row (via flex-basis:auto → width), leaving zero leftover
-    // space for the stub to grow into. Letting flex own the sizing here gives
-    // this card a content-based basis, so the thread claims the remainder.
-    // `min-w-0` guards against a future long system name forcing overflow
-    // instead of shrinking. In the `<lg` stacked list the parent `<li>` is a
-    // plain block box, so this div still fills it via normal block sizing.
-    <div className="min-w-0 rounded-2xl border border-whisper bg-surface px-4 py-3 text-sm font-medium text-ink shadow-card">
+    <div
+      className={`min-w-0 rounded-2xl border border-whisper bg-surface px-4 py-3 text-sm font-medium text-ink shadow-card ${className}`}
+    >
       {name}
     </div>
   );
@@ -98,7 +105,10 @@ export function Integrations() {
             <div className="flex w-64 shrink-0 flex-col gap-3">
               {systems.map((system) => (
                 <div key={system} className="flex items-center gap-3">
-                  <SystemCard name={system} />
+                  {/* Ancho uniforme: sin él las tarjetas se dimensionan por
+                      contenido y los cuatro hilos arrancan en x distintos, con
+                      lo que la convergencia se lee desordenada. */}
+                  <SystemCard name={system} className="w-40 shrink-0" />
                   <div className="h-px w-6 flex-1">
                     <SignalThread orientation="horizontal" />
                   </div>

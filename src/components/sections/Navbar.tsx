@@ -40,7 +40,10 @@ export function Navbar() {
           scrolled ? "scale-[0.97]" : ""
         }`}
       >
-        <a href="#" className="font-serif text-2xl leading-none text-ink">
+        <a
+          href="#"
+          className="flex min-h-11 items-center font-serif text-2xl leading-none text-ink"
+        >
           {brand}
         </a>
         <nav aria-label="Principal" className="hidden items-center gap-7 md:flex">
