@@ -12,6 +12,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Agent scaffolding directories — not project source.
+    ".agents/**",
+    ".claude/**",
+    ".superpowers/**",
   ]),
 ]);
 
