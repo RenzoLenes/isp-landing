@@ -44,7 +44,7 @@ export function HeroComposition() {
   const c = LANDING.hero.composition;
   return (
     <div
-      className="relative mx-auto aspect-[4/5] w-full max-w-[420px] lg:mx-0"
+      className="relative mx-auto aspect-[3/5] w-full max-w-[420px] sm:aspect-[4/5] lg:mx-0"
       role="img"
       aria-label="Composición ilustrativa: un mensaje de WhatsApp se convierte en una consulta al sistema y en un ticket listo para asignar"
     >
@@ -67,21 +67,21 @@ export function HeroComposition() {
       >
         <path
           d="M150 100 C 230 130, 300 170, 310 225"
-          stroke="#a7a9eb"
+          className="stroke-lavender"
           strokeWidth="1.5"
           strokeDasharray="3 6"
           opacity="0.7"
         />
         <path
           d="M300 300 C 250 360, 180 390, 150 420"
-          stroke="#a7a9eb"
+          className="stroke-lavender"
           strokeWidth="1.5"
           strokeDasharray="3 6"
           opacity="0.7"
         />
-        <circle cx="150" cy="100" r="4" fill="#a7a9eb" />
-        <circle cx="310" cy="225" r="4" fill="#5aabff" />
-        <circle cx="150" cy="420" r="4" fill="#7ad8ad" />
+        <circle cx="150" cy="100" r="4" className="fill-lavender" />
+        <circle cx="310" cy="225" r="4" className="fill-blue" />
+        <circle cx="150" cy="420" r="4" className="fill-fiber" />
       </svg>
 
       {/* 1. Conversación */}

@@ -17,12 +17,9 @@ export function UseCases() {
             <Reveal key={useCase.id}>
               <div
                 className={`grid items-center gap-10 lg:grid-cols-2 lg:gap-16 ${
-                  i % 2 === 1 ? "lg:[&>*:first-child]:order-2" : ""
+                  i % 2 === 0 ? "lg:[&>*:first-child]:order-2" : ""
                 }`}
               >
-                <div className="mx-auto w-full max-w-md">
-                  <ChatScene label={useCase.chatLabel} chat={useCase.chat} />
-                </div>
                 <div>
                   <span className="rounded-full border border-whisper bg-surface px-3 py-1 text-xs font-medium text-moss">
                     {useCase.tag}
@@ -39,6 +36,9 @@ export function UseCases() {
                       meta={useCase.result.meta}
                     />
                   </div>
+                </div>
+                <div className="mx-auto w-full max-w-md">
+                  <ChatScene label={useCase.chatLabel} chat={useCase.chat} />
                 </div>
               </div>
             </Reveal>

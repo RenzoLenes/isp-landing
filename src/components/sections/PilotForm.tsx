@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { LANDING } from "@/content/landing";
 import {
   submitPilotRequest,
@@ -18,6 +18,11 @@ export function PilotForm() {
   const [errors, setErrors] = useState<PilotFormErrors>({});
   const [submitted, setSubmitted] = useState(false);
   const [sending, setSending] = useState(false);
+  const successRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (submitted) successRef.current?.focus();
+  }, [submitted]);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -33,7 +38,9 @@ export function PilotForm() {
   if (submitted) {
     return (
       <div
+        ref={successRef}
         role="status"
+        tabIndex={-1}
         className="rounded-3xl border border-fiber/40 bg-fiber/15 p-8"
       >
         <p className="font-serif text-2xl text-ink">{form.success.title}</p>

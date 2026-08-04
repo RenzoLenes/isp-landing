@@ -156,7 +156,7 @@ export const LANDING = {
         tag: "Ventas e instalaciones",
         title: "De «¿llegan a mi zona?» a instalación agendada",
         description:
-          "Nexo consulta cobertura real, cotiza el plan y agenda la instalación en la agenda de tus cuadrillas. Sin idas y vueltas.",
+          "Nexo consulta cobertura real, cotiza el plan y coordina la instalación en la agenda de tus cuadrillas. Sin idas y vueltas.",
         chatLabel: "WhatsApp · Nuevo contacto",
         chat: [
           { from: "cliente", text: "¿Tienen cobertura en el sector La Planicie?" },
@@ -178,9 +178,14 @@ export const LANDING = {
     ] satisfies UseCase[],
   },
 
+  chatSpeakers: {
+    cliente: "Cliente",
+    bot: "Nexo",
+  },
+
   flow: {
     eyebrow: "Cómo funciona",
-    title: "Del mensaje a la acción, sin fricción manual.",
+    title: "Del mensaje a la acción, sin pasos manuales.",
     steps: [
       {
         title: "Mensaje de WhatsApp",

@@ -1,12 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { LANDING } from "@/content/landing";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 
 export function Navbar() {
   const [open, setOpen] = useState(false);
   const { brand, links, cta } = LANDING.nav;
+
+  useEffect(() => {
+    if (!open) return;
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") setOpen(false);
+    }
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [open]);
 
   return (
     <header className="fixed inset-x-0 top-4 z-50 px-4">
@@ -54,7 +63,7 @@ export function Navbar() {
                 key={link.href}
                 href={link.href}
                 onClick={() => setOpen(false)}
-                className="text-lg text-ink"
+                className="flex min-h-11 items-center text-lg text-ink"
               >
                 {link.label}
               </a>

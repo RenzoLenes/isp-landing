@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { LANDING } from "@/content/landing";
 
 export function ChatBubble({
   from,
@@ -17,6 +18,7 @@ export function ChatBubble({
             : "rounded-br-md bg-fog-deep text-ink"
         }`}
       >
+        <span className="sr-only">{LANDING.chatSpeakers[from]}: </span>
         {children}
       </p>
     </div>
