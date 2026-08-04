@@ -10,7 +10,9 @@ export function Footer() {
           <p className="mt-1 text-sm text-moss">{tagline}</p>
         </div>
         <div className="flex items-center gap-2 text-sm text-moss">
-          <a href={ctaHref} className="hover:text-ink">
+          {/* py-3 + text-sm's 20px line-height = 44px: the AA tap-target
+              floor, reached with padding rather than a larger font. */}
+          <a href={ctaHref} className="py-3 hover:text-ink">
             {ctaLabel}
           </a>
           <span className="mx-1" aria-hidden>·</span>

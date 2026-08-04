@@ -101,7 +101,10 @@ export function HeroComposition() {
         />
       </Piece>
 
-      <Spine top="blue" bottom="fiber" />
+      {/* No `bottom` dot here: `ResultCard` renders its own leading fiber
+          dot, so a second one would double up a few pixels above it — same
+          grammar as `UseCases`' `Connector`. */}
+      <Spine top="blue" />
 
       {/* 3. Acción — resultado derivado, desplazado a la izquierda */}
       <Piece delay={0.65} className="w-[76%] self-start">

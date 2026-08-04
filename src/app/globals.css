@@ -11,6 +11,7 @@
   --color-lavender: #a7a9eb;
   --color-fiber: #7ad8ad;
   --color-coral: #e78668;
+  --color-coral-deep: #c2451f; /* AA text variant of coral — 5.04:1 on white, see final-review-fixes.md */
   --color-whisper: rgb(23 32 27 / 0.08);
 
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;

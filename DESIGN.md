@@ -63,7 +63,13 @@ gramática — por eso la página se siente como un producto y no como secciones
 - **Azul Profundo** (`#4A9EF5`) — exclusivamente el hover del azul de acción.
 - **Lavanda de Señal** (`#A7A9EB`) — decorativo y estructural: hilos, halos, pulsos,
   y el **nodo de señal**. Nunca en elementos interactivos.
-- **Verde Fibra** (`#7AD8AD`) — exclusivamente confirmaciones y el **nodo de acción**.
+- **Verde Fibra** (`#7AD8AD`) — sanciona exactamente tres usos: confirmaciones, el
+  **nodo de acción** (el nodo terminal de la tríada, el tercer tiempo del recorrido),
+  y enunciados de tranquilidad sobre una afirmación del producto (p. ej. la frase de
+  confianza de Integraciones). Sigue **prohibido** cualquier uso que implique estado
+  vivo de un sistema — ningún punto, chip o check junto a un nombre de sistema, ni
+  la palabra "activo": Verde Fibra no reporta salud de infraestructura, marca el
+  final de un recorrido de señal ya mostrado en la página.
 - **Coral Suave** (`#E78668`) — exclusivamente alertas y errores de formulario.
 
 Gradientes permitidos: transiciones muy suaves entre Niebla Verde, Lavanda al ~20%
@@ -97,7 +103,7 @@ y blanco. Nunca gradientes saturados ni neón.
 - **Chips de estado:** píldora pequeña; verde fibra tenue para estados sanos,
   coral tenue para alertas, niebla profunda para neutros. Siempre con texto, nunca
   solo color.
-- **Hilo de señal:** trazo punteado 1px lavanda con nodos de 4px en los extremos y
+- **Hilo de señal:** trazo punteado 1px lavanda con nodos de 6px en los extremos y
   en cada punto de decisión.
 - **Burbujas de chat:** cliente en blanco con borde; bot en Niebla Profunda. Cada
   burbuja lleva un prefijo `sr-only` con el hablante. Verde WhatsApp jamás.

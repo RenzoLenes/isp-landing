@@ -19,7 +19,7 @@ const EMPTY: PilotFormData = {
 };
 
 // Orden de los campos tal como pide la spec: tres de texto, dos selects y el
-// WhatsApp al final. `sistema` usa `<input type="tel">`; el resto de texto usa
+// WhatsApp al final. `whatsapp` usa `<input type="tel">`; el resto de texto usa
 // `<input type="text">`. Los que faltan aquí se resuelven como select porque
 // su copy en `landing.ts` trae `options`.
 const FIELD_ORDER: readonly (keyof PilotFormData)[] = [
@@ -84,7 +84,7 @@ export function PilotForm() {
       noValidate
       className="rounded-3xl border border-whisper bg-surface p-6 shadow-float md:p-8"
     >
-      <p className="font-serif text-2xl text-ink">{form.title}</p>
+      <h3 className="font-serif text-2xl text-ink">{form.title}</h3>
       <div className="mt-6 flex flex-col gap-5">
         {FIELD_ORDER.map((name) => {
           const field = form.fields[name];
@@ -147,7 +147,7 @@ export function PilotForm() {
                 />
               )}
               {error ? (
-                <p id={errorId} className="mt-1.5 text-xs text-coral">
+                <p id={errorId} className="mt-1.5 text-xs text-coral-deep">
                   {error}
                 </p>
               ) : null}

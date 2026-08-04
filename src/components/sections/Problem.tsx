@@ -1,6 +1,7 @@
 import { LANDING } from "@/content/landing";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Reveal } from "@/components/ui/Reveal";
+import { StatusChip } from "@/components/ui/StatusChip";
 
 const CHAOS_STYLES = [
   "-rotate-3 self-start",
@@ -42,8 +43,8 @@ export function Problem() {
                   className="flex items-center justify-between gap-4 rounded-2xl border border-whisper bg-surface px-5 py-4 shadow-card"
                 >
                   <p className="text-sm text-ink">{item.text}</p>
-                  <span className="shrink-0 rounded-full bg-fiber/20 px-3 py-1 text-xs font-medium text-ink [font-variant-numeric:tabular-nums]">
-                    {item.status}
+                  <span className="shrink-0 [font-variant-numeric:tabular-nums]">
+                    <StatusChip label={item.status} tone="ok" />
                   </span>
                 </div>
               ))}

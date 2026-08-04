@@ -94,7 +94,7 @@ export function Integrations() {
 
         {/* `lg` y más: convergencia horizontal — sistemas → Nexo → salida. */}
         <Reveal delay={0.15}>
-          <div className="mt-16 hidden items-center lg:flex">
+          <div className="mt-16 hidden items-center justify-center lg:flex">
             <div className="flex w-64 shrink-0 flex-col gap-3">
               {systems.map((system) => (
                 <div key={system} className="flex items-center gap-3">
@@ -106,7 +106,25 @@ export function Integrations() {
               ))}
             </div>
 
-            <div aria-hidden className="h-40 w-px shrink-0">
+            {/*
+              Trunk height, derived (not guessed) from the systems column's
+              actual box model, so the top/bottom stubs land exactly on the
+              outer cards' centres instead of overshooting past the visible
+              line:
+                - SystemCard: text-sm → 20px line-height, py-3 → 12px+12px
+                  padding, border → 1px+1px. Height = 20+24+2 = 46px.
+                - 4 cards, gap-3 (12px) between them, 3 gaps.
+                - Column height = 4×46 + 3×12 = 220px.
+                - First card centre = 46/2 = 23px from column top.
+                - Last card centre  = 220 - 23 = 197px from column top.
+                - Outer-centre-to-outer-centre span = 197 - 23 = 174px.
+              The trunk is centred (via `items-center`) inside a 220px-tall
+              row, so a 174px trunk sits at 23px..197px — exactly matching
+              the two stub y-positions above. h-44 (176px) is the nearest
+              step in the default scale but leaves a 1px gap each side, so
+              this uses the exact value instead.
+            */}
+            <div aria-hidden className="h-[174px] w-px shrink-0">
               <SignalThread orientation="vertical" />
             </div>
 
