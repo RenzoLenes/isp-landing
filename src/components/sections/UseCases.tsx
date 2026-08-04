@@ -1,8 +1,23 @@
 import { LANDING } from "@/content/landing";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Reveal } from "@/components/ui/Reveal";
+import { DataCard } from "@/components/ui/DataCard";
 import { ResultCard } from "@/components/ui/ResultCard";
+import { SignalThread } from "@/components/ui/SignalThread";
 import { ChatScene } from "@/components/sections/ChatScene";
+
+/** Connector between the lookup (context) and the result (action), matching the hero's dot–thread–dot idiom. */
+function Connector() {
+  return (
+    <div aria-hidden className="flex flex-col items-center gap-1 self-center py-1.5">
+      <span className="size-1.5 shrink-0 rounded-full bg-blue" />
+      <div className="h-6 w-px">
+        <SignalThread orientation="vertical" />
+      </div>
+      <span className="size-1.5 shrink-0 rounded-full bg-fiber" />
+    </div>
+  );
+}
 
 export function UseCases() {
   const { eyebrow, title, items } = LANDING.useCases;
@@ -30,7 +45,9 @@ export function UseCases() {
                   <p className="mt-4 max-w-[58ch] leading-relaxed text-moss">
                     {useCase.description}
                   </p>
-                  <div className="mt-6 max-w-sm">
+                  <div className="mt-6 flex max-w-sm flex-col">
+                    <DataCard title={useCase.lookup.title} rows={useCase.lookup.rows} />
+                    <Connector />
                     <ResultCard
                       title={useCase.result.title}
                       meta={useCase.result.meta}

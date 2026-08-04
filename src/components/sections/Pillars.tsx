@@ -1,6 +1,45 @@
 import { LANDING } from "@/content/landing";
+import type { PillarArtifact } from "@/content/landing";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Reveal } from "@/components/ui/Reveal";
+import { DataCard } from "@/components/ui/DataCard";
+import { DecisionChain } from "@/components/ui/DecisionChain";
+
+/** Narrows `PillarArtifact` on `kind` and renders the matching primitive. */
+function PillarArtifactView({ artifact }: { artifact: PillarArtifact }) {
+  switch (artifact.kind) {
+    case "ficha":
+      return (
+        <DataCard
+          title={artifact.title}
+          status={{ label: artifact.status, tone: "ok" }}
+          rows={artifact.rows}
+        />
+      );
+    case "decision":
+      return <DecisionChain checks={artifact.checks} outcome={artifact.outcome} />;
+    case "ticket":
+      return (
+        <DataCard
+          title={artifact.title}
+          status={{ label: artifact.status, tone: "neutral" }}
+          rows={artifact.rows}
+          footer={
+            <div className="flex items-center justify-between gap-4">
+              <span className="text-xs text-moss">{artifact.footerLabel}</span>
+              <span className="text-sm font-medium text-ink [font-variant-numeric:tabular-nums]">
+                {artifact.footerValue}
+              </span>
+            </div>
+          }
+        />
+      );
+    default: {
+      const exhaustive: never = artifact;
+      return exhaustive;
+    }
+  }
+}
 
 export function Pillars() {
   const { eyebrow, title, items } = LANDING.pillars;
@@ -27,18 +66,8 @@ export function Pillars() {
                     {pillar.body}
                   </p>
                 </div>
-                <div className="relative flex min-h-48 items-center justify-center overflow-hidden rounded-3xl border border-whisper bg-[linear-gradient(135deg,rgb(167_169_235/0.16),rgb(90_171_255/0.10))] p-8">
-                  <div
-                    aria-hidden
-                    className="absolute size-40 rounded-full border border-lavender/40"
-                  />
-                  <div
-                    aria-hidden
-                    className="absolute size-24 rounded-full border border-lavender/60"
-                  />
-                  <span className="relative rounded-full border border-whisper bg-surface/85 px-4 py-2 text-xs font-medium text-moss shadow-card backdrop-blur-sm [font-variant-numeric:tabular-nums]">
-                    {pillar.visualLabel}
-                  </span>
+                <div className="mx-auto w-full max-w-sm md:mx-0">
+                  <PillarArtifactView artifact={pillar.artifact} />
                 </div>
               </div>
             </Reveal>
