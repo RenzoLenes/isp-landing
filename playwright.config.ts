@@ -12,6 +12,13 @@ export default defineConfig({
   timeout: 30_000,
   expect: { timeout: 5_000 },
   fullyParallel: true,
+  // Tope de concurrencia deliberado. Con el valor por defecto (mitad de los
+  // núcleos, 7 en la máquina de desarrollo) varias specs se volvían
+  // intermitentes: un solo `next start` atendiendo siete navegaciones
+  // simultáneas hace que algunas superen el timeout sin que exista un defecto
+  // en la página. Una suite intermitente entrena a ignorar los fallos, que es
+  // peor que no tenerla. Tres workers la dejan estable sin alargarla de más.
+  workers: 3,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   reporter: [["list"]],
