@@ -1,4 +1,12 @@
-import { PILOT_CLIENT_RANGES } from "@/lib/pilot";
+// Fuente única de verdad de los rangos permitidos: es copy visible (texto de
+// <option>), así que vive aquí como el resto del copy. `src/lib/pilot.ts`
+// importa esta lista para su comprobación de pertenencia en la validación.
+export const PILOT_CLIENT_RANGES = [
+  "Menos de 300",
+  "300–1000",
+  "1000–3000",
+  "Más de 3000",
+] as const;
 
 export type ChatMessage = {
   from: "cliente" | "bot";
@@ -307,7 +315,7 @@ export const LANDING = {
         kind: "consulta",
         title: "Consulta a tu sistema",
         body: "Nexo revisa deuda, cortes, fallas y cobertura en tu sistema de gestión.",
-        system: "Tu sistema de gestión",
+        system: "MikroWisp / WiMovil",
         rows: [
           { label: "Deuda", value: "Sin pendiente" },
           { label: "Falla masiva", value: "No" },

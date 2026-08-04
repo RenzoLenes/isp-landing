@@ -9,8 +9,30 @@ import {
   type PilotFormErrors,
 } from "@/lib/pilot";
 
-const EMPTY: PilotFormData = { nombre: "", isp: "", ciudad: "", whatsapp: "" };
-const FIELD_ORDER = ["nombre", "isp", "ciudad", "whatsapp"] as const;
+const EMPTY: PilotFormData = {
+  nombre: "",
+  isp: "",
+  sistema: "",
+  clientes: "",
+  reto: "",
+  whatsapp: "",
+};
+
+// Orden de los campos tal como pide la spec: tres de texto, dos selects y el
+// WhatsApp al final. `sistema` usa `<input type="tel">`; el resto de texto usa
+// `<input type="text">`. Los que faltan aquí se resuelven como select porque
+// su copy en `landing.ts` trae `options`.
+const FIELD_ORDER: readonly (keyof PilotFormData)[] = [
+  "nombre",
+  "isp",
+  "sistema",
+  "clientes",
+  "reto",
+  "whatsapp",
+];
+
+const CONTROL_CLASS =
+  "min-h-11 w-full rounded-xl border border-whisper bg-fog px-4 py-2.5 text-sm text-ink placeholder:text-moss/60 focus:outline-2 focus:outline-offset-1 focus:outline-blue";
 
 export function PilotForm() {
   const { form } = LANDING.pilot;
@@ -23,6 +45,13 @@ export function PilotForm() {
   useEffect(() => {
     if (submitted) successRef.current?.focus();
   }, [submitted]);
+
+  function handleFieldChange(name: keyof PilotFormData, value: string) {
+    setData((prev) => ({ ...prev, [name]: value }));
+    // Limpia el error en cuanto el usuario corrige: si no, el mensaje
+    // y aria-invalid quedan obsoletos junto a un campo ya válido.
+    setErrors((prev) => (prev[name] ? { ...prev, [name]: undefined } : prev));
+  }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -57,43 +86,74 @@ export function PilotForm() {
     >
       <p className="font-serif text-2xl text-ink">{form.title}</p>
       <div className="mt-6 flex flex-col gap-5">
-        {FIELD_ORDER.map((field) => (
-          <div key={field}>
-            <label
-              htmlFor={`pilot-${field}`}
-              className="mb-1.5 block text-sm font-medium text-ink"
-            >
-              {form.fields[field].label}
-            </label>
-            <input
-              id={`pilot-${field}`}
-              name={field}
-              type={field === "whatsapp" ? "tel" : "text"}
-              value={data[field]}
-              placeholder={form.fields[field].placeholder}
-              aria-invalid={Boolean(errors[field])}
-              aria-describedby={errors[field] ? `pilot-${field}-error` : undefined}
-              onChange={(e) => {
-                const value = e.target.value;
-                setData((prev) => ({ ...prev, [field]: value }));
-                // Limpia el error en cuanto el usuario corrige: si no, el mensaje
-                // y aria-invalid quedan obsoletos junto a un campo ya válido.
-                setErrors((prev) =>
-                  prev[field] ? { ...prev, [field]: undefined } : prev,
-                );
-              }}
-              className="min-h-11 w-full rounded-xl border border-whisper bg-fog px-4 py-2.5 text-sm text-ink placeholder:text-moss/60 focus:outline-2 focus:outline-offset-1 focus:outline-blue"
-            />
-            {errors[field] ? (
-              <p
-                id={`pilot-${field}-error`}
-                className="mt-1.5 text-xs text-coral"
+        {FIELD_ORDER.map((name) => {
+          const field = form.fields[name];
+          const error = errors[name];
+          const controlId = `pilot-${name}`;
+          const errorId = error ? `${controlId}-error` : undefined;
+
+          return (
+            <div key={name}>
+              <label
+                htmlFor={controlId}
+                className="mb-1.5 block text-sm font-medium text-ink"
               >
-                {errors[field]}
-              </p>
-            ) : null}
-          </div>
-        ))}
+                {field.label}
+              </label>
+              {"options" in field ? (
+                <div className="relative">
+                  <select
+                    id={controlId}
+                    name={name}
+                    value={data[name]}
+                    aria-invalid={Boolean(error)}
+                    aria-describedby={errorId}
+                    onChange={(e) => handleFieldChange(name, e.target.value)}
+                    className={`${CONTROL_CLASS} appearance-none pr-10`}
+                  >
+                    <option value="">{field.placeholder}</option>
+                    {field.options.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                  <svg
+                    aria-hidden
+                    viewBox="0 0 20 20"
+                    fill="none"
+                    className="pointer-events-none absolute right-4 top-1/2 size-4 -translate-y-1/2 text-moss"
+                  >
+                    <path
+                      d="M5 7.5 10 12.5 15 7.5"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </div>
+              ) : (
+                <input
+                  id={controlId}
+                  name={name}
+                  type={name === "whatsapp" ? "tel" : "text"}
+                  value={data[name]}
+                  placeholder={field.placeholder}
+                  aria-invalid={Boolean(error)}
+                  aria-describedby={errorId}
+                  onChange={(e) => handleFieldChange(name, e.target.value)}
+                  className={CONTROL_CLASS}
+                />
+              )}
+              {error ? (
+                <p id={errorId} className="mt-1.5 text-xs text-coral">
+                  {error}
+                </p>
+              ) : null}
+            </div>
+          );
+        })}
       </div>
       <button
         type="submit"

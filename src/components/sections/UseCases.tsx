@@ -6,7 +6,12 @@ import { ResultCard } from "@/components/ui/ResultCard";
 import { SignalThread } from "@/components/ui/SignalThread";
 import { ChatScene } from "@/components/sections/ChatScene";
 
-/** Connector between the lookup (context) and the result (action), matching the hero's dot–thread–dot idiom. */
+/**
+ * Connector between the lookup (context) and the result (action). Only the
+ * top node is drawn here — the thread terminates into `ResultCard`'s own
+ * leading fiber dot, which reads as the action node. A second fiber dot here
+ * would stack a few pixels above it as a redundant double dot.
+ */
 function Connector() {
   return (
     <div aria-hidden className="flex flex-col items-center gap-1 self-center py-1.5">
@@ -14,7 +19,6 @@ function Connector() {
       <div className="h-6 w-px">
         <SignalThread orientation="vertical" />
       </div>
-      <span className="size-1.5 shrink-0 rounded-full bg-fiber" />
     </div>
   );
 }

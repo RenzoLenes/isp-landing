@@ -4,6 +4,50 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Reveal } from "@/components/ui/Reveal";
 import { DataCard } from "@/components/ui/DataCard";
 import { DecisionChain } from "@/components/ui/DecisionChain";
+import { StatusChip } from "@/components/ui/StatusChip";
+
+/**
+ * The ticket artifact reuses `DataCard`'s row/footer rhythm but replaces its
+ * header: the ticket id sits alone on a raised top bar in a tabular/monospace
+ * treatment, visually separated from the data rows below. Pillars 1 and 3
+ * both render "ficha"-shaped data, so this keeps them from reading as the
+ * same card with a different chip.
+ */
+function TicketCard({
+  artifact,
+}: {
+  artifact: Extract<PillarArtifact, { kind: "ticket" }>;
+}) {
+  return (
+    <div className="overflow-hidden rounded-3xl border border-whisper bg-surface shadow-card">
+      <div className="flex items-center justify-between gap-3 border-b border-whisper bg-fog-deep px-6 py-4">
+        <p className="font-mono text-sm tracking-tight text-ink [font-variant-numeric:tabular-nums]">
+          {artifact.title}
+        </p>
+        <StatusChip label={artifact.status} tone="neutral" />
+      </div>
+      <dl className="px-6 pb-2 pt-2">
+        {artifact.rows.map((row) => (
+          <div
+            key={row.label}
+            className="flex items-center justify-between gap-4 border-t border-whisper py-2.5 first:border-t-0"
+          >
+            <dt className="text-xs text-moss">{row.label}</dt>
+            <dd className="text-sm text-ink [font-variant-numeric:tabular-nums]">
+              {row.value}
+            </dd>
+          </div>
+        ))}
+      </dl>
+      <div className="flex items-center justify-between gap-4 border-t border-whisper px-6 py-4">
+        <span className="text-xs text-moss">{artifact.footerLabel}</span>
+        <span className="text-sm font-medium text-ink [font-variant-numeric:tabular-nums]">
+          {artifact.footerValue}
+        </span>
+      </div>
+    </div>
+  );
+}
 
 /** Narrows `PillarArtifact` on `kind` and renders the matching primitive. */
 function PillarArtifactView({ artifact }: { artifact: PillarArtifact }) {
@@ -19,21 +63,7 @@ function PillarArtifactView({ artifact }: { artifact: PillarArtifact }) {
     case "decision":
       return <DecisionChain checks={artifact.checks} outcome={artifact.outcome} />;
     case "ticket":
-      return (
-        <DataCard
-          title={artifact.title}
-          status={{ label: artifact.status, tone: "neutral" }}
-          rows={artifact.rows}
-          footer={
-            <div className="flex items-center justify-between gap-4">
-              <span className="text-xs text-moss">{artifact.footerLabel}</span>
-              <span className="text-sm font-medium text-ink [font-variant-numeric:tabular-nums]">
-                {artifact.footerValue}
-              </span>
-            </div>
-          }
-        />
-      );
+      return <TicketCard artifact={artifact} />;
     default: {
       const exhaustive: never = artifact;
       return exhaustive;

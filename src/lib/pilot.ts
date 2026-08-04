@@ -1,3 +1,5 @@
+import { PILOT_CLIENT_RANGES } from "@/content/landing";
+
 export type PilotFormData = {
   nombre: string;
   isp: string;
@@ -8,15 +10,6 @@ export type PilotFormData = {
 };
 
 export type PilotFormErrors = Partial<Record<keyof PilotFormData, string>>;
-
-// Fuente única de verdad de los rangos permitidos: el formulario (`landing.ts`)
-// referencia esta lista para sus opciones y el validador la usa para aceptar/rechazar.
-export const PILOT_CLIENT_RANGES = [
-  "Menos de 300",
-  "300–1000",
-  "1000–3000",
-  "Más de 3000",
-] as const;
 
 const WHATSAPP_INVALID =
   "Ingresa un número válido (solo dígitos, espacios, + y -).";

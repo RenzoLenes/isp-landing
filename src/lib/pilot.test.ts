@@ -66,7 +66,7 @@ describe("validatePilotForm", () => {
     ).toBe("Selecciona un rango de clientes.");
   });
 
-  it("no exige el sistema si está vacío tras recortar espacios", () => {
+  it("exige el sistema si solo contiene espacios en blanco", () => {
     expect(validatePilotForm({ ...VALID, sistema: "   " }).sistema).toBe(
       "Ingresa el sistema que usas hoy.",
     );

@@ -37,7 +37,7 @@ export function Navbar() {
     >
       <div
         className={`mx-auto flex max-w-content items-center justify-between rounded-full border border-whisper bg-surface/60 pl-6 pr-2.5 shadow-[0_6px_16px_-10px_rgb(23_32_27/0.16)] backdrop-blur-md transition-transform duration-300 ease-out motion-reduce:transition-none md:max-w-3xl ${
-          scrolled ? "scale-[0.97] py-1" : "py-1.5"
+          scrolled ? "scale-[0.97] py-1" : "py-1"
         }`}
       >
         <a href="#" className="font-serif text-2xl leading-none text-ink">
@@ -55,7 +55,7 @@ export function Navbar() {
           ))}
         </nav>
         <div className="hidden md:block">
-          <ButtonLink href={cta.href} className="bg-blue/90 px-4!">
+          <ButtonLink href={cta.href} size="sm" className="bg-blue/90">
             {cta.label}
           </ButtonLink>
         </div>
