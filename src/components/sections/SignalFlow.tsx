@@ -5,32 +5,66 @@ import { DataCard } from "@/components/ui/DataCard";
 import { SignalThread } from "@/components/ui/SignalThread";
 
 /**
- * Ancho de columna por tipo de artefacto en el breakpoint de fila (`lg`).
+ * Ancho de columna por tipo de artefacto, por breakpoint de fila.
  *
  * Aritmética de contenedor (ver informe de la ola final de fixes): el ancho
- * útil es `min(viewport − 32, 1220) − 112`. A `lg` (1024px) eso da 880px.
- * El contenido mínimo de la fila es la suma de estos cuatro anchos más
- * 3 × 32px de piso de conector (`min-w-8` en `StepConnector`):
- *   160 (mensaje) + 192 (consulta) + 160 (decision) + 160 (resultado)
- *   = 672px, + 96px de conectores = 768px.
- * Margen a `lg`: 880 − 768 = 112px. Margen a `xl` (1108px útiles): 340px.
+ * útil es `min(viewport − 32, 1220) − 112`. A `lg` (1024px) eso da 880px; a
+ * `xl` (1280px) y por encima, el clamp de 1220 ya está activo, así que el
+ * ancho útil es constante en 1108px.
+ *
+ * El contenido mínimo de la fila es la suma de los cuatro anchos de columna
+ * más 3 × 32px de piso de conector (`min-w-8` en `StepConnector`):
+ *
+ *   breakpoint │ mensaje │ consulta │ decisión │ resultado │ contenido │ conectores │ útil │ margen
+ *   lg         │ 160     │ 192      │ 160      │ 160       │ 672       │ 96         │ 880  │ 112
+ *   xl         │ 224     │ 256      │ 224      │ 224       │ 928       │ 96         │ 1108 │ 84
  *
  * `consulta` reutiliza `DataCard` en `density="compact"` (`p-4`, 32px de
- * chroma horizontal en vez de los 48px de `p-6`) — por eso su columna baja de
- * 208px a 192px sin perder área de contenido: 208 − 48 = 160px de contenido
- * con el chroma viejo, y 192 − 32 = 160px de contenido con el nuevo. El resto
- * de columnas se angostó en la misma proporción para liberar el margen que
- * antes forzaba el corte a `xl`.
+ * chroma horizontal en vez de los 48px de `p-6`) — por eso su columna es
+ * siempre 32px más ancha que las otras tres (que llevan su propio chroma
+ * interno): 160/192 a `lg`, 224/256 a `xl`. Esa relación (consulta = resto +
+ * 32) se mantiene al escalar, así que el área de contenido real es
+ * equivalente entre las cuatro columnas en ambos breakpoints.
+ *
+ * A `xl` sobraban 340px (1108 − 672) con los anchos de `lg` sin cambios —
+ * eso partía la copia en líneas de tres palabras. Se escalaron los cuatro
+ * anchos hasta dejar 84px de margen a `xl`, suficiente para nunca cortar y
+ * para que el texto respire.
  */
 const COLUMN_WIDTH: Record<FlowStep["kind"], string> = {
-  mensaje: "lg:w-40",
-  consulta: "lg:w-48",
-  decision: "lg:w-40",
-  resultado: "lg:w-40",
+  mensaje: "lg:w-40 xl:w-56",
+  consulta: "lg:w-48 xl:w-64",
+  decision: "lg:w-40 xl:w-56",
+  resultado: "lg:w-40 xl:w-56",
 };
 
 /** Color del nodo en cada conector, según la categoría de la tríada a la que se entra. */
 const JUNCTION_COLOR = ["bg-blue", "bg-blue", "bg-fiber"] as const;
+
+/**
+ * Banda vertical uniforme para los cuatro artefactos, sólo en el breakpoint
+ * de fila (`lg` y por encima). Los artefactos tienen alturas intrínsecas muy
+ * distintas (burbuja de chat de 4 líneas, `DataCard` de 2 filas, regla de
+ * decisión de 3 líneas, chip de resultado de 2 líneas); sin una banda común,
+ * cada `<h3>` arranca a una altura distinta (escalera) y el conector —
+ * anclado al tope de la fila por `lg:items-start` — queda flotando por
+ * encima del centro real de los artefactos en vez de atravesarlos.
+ *
+ * Altura medida (build de producción, Chromium, `reducedMotion: reduce`):
+ * el artefacto más alto es la burbuja de "mensaje" a `lg` (columna de
+ * 160px, texto envuelve a 4 líneas) con 161.8px. A `xl` las columnas son
+ * más anchas y el más alto pasa a ser el `DataCard` de "consulta" con
+ * 124px — siempre por debajo del máximo de `lg`. `lg:h-44` (176px) cubre
+ * el caso más alto medido con ~14px de aire (161.8 → 176).
+ *
+ * Se usa en dos lugares: como altura del contenedor que centra cada
+ * artefacto (`items-center` centra verticalmente dentro de la banda) y como
+ * altura del `StepConnector`, para que su centro vertical —ya centrado por
+ * `items-center`— coincida exactamente con el centro de la banda sin
+ * necesidad de un offset manual. Si la copia crece, este es el único valor
+ * a ajustar.
+ */
+const ARTIFACT_BAND = "lg:h-44";
 
 function StepMessage({ line }: { line: string }) {
   return (
@@ -109,7 +143,7 @@ function StepConnector({ color }: { color: string }) {
   return (
     <div
       aria-hidden
-      className="flex shrink-0 flex-col items-center gap-1.5 py-1 lg:min-w-8 lg:flex-1 lg:flex-row lg:justify-center lg:gap-2 lg:py-0"
+      className={`flex shrink-0 flex-col items-center gap-1.5 py-1 lg:min-w-8 lg:flex-1 lg:flex-row lg:justify-center lg:gap-2 lg:py-0 ${ARTIFACT_BAND}`}
     >
       <span className={`size-1.5 shrink-0 rounded-full ${color}`} />
       <div className="h-8 w-px lg:hidden">
@@ -136,7 +170,9 @@ export function SignalFlow() {
           <div
             className={`flex w-full max-w-xs flex-col items-center text-center lg:max-w-none lg:items-start lg:text-left ${COLUMN_WIDTH[step.kind]}`}
           >
-            <FlowStepArtifact step={step} />
+            <div className={`flex w-full items-center ${ARTIFACT_BAND}`}>
+              <FlowStepArtifact step={step} />
+            </div>
             <h3 className="mt-4 font-medium text-ink">{step.title}</h3>
             <p className="mt-2 text-sm leading-relaxed text-moss">{step.body}</p>
           </div>
