@@ -1,7 +1,7 @@
 const TONES = {
   ok: "bg-fiber/20 text-ink",
   alert: "bg-coral/20 text-ink",
-  neutral: "bg-fog-deep text-moss",
+  neutral: "bg-sunk text-moss",
 } as const;
 
 export function StatusChip({

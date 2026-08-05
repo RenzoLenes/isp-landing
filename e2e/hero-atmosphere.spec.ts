@@ -34,8 +34,8 @@ test.describe("Hero atmosphere (gradient field, headline scale, console width)",
   test("the field is a real, visible tint — not a near-invisible wash", async ({ page }) => {
     // The pre-chunk-C field peaked at ~4% opacity and read as flat from a
     // normal viewing distance (spec Part 1a's diagnosis). Confirm the
-    // strengthened field actually shifts pixel colour away from plain fog
-    // (#F5F7F4) by a real margin, sampled from an actual screenshot — not
+    // strengthened field actually shifts pixel colour away from plain canvas
+    // (#F4F6F4) by a real margin, sampled from an actual screenshot — not
     // computed styles, which is exactly the measurement chunk A's own
     // contrast helper is blind to (see e2e/helpers/contrast.ts's doc
     // comment).
@@ -54,13 +54,13 @@ test.describe("Hero atmosphere (gradient field, headline scale, console width)",
     const sampleY = fieldBox.y + fieldBox.height * 0.32;
     const pixel = await readPixel(page, canvasId, sampleX, sampleY);
 
-    const fog = { r: 245, g: 247, b: 244 };
+    const canvas = { r: 244, g: 246, b: 244 };
     const distance = Math.sqrt(
-      (pixel.r - fog.r) ** 2 + (pixel.g - fog.g) ** 2 + (pixel.b - fog.b) ** 2,
+      (pixel.r - canvas.r) ** 2 + (pixel.g - canvas.g) ** 2 + (pixel.b - canvas.b) ** 2,
     );
     expect(
       distance,
-      `sampled field pixel rgb(${pixel.r},${pixel.g},${pixel.b}) vs fog rgb(245,247,244), distance ${distance.toFixed(1)}`,
+      `sampled field pixel rgb(${pixel.r},${pixel.g},${pixel.b}) vs canvas rgb(244,246,244), distance ${distance.toFixed(1)}`,
     ).toBeGreaterThan(10);
   });
 

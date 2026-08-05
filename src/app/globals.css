@@ -1,22 +1,24 @@
 @import "tailwindcss";
 
 @theme {
-  --color-fog: #f5f7f4;
-  --color-fog-deep: #eaeeea;
+  --color-canvas: #f4f6f4; /* was `fog` — base de secciones neutras */
   --color-surface: #ffffff;
+  --color-sunk: #eaeeea; /* was `fog-deep` — burbujas del sistema, cabeceras hundidas */
+  --color-night: #141c19; /* fondo a sangre del registro oscuro */
   --color-ink: #17201b;
-  --color-moss: #647168;
-  --color-blue: #5aabff;
-  --color-blue-deep: #4a9ef5; /* único hover del azul de acción */
-  --color-lavender: #a7a9eb;
-  --color-lavender-deep: #8285d2; /* variante legible del lavanda — 3.13:1 sobre fog, mínimo AA para texto grande */
-  --color-fiber: #7ad8ad;
-  --color-coral: #e78668;
-  --color-coral-deep: #c2451f; /* AA text variant of coral — 5.04:1 on white, see final-review-fixes.md */
+  --color-moss: #647168; /* secundario SOLO sobre canvas/surface */
+  --color-mist: #e4eae6; /* secundario sobre night */
   --color-whisper: rgb(23 32 27 / 0.08);
+  --color-whisper-night: rgb(244 246 244 / 0.12);
+  --color-signal-field: #cbe0f5; /* fondo a sangre del registro azul */
+  --color-signal: #3e86d9; /* reemplaza a `blue` */
+  --color-signal-deep: #1b4f92; /* reemplaza a `blue-deep` */
+  --color-fiber: #7ad8ad;
+  --color-coral: #e78668; /* solo bordes/fondos de error */
+  --color-coral-deep: #c2451f; /* texto de error — 5.04:1 sobre blanco, cumple AA */
 
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-instrument-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
 
   --shadow-float: 0 24px 60px -24px rgb(100 113 104 / 0.28);
   --shadow-card: 0 12px 32px -16px rgb(100 113 104 / 0.22);
@@ -56,7 +58,7 @@
 }
 
 ::selection {
-  background: rgb(90 171 255 / 0.25);
+  background: rgb(62 134 217 / 0.25); /* --color-signal at 25% */
 }
 
 body {

@@ -46,8 +46,8 @@ test.describe("Reduced motion", () => {
     await page.goto("/");
 
     // Each SignalThread renders a static dashed line (`absolute inset-0
-    // border-lavender ...`) plus a `motion.div` pulse holding the travelling
-    // dot — also `absolute inset-0` but without the `border-lavender` class.
+    // border-signal ...`) plus a `motion.div` pulse holding the travelling
+    // dot — also `absolute inset-0` but without the `border-signal` class.
     //
     // That pulse node is now always mounted (conditionally *removing* it
     // based on `useReducedMotion()` — which resolves synchronously on the
@@ -60,7 +60,7 @@ test.describe("Reduced motion", () => {
     // DOM node itself is absent: opacity pinned at 0 (never visible) and no
     // infinite-repeat animation ever created for it.
     const pulses = page.locator(
-      'div[aria-hidden="true"] > div.absolute.inset-0:not(.border-lavender)',
+      'div[aria-hidden="true"] > div.absolute.inset-0:not(.border-signal)',
     );
     const count = await pulses.count();
     expect(count, "expected every SignalThread's pulse wrapper to exist").toBeGreaterThan(0);
@@ -71,7 +71,7 @@ test.describe("Reduced motion", () => {
 
     const infiniteOnPulses = await page.evaluate(() => {
       const nodes = document.querySelectorAll(
-        'div[aria-hidden="true"] > div.absolute.inset-0:not(.border-lavender)',
+        'div[aria-hidden="true"] > div.absolute.inset-0:not(.border-signal)',
       );
       let count = 0;
       for (const node of nodes) {

@@ -33,17 +33,17 @@ test.describe("Contrast (computed, WCAG AA)", () => {
     );
   });
 
-  test("pillar numbers (lavender-deep on fog)", async ({ page }) => {
+  test("pillar numbers (signal-deep on canvas)", async ({ page }) => {
     await page.goto("/");
     const info = await report("pillar number '01'", page, () =>
-      page.locator("#producto p.text-lavender-deep").first(),
+      page.locator("#producto p.text-signal-deep").first(),
     );
     expect(info.ratio, `pillar number contrast ${info.ratio.toFixed(2)}:1`).toBeGreaterThanOrEqual(
       info.requiredRatio,
     );
   });
 
-  test("secondary body text (moss on fog) — hero subtitle", async ({ page }) => {
+  test("secondary body text (moss on canvas) — hero subtitle", async ({ page }) => {
     await page.goto("/");
     // The rebuilt hero (spec §4) wraps the headline and subtitle in
     // separate staggered-entrance wrappers, so they're no longer DOM

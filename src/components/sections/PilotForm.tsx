@@ -32,7 +32,7 @@ const FIELD_ORDER: readonly (keyof PilotFormData)[] = [
 ];
 
 const CONTROL_CLASS =
-  "min-h-11 w-full rounded-xl border border-whisper bg-fog px-4 py-2.5 text-sm text-ink placeholder:text-moss/60 focus:outline-2 focus:outline-offset-1 focus:outline-blue";
+  "min-h-11 w-full rounded-xl border border-whisper bg-canvas px-4 py-2.5 text-sm text-ink placeholder:text-moss/60 focus:outline-2 focus:outline-offset-1 focus:outline-signal";
 
 export function PilotForm() {
   const { form } = LANDING.pilot;
@@ -158,7 +158,7 @@ export function PilotForm() {
       <button
         type="submit"
         disabled={sending}
-        className="mt-7 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-blue px-6 py-3 text-sm font-medium text-surface shadow-card transition-[background-color,transform] duration-200 hover:bg-blue-deep active:translate-y-px disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue"
+        className="mt-7 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-signal px-6 py-3 text-sm font-medium text-surface shadow-card transition-[background-color,transform] duration-200 hover:bg-signal-deep active:translate-y-px disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal"
       >
         {sending ? form.sending : form.submit}
       </button>

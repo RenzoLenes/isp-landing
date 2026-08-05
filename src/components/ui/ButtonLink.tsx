@@ -1,16 +1,16 @@
 import type { ReactNode } from "react";
 
 const VARIANTS = {
-  // Blue filled pill. No call site uses this for a CTA anymore (hero-fixes-
+  // Signal filled pill. No call site uses this for a CTA anymore (hero-fixes-
   // report.md, Fix 4): the navbar CTA moved from `primary` to `ink` to match
   // the hero, since the references pair one dark CTA treatment across the
-  // whole page rather than blue-for-nav/dark-for-hero. Kept as a variant —
-  // blue remains the accent color elsewhere (links, focus rings, the
+  // whole page rather than signal-for-nav/dark-for-hero. Kept as a variant —
+  // signal remains the accent color elsewhere (links, focus rings, the
   // triad's context node) — in case a future secondary action wants it.
   primary:
-    "bg-blue text-surface hover:bg-blue-deep active:translate-y-px shadow-card",
+    "bg-signal text-surface hover:bg-signal-deep active:translate-y-px shadow-card",
   // Dark filled pill — the hero's primary CTA and, since Fix 4, the navbar's
-  // too. Blue stays the sole action accent everywhere else (links, focus
+  // too. Signal stays the sole action accent everywhere else (links, focus
   // rings, the triad's context node).
   ink: "bg-ink text-surface hover:bg-ink/90 active:translate-y-px shadow-card",
   ghost:
@@ -40,7 +40,7 @@ export function ButtonLink({
   return (
     <a
       href={href}
-      className={`inline-flex min-h-11 items-center justify-center rounded-full py-3 text-sm font-medium transition-[background-color,border-color,transform] duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue ${SIZES[size]} ${VARIANTS[variant]} ${className}`}
+      className={`inline-flex min-h-11 items-center justify-center rounded-full py-3 text-sm font-medium transition-[background-color,border-color,transform] duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal ${SIZES[size]} ${VARIANTS[variant]} ${className}`}
     >
       {children}
     </a>

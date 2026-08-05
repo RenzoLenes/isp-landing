@@ -15,7 +15,7 @@ import { ChatScene } from "@/components/sections/ChatScene";
 function Connector() {
   return (
     <div aria-hidden className="flex flex-col items-center gap-1 self-center py-1.5">
-      <span className="size-1.5 shrink-0 rounded-full bg-blue" />
+      <span className="size-1.5 shrink-0 rounded-full bg-signal" />
       <div className="h-6 w-px">
         <SignalThread orientation="vertical" />
       </div>

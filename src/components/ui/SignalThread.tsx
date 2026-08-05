@@ -47,7 +47,7 @@ export function SignalThread({
       className={`relative ${isVertical ? "h-full w-px" : "h-px w-full"} ${className}`}
     >
       <div
-        className={`absolute inset-0 border-lavender ${
+        className={`absolute inset-0 border-signal ${
           isVertical ? "border-l border-dashed" : "border-t border-dashed"
         }`}
       />
@@ -65,7 +65,7 @@ export function SignalThread({
             : { duration: 2.4, repeat: Infinity, ease: "linear" }
         }
       >
-        <span className="absolute -left-[3px] -top-[3px] block size-1.5 rounded-full bg-lavender" />
+        <span className="absolute -left-[3px] -top-[3px] block size-1.5 rounded-full bg-signal" />
       </motion.div>
     </div>
   );

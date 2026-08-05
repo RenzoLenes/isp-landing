@@ -26,16 +26,19 @@
 //    ralentizan" without touching DOM structure.
 // 5. Replaced the default demo colours (`gradientStartColor="#ffaa40"`
 //    orange, `gradientStopColor="#9c40ff"` purple, `pathColor="gray"`) with
-//    this project's tokens — see the named constants below.
+//    this project's tokens — see the named constant below.
 
 import { RefObject, useEffect, useId, useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
 
-// Hex literals (SVG `stroke`/`stopColor` attributes can't take Tailwind
-// classes, same reasoning as `GradientField`'s inline gradients) — each one
-// names the design token it mirrors, from `globals.css`'s `@theme` block.
-const LAVENDER = "#a7a9eb"; // --color-lavender (Lavanda de Señal)
-const BLUE = "#5aabff"; // --color-blue (Azul Inteligente)
+// Hex literal (SVG `stroke`/`stopColor` attributes can't take Tailwind
+// classes, same reasoning as `GradientField`'s inline gradients) — names the
+// design token it mirrors, from `globals.css`'s `@theme` block. The old
+// design had two hues here (a lavender base fading into a blue highlight);
+// DESIGN.md §3's "un solo acento" collapses both ends of the gradient to
+// the one committed accent — the travelling highlight still reads because
+// the gradient stops still animate position and opacity, just no longer hue.
+const SIGNAL = "#3e86d9"; // --color-signal
 
 export interface AnimatedBeamProps {
   className?: string;
@@ -70,18 +73,18 @@ export const AnimatedBeam: React.FC<AnimatedBeamProps> = ({
   duration = 5.5,
   delay = 0,
   // The original demo's base path (`pathColor="gray"`, `pathOpacity={0.2}`)
-  // all but disappeared against our light fog background (`#F5F7F4`) —
+  // all but disappeared against our light canvas background (`#F4F6F4`) —
   // confirmed by rendering and looking at the screenshot, not guessed. Base
   // colour moved from a near-invisible dark "whisper" tone to the same
-  // lavender as the rest of the signal-thread vocabulary (`SignalThread`'s
+  // signal accent as the rest of the signal-thread vocabulary (`SignalThread`'s
   // static dashed line), at a visible-but-still-quiet opacity, with a
   // slightly heavier stroke than the 21st.dev default so the curve reads at
   // a glance instead of needing to be looked for.
-  pathColor = LAVENDER,
+  pathColor = SIGNAL,
   pathWidth = 2.5,
   pathOpacity = 0.55,
-  gradientStartColor = LAVENDER,
-  gradientStopColor = BLUE,
+  gradientStartColor = SIGNAL,
+  gradientStopColor = SIGNAL,
   startXOffset = 0,
   startYOffset = 0,
   endXOffset = 0,

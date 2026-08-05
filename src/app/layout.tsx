@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import { Geist, Instrument_Sans } from "next/font/google";
+import { Geist, Space_Grotesk } from "next/font/google";
 import { GradientField } from "@/components/ui/GradientField";
+import { GrainOverlay } from "@/components/ui/GrainOverlay";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -8,9 +9,19 @@ const geistSans = Geist({
   subsets: ["latin"],
 });
 
-const instrumentSans = Instrument_Sans({
-  variable: "--font-instrument-sans",
+// Replaces Instrument Sans (DESIGN.md §4): Space Grotesk's technical,
+// slightly mechanical character matches the subject — signal, network,
+// structure — where Instrument Sans read as correct but anonymous. Weights
+// requested match every weight actually used with `font-display` in
+// `src/`: 400 (the default, unweighted usage) and 700 (Hero.tsx's `h1`,
+// the only spot that adds `font-bold`). Asking for a weight that isn't
+// loaded here falls back silently, so if a future call site adds
+// `font-semibold`/`font-medium` to a `font-display` element, its weight
+// must be added to this list too.
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-space-grotesk",
   subsets: ["latin"],
+  weight: ["400", "700"],
 });
 
 export const metadata: Metadata = {
@@ -23,12 +34,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="es"
-      className={`${geistSans.variable} ${instrumentSans.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${spaceGrotesk.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-fog-deep p-2 text-ink font-sans antialiased sm:p-3 md:p-4">
+      <body className="min-h-full flex flex-col bg-sunk p-2 text-ink font-sans antialiased sm:p-3 md:p-4">
         {/*
           The rounded outer shell (§6): the whole page lives inside this
-          container so it reads as an object sitting on `fog-deep`, not a
+          container so it reads as an object sitting on `sunk`, not a
           document that bleeds to the viewport edge. `relative` makes it the
           positioning context for `GradientField`; `isolate` gives it its own
           stacking context so that field and the hero's own local gradient
@@ -46,10 +57,16 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           this box has no explicit height, so it sizes to its content (which
           is taller than the viewport) and the page still scrolls natively.
         */}
-        <div className="relative isolate flex flex-1 flex-col overflow-hidden rounded-[1.5rem] bg-fog shadow-float sm:rounded-[2rem] lg:rounded-[2.5rem]">
+        <div className="relative isolate flex flex-1 flex-col overflow-hidden rounded-[1.5rem] bg-canvas shadow-float sm:rounded-[2rem] lg:rounded-[2.5rem]">
           <GradientField />
           {children}
         </div>
+        {/* Grain (§5): fixed at the body level, not inside the rounded
+            shell above — the shell's `overflow-hidden` would clip it to the
+            shell's own (content-sized, not viewport-sized) box. Sits after
+            the shell in DOM order and above it via z-index so it layers
+            over every register, including the rounded corners' shadow. */}
+        <GrainOverlay />
       </body>
     </html>
   );

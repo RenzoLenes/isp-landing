@@ -61,7 +61,7 @@ export function DecisionChain({
       <div
         className={`flex items-center gap-2.5 border-t border-whisper ${isCompact ? "mt-1 pt-3" : "mt-2 pt-4"}`}
       >
-        <span aria-hidden className="size-2 shrink-0 rounded-full bg-blue" />
+        <span aria-hidden className="size-2 shrink-0 rounded-full bg-signal" />
         <span aria-hidden className="text-moss">
           →
         </span>

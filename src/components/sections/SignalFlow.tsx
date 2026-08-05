@@ -39,7 +39,7 @@ const COLUMN_WIDTH: Record<FlowStep["kind"], string> = {
 };
 
 /** Color del nodo en cada conector, según la categoría de la tríada a la que se entra. */
-const JUNCTION_COLOR = ["bg-blue", "bg-blue", "bg-fiber"] as const;
+const JUNCTION_COLOR = ["bg-signal", "bg-signal", "bg-fiber"] as const;
 
 /**
  * Banda vertical uniforme para los cuatro artefactos, sólo en el breakpoint
@@ -97,7 +97,7 @@ function StepDecision({
     <div className="w-full rounded-3xl border border-whisper bg-surface p-4 shadow-card">
       <p className="text-xs text-moss">{condition}</p>
       <div className="mt-2.5 flex items-center gap-2 border-t border-whisper pt-2.5">
-        <span aria-hidden className="size-2 shrink-0 rounded-full bg-blue" />
+        <span aria-hidden className="size-2 shrink-0 rounded-full bg-signal" />
         <span aria-hidden className="text-moss">
           →
         </span>

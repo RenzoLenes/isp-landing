@@ -1,6 +1,6 @@
 /**
- * Atmospheric background: soft, blurred patches of blue and lavender over the
- * fog surface, concentrated behind the hero and fading out before the next
+ * Atmospheric background: soft, blurred patches of the signal accent over the
+ * canvas surface, concentrated behind the hero and fading out before the next
  * section. Server Component — no client JS, nothing animated, `aria-hidden`
  * so assistive tech skips it entirely.
  *
@@ -30,19 +30,21 @@ export function GradientField() {
       aria-hidden
       className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[820px] overflow-hidden [mask-image:linear-gradient(to_bottom,black,black_32%,transparent_78%)] sm:h-[900px] lg:h-[980px]"
     >
-      {/* Lavender — upper field, biased right (behind where the product
+      {/* Signal — upper field, biased right (behind where the product
           composition sits), well clear of the text column's left edge. */}
-      <div className="absolute -top-32 right-[-6%] size-[30rem] rounded-full bg-lavender/[0.32] blur-[130px] sm:size-[36rem] lg:size-[40rem]" />
+      <div className="absolute -top-32 right-[-6%] size-[30rem] rounded-full bg-signal/[0.32] blur-[130px] sm:size-[36rem] lg:size-[40rem]" />
 
-      {/* Blue — lower and further right, the second "light source" that
-          gives the field its two-tone read. Deliberately smaller than the
-          lavender patch above and offset so their overlap band stays inside
-          the contrast budget (verified empirically, see hero-fixes-report.md). */}
-      <div className="absolute top-[34%] right-[0%] size-[22rem] rounded-full bg-blue/[0.27] blur-[110px] sm:size-[26rem] lg:size-[30rem]" />
+      {/* Signal, lower opacity — lower and further right, the second "light
+          source" that gives the field its two-tone read. Deliberately
+          smaller than the patch above and offset so their overlap band
+          stays inside the contrast budget (verified empirically, see
+          hero-fixes-report.md). One accent, not a second hue: the depth
+          here comes from opacity and placement, not colour. */}
+      <div className="absolute top-[34%] right-[0%] size-[22rem] rounded-full bg-signal/[0.27] blur-[110px] sm:size-[26rem] lg:size-[30rem]" />
 
       {/* A wide wash across the top so the field reads as one continuous
           atmosphere rather than two isolated dots. */}
-      <div className="absolute -top-16 left-[10%] size-[26rem] rounded-full bg-lavender/[0.19] blur-[140px] sm:size-[32rem]" />
+      <div className="absolute -top-16 left-[10%] size-[26rem] rounded-full bg-signal/[0.19] blur-[140px] sm:size-[32rem]" />
     </div>
   );
 }

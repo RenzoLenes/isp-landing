@@ -55,7 +55,7 @@ export function Hero() {
   const { badge, title, subtitle, ctaPrimary, ctaSecondary } = LANDING.hero;
   return (
     <section className="relative overflow-hidden px-4 pb-8 pt-36 md:pt-44">
-      {/* The section's own local fog gradient is gone — `GradientField`
+      {/* The section's own local canvas gradient is gone — `GradientField`
           (mounted once in `layout.tsx`, behind the whole page shell) is now
           the single atmospheric background. Keeping both would stack their
           tints right where the hero copy sits and blow the contrast budget

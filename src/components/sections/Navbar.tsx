@@ -60,8 +60,8 @@ export function Navbar() {
         <div className="hidden md:block">
           {/* Fix 4 (hero-fixes-report.md): unify the two primary CTAs — the
               hero's is `ink`, so the nav's now matches instead of staying
-              `blue`, per the references (Qipeline uses the same dark
-              treatment in both). Blue remains the accent for links, focus
+              `signal`, per the references (Qipeline uses the same dark
+              treatment in both). Signal remains the accent for links, focus
               rings, and the triad's context node; it's no longer used as a
               CTA fill anywhere on the page. */}
           <ButtonLink href={cta.href} variant="ink" size="sm">

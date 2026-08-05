@@ -15,7 +15,7 @@ export function ChatBubble({
         className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
           isCliente
             ? "rounded-bl-md border border-whisper bg-surface text-ink"
-            : "rounded-br-md bg-fog-deep text-ink"
+            : "rounded-br-md bg-sunk text-ink"
         }`}
       >
         <span className="sr-only">{LANDING.chatSpeakers[from]}: </span>

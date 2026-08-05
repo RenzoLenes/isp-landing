@@ -18,11 +18,11 @@ export type ContrastInfo = {
  * background-color it finds onto an assumed-white canvas.
  *
  * This is an approximation, not a pixel-perfect renderer: `background-image`
- * (gradients, the hero's radial-gradient fog) is invisible to this method
+ * (gradients, the hero's radial-gradient field) is invisible to this method
  * because it only reads `background-color`, and `backdrop-filter: blur` is
  * ignored entirely. Where a surface relies on either of those (the navbar's
  * glass pill, the hero's gradient wash) the composite falls back to the
- * nearest solid ancestor background — practically `bg-fog` (#F5F7F4) — which
+ * nearest solid ancestor background — practically `bg-canvas` (#F4F6F4) — which
  * is a fair stand-in since the accents layered on top are low-opacity tints
  * of it, but it is not the literal pixel colour a human eye would sample.
  */

@@ -36,7 +36,7 @@ export function ProductConsole() {
     >
       <div className="grid grid-cols-1 font-sans lg:grid-cols-[200px_minmax(0,1fr)_260px]">
         {/* Sidebar — wordmark + nav, desktop only */}
-        <div className="hidden flex-col gap-6 border-whisper bg-fog-deep/40 p-5 lg:flex lg:border-r">
+        <div className="hidden flex-col gap-6 border-whisper bg-sunk/40 p-5 lg:flex lg:border-r">
           <p className="font-display text-lg leading-none text-ink">
             {LANDING.nav.brand}
           </p>
@@ -69,14 +69,14 @@ export function ProductConsole() {
               <li
                 key={row.name}
                 className={`flex items-center justify-between gap-3 border-t border-whisper px-5 py-3 first:border-t-0 ${
-                  row.active ? "bg-fog-deep/50" : ""
+                  row.active ? "bg-sunk/50" : ""
                 }`}
               >
                 <span className="flex min-w-0 items-center gap-2">
                   {row.active ? (
                     <span
                       aria-hidden
-                      className="size-1.5 shrink-0 rounded-full bg-blue"
+                      className="size-1.5 shrink-0 rounded-full bg-signal"
                     />
                   ) : null}
                   <span className="truncate text-sm text-ink">{row.name}</span>
@@ -97,7 +97,7 @@ export function ProductConsole() {
         </div>
 
         {/* Context — client card, resolved decision, ticket action */}
-        <div className="flex flex-col gap-4 bg-fog-deep/20 p-5">
+        <div className="flex flex-col gap-4 bg-sunk/20 p-5">
           <p className="text-xs font-medium uppercase tracking-[0.14em] text-moss">
             {c.contextHeading}
           </p>

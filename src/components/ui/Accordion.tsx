@@ -1,9 +1,9 @@
 // Vendored from 21st.dev — ddoemonn, "Accordion" (demo id 23530), approved by
 // the client. Original source: .superpowers/21st/accordion-source.tsx.
 // Adaptations from that source (see .superpowers/21st/NOTAS-accordion.md):
-//   - stone-* colours -> project tokens (surface, whisper, ink, moss, fog-deep)
-//   - focus #4568FF -> our `blue` token, expressed as an outline (matching
-//     ButtonLink/PilotForm's `focus-visible:outline-*-blue` elsewhere on the
+//   - stone-* colours -> project tokens (surface, whisper, ink, moss, sunk)
+//   - focus #4568FF -> our `signal` token, expressed as an outline (matching
+//     ButtonLink/PilotForm's `focus-visible:outline-*-signal` elsewhere on the
 //     page) rather than the source's inset box-shadow — inset because the
 //     container needs `overflow-hidden` to clip its rounded corners, and an
 //     outward offset would get clipped for the first/last row.
@@ -360,7 +360,7 @@ function AccordionRow({
       <div role="heading" aria-level={headingLevel}>
         <button
           {...header}
-          className="flex min-h-11 w-full items-center gap-4 px-5 py-4 text-left transition-colors duration-150 hover:bg-fog-deep/60 focus-visible:bg-blue/[0.06] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-blue"
+          className="flex min-h-11 w-full items-center gap-4 px-5 py-4 text-left transition-colors duration-150 hover:bg-sunk/60 focus-visible:bg-signal/[0.06] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-signal"
         >
           <span
             className={`min-w-0 flex-1 text-base font-medium transition-colors duration-150 ${
@@ -409,7 +409,7 @@ function AccordionRow({
         <div
           {...panel}
           ref={ref}
-          className="border-t border-whisper bg-fog-deep"
+          className="border-t border-whisper bg-sunk"
           style={
             maxPanelHeight
               ? {

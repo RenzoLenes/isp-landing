@@ -16,7 +16,7 @@ export function Pilot() {
                 <li key={bullet} className="flex items-start gap-3 text-moss">
                   <span
                     aria-hidden
-                    className="mt-2 size-1.5 shrink-0 rounded-full bg-blue"
+                    className="mt-2 size-1.5 shrink-0 rounded-full bg-signal"
                   />
                   {bullet}
                 </li>

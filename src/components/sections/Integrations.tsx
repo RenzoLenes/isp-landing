@@ -36,7 +36,7 @@ export function SystemCard({
 }
 
 /**
- * The convergence node — the section's visual climax, with a lavender halo.
+ * The convergence node — the section's visual climax, with a signal halo.
  *
  * Shape ruling (chunk C, spec Part 3): this was a circle under the old name.
  * "Nexo" means nexus/convergence point, so a circle — everything collapsing
@@ -68,9 +68,9 @@ export function HubNode({
     <div ref={ref} className="relative flex shrink-0 flex-col items-center">
       <div
         aria-hidden
-        className="absolute inset-0 -z-10 rounded-[1.75rem] bg-lavender/40 blur-2xl"
+        className="absolute inset-0 -z-10 rounded-[1.75rem] bg-signal/40 blur-2xl"
       />
-      <div className="flex size-24 items-center justify-center rounded-[1.75rem] border border-lavender/50 bg-surface shadow-float lg:size-28">
+      <div className="flex size-24 items-center justify-center rounded-[1.75rem] border border-signal/50 bg-surface shadow-float lg:size-28">
         <span className="text-lg font-semibold text-ink">{label}</span>
       </div>
     </div>
@@ -130,7 +130,7 @@ export function Integrations() {
               </li>
             ))}
             <li aria-hidden>
-              <VerticalConnector color="bg-lavender" />
+              <VerticalConnector color="bg-signal" />
             </li>
             <li>
               <HubNode label={hub} />
