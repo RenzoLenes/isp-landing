@@ -3,6 +3,7 @@ import { LANDING } from "@/content/landing";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Reveal } from "@/components/ui/Reveal";
 import { SignalThread } from "@/components/ui/SignalThread";
+import { SectionRegister } from "@/components/ui/SectionRegister";
 import { IntegrationsBeamDiagram } from "@/components/sections/IntegrationsBeamDiagram";
 
 // Nunca `w-full` aquí: en la fila de escritorio esta tarjeta es hermana flex del
@@ -110,7 +111,7 @@ export function Integrations() {
     LANDING.integrations;
 
   return (
-    <section className="px-4 py-[clamp(5rem,10vw,9rem)]">
+    <SectionRegister register="surface" className="px-4 py-[clamp(5rem,10vw,9rem)]">
       <div className="mx-auto max-w-content">
         <Reveal>
           <SectionHeading
@@ -162,6 +163,6 @@ export function Integrations() {
           </div>
         </Reveal>
       </div>
-    </section>
+    </SectionRegister>
   );
 }

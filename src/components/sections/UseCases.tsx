@@ -4,6 +4,7 @@ import { Reveal } from "@/components/ui/Reveal";
 import { DataCard } from "@/components/ui/DataCard";
 import { ResultCard } from "@/components/ui/ResultCard";
 import { SignalThread } from "@/components/ui/SignalThread";
+import { SectionRegister } from "@/components/ui/SectionRegister";
 import { ChatScene } from "@/components/sections/ChatScene";
 
 /**
@@ -26,7 +27,11 @@ function Connector() {
 export function UseCases() {
   const { eyebrow, title, items } = LANDING.useCases;
   return (
-    <section id="casos" className="scroll-mt-28 px-4 py-[clamp(5rem,10vw,9rem)]">
+    <SectionRegister
+      register="canvas"
+      id="casos"
+      className="scroll-mt-28 px-4 py-[clamp(5rem,10vw,9rem)]"
+    >
       <div className="mx-auto max-w-content">
         <Reveal>
           <SectionHeading eyebrow={eyebrow} title={title} />
@@ -66,6 +71,6 @@ export function UseCases() {
           ))}
         </div>
       </div>
-    </section>
+    </SectionRegister>
   );
 }

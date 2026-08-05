@@ -5,6 +5,7 @@ import { Reveal } from "@/components/ui/Reveal";
 import { DataCard } from "@/components/ui/DataCard";
 import { DecisionChain } from "@/components/ui/DecisionChain";
 import { StatusChip } from "@/components/ui/StatusChip";
+import { SectionRegister } from "@/components/ui/SectionRegister";
 
 /**
  * The ticket artifact reuses `DataCard`'s row/footer rhythm but replaces its
@@ -21,7 +22,11 @@ function TicketCard({
   artifact: Extract<PillarArtifact, { kind: "ticket" }>;
 }) {
   return (
-    <div className="overflow-hidden rounded-3xl border border-whisper bg-surface shadow-card">
+    // Same chrome-only register adaptation as DataCard/DecisionChain: the
+    // card's own fill (and its `bg-sunk` header, and every row inside)
+    // stays exactly as-is, since it's always white regardless of the
+    // section's register. Only the outer border/shadow read the vars.
+    <div className="overflow-hidden rounded-3xl border border-[color:var(--card-border)] bg-surface shadow-[var(--card-shadow)]">
       <div className="flex items-center justify-between gap-3 border-b border-whisper bg-sunk px-6 py-4">
         <p className="text-sm font-medium tracking-wide text-ink [font-variant-numeric:tabular-nums]">
           {artifact.title}
@@ -76,7 +81,13 @@ function PillarArtifactView({ artifact }: { artifact: PillarArtifact }) {
 export function Pillars() {
   const { eyebrow, title, items } = LANDING.pillars;
   return (
-    <section id="producto" className="scroll-mt-28 px-4 py-[clamp(5rem,10vw,9rem)]">
+    // Sala Oscura (DESIGN.md §2, row 3): "the system thinking," the
+    // artifacts glow like lit screens in a dimmed room.
+    <SectionRegister
+      register="night"
+      id="producto"
+      className="scroll-mt-28 px-4 py-[clamp(5rem,10vw,9rem)]"
+    >
       <div className="mx-auto max-w-content">
         <Reveal>
           <SectionHeading eyebrow={eyebrow} title={title} />
@@ -90,13 +101,19 @@ export function Pillars() {
                 }`}
               >
                 <div>
-                  <p className="font-display text-6xl text-signal-deep">
+                  {/* `--accent-text`: signal-deep on light registers,
+                      signal itself on night — signal-deep (#1B4F92) is
+                      nearly as dark as `night` (#141C19) and would all but
+                      disappear; plain signal measures 4.64:1 against night
+                      (table, §3), comfortably clearing the 3:1 large-text
+                      floor this numeral needs. */}
+                  <p className="font-display text-6xl text-[color:var(--accent-text)]">
                     {pillar.number}
                   </p>
-                  <h3 className="mt-3 font-display text-3xl leading-tight text-balance md:text-4xl">
+                  <h3 className="mt-3 font-display text-3xl leading-tight text-balance text-[color:var(--text-primary)] md:text-4xl">
                     {pillar.title}
                   </h3>
-                  <p className="mt-4 max-w-[58ch] leading-relaxed text-moss">
+                  <p className="mt-4 max-w-[58ch] leading-relaxed text-[color:var(--text-secondary)]">
                     {pillar.body}
                   </p>
                 </div>
@@ -108,6 +125,6 @@ export function Pillars() {
           ))}
         </div>
       </div>
-    </section>
+    </SectionRegister>
   );
 }

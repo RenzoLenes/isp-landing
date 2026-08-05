@@ -2,6 +2,7 @@ import { LANDING } from "@/content/landing";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Reveal } from "@/components/ui/Reveal";
 import { StatusChip } from "@/components/ui/StatusChip";
+import { SectionRegister } from "@/components/ui/SectionRegister";
 
 const CHAOS_STYLES = [
   "-rotate-3 self-start",
@@ -15,7 +16,7 @@ const CHAOS_STYLES = [
 export function Problem() {
   const { eyebrow, title, body, chaos, order } = LANDING.problem;
   return (
-    <section className="px-4 py-[clamp(5rem,10vw,9rem)]">
+    <SectionRegister register="surface" className="px-4 py-[clamp(5rem,10vw,9rem)]">
       <div className="mx-auto max-w-content">
         <Reveal>
           <SectionHeading eyebrow={eyebrow} title={title} body={body} />
@@ -52,6 +53,6 @@ export function Problem() {
           </Reveal>
         </div>
       </div>
-    </section>
+    </SectionRegister>
   );
 }

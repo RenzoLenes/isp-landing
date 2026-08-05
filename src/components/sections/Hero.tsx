@@ -5,6 +5,8 @@ import type { ReactNode } from "react";
 import { LANDING } from "@/content/landing";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { ProductConsole } from "@/components/sections/ProductConsole";
+import { GradientField } from "@/components/ui/GradientField";
+import { SectionRegister } from "@/components/ui/SectionRegister";
 
 /** One step of the hero's staggered entrance: badge → headline → subtitle →
  * CTAs → console. `transform`/`opacity` only, springs at ~100/20 per
@@ -54,12 +56,21 @@ function Beat({
 export function Hero() {
   const { badge, title, subtitle, ctaPrimary, ctaSecondary } = LANDING.hero;
   return (
-    <section className="relative overflow-hidden px-4 pb-8 pt-36 md:pt-44">
-      {/* The section's own local canvas gradient is gone — `GradientField`
-          (mounted once in `layout.tsx`, behind the whole page shell) is now
-          the single atmospheric background. Keeping both would stack their
-          tints right where the hero copy sits and blow the contrast budget
-          (verified empirically — see chunk-a-report.md). */}
+    <SectionRegister
+      register="signal-field"
+      className="relative isolate overflow-hidden px-4 pb-8 pt-36 md:pt-44"
+    >
+      {/* `GradientField` now mounts here, inside the hero it was always
+          scoped to (§2: Hero is the Campo Señal register). It used to live
+          in `layout.tsx` as a sibling of the whole page tree, purely because
+          the section it decorates didn't yet have its own solid background
+          to sit on top of. Now that this section paints `bg-signal-field`
+          itself, GradientField's blurred signal patches are a second,
+          brighter layer of atmosphere over that solid field rather than the
+          field's only source of colour — moving it here keeps that
+          decoration next to the one section it was ever tuned for, instead
+          of a global fixture every other section had to render behind. */}
+      <GradientField />
       <div className="mx-auto flex max-w-content flex-col items-center gap-14">
         <div className="flex flex-col items-center text-center">
           <Beat delay={0}>
@@ -133,6 +144,6 @@ export function Hero() {
       <Beat delay={0.5} className="mx-auto mt-14 w-full max-w-[1600px]">
         <ProductConsole />
       </Beat>
-    </section>
+    </SectionRegister>
   );
 }

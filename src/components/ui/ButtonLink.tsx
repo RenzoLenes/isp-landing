@@ -12,7 +12,18 @@ const VARIANTS = {
   // Dark filled pill — the hero's primary CTA and, since Fix 4, the navbar's
   // too. Signal stays the sole action accent everywhere else (links, focus
   // rings, the triad's context node).
-  ink: "bg-ink text-surface hover:bg-ink/90 active:translate-y-px shadow-card",
+  //
+  // Register-aware (DESIGN.md §5: "Superficie sobre Sala Oscura"): reads
+  // `--btn-primary-bg`/`--btn-primary-fg` instead of hardcoding `bg-ink`/
+  // `text-surface`, so a filled dark button doesn't vanish if it's ever
+  // rendered directly against the `night` register — those vars invert to
+  // surface-on-ink there. No call site currently places this variant on
+  // `night` (Hero and Navbar both sit on light registers, and the navbar's
+  // own glass pill is always light regardless of what's scrolled behind
+  // it), so on every page that ships today this resolves to the exact same
+  // `bg-ink text-surface` as before — the inversion is a real capability,
+  // not yet an exercised one.
+  ink: "bg-[color:var(--btn-primary-bg)] text-[color:var(--btn-primary-fg)] hover:opacity-90 active:translate-y-px shadow-card",
   ghost:
     "border border-whisper bg-surface/60 text-ink hover:border-ink/20 active:translate-y-px",
 } as const;

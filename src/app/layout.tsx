@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Geist, Space_Grotesk } from "next/font/google";
-import { GradientField } from "@/components/ui/GradientField";
 import { GrainOverlay } from "@/components/ui/GrainOverlay";
 import "./globals.css";
 
@@ -40,25 +39,32 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         {/*
           The rounded outer shell (§6): the whole page lives inside this
           container so it reads as an object sitting on `sunk`, not a
-          document that bleeds to the viewport edge. `relative` makes it the
-          positioning context for `GradientField`; `isolate` gives it its own
-          stacking context so that field and the hero's own local gradient
-          resolve their z-order against each other predictably.
+          document that bleeds to the viewport edge.
+
+          Each section now paints its own full-bleed register background
+          (`SectionRegister`, §2) edge to edge, so this shell's own `bg-canvas`
+          is mostly a fallback — visible only where border-radius clips a
+          section's corners into the rounded shape, never as a gap between
+          sections (they abut with no margin). `GradientField` used to mount
+          here as a sibling of `{children}` purely so it had a solid surface
+          under it before any section supplied its own background; it now
+          lives inside `Hero.tsx`, the one section it was ever scoped to (§2:
+          Hero is the Campo Señal register), so this shell no longer needs to
+          host it.
 
           Deliberately NOT using `transform`/`filter`/`will-change:transform`
           here — any of those would create a new containing block for
           descendants with `position: fixed`, and the navbar is fixed. Plain
-          `border-radius` + `overflow-hidden` clips the rounded corners (and
-          contains GradientField's blur) without touching the containing-block
-          chain, so the fixed navbar still pins to the viewport, not to this
-          box. Verified in chunk-a-report.md.
+          `border-radius` + `overflow-hidden` clips the rounded corners
+          without touching the containing-block chain, so the fixed navbar
+          still pins to the viewport, not to this box. Verified in
+          chunk-a-report.md.
 
           `overflow-hidden` here does not create a second scroll container:
           this box has no explicit height, so it sizes to its content (which
           is taller than the viewport) and the page still scrolls natively.
         */}
         <div className="relative isolate flex flex-1 flex-col overflow-hidden rounded-[1.5rem] bg-canvas shadow-float sm:rounded-[2rem] lg:rounded-[2.5rem]">
-          <GradientField />
           {children}
         </div>
         {/* Grain (§5): fixed at the body level, not inside the rounded

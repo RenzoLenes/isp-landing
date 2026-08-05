@@ -22,8 +22,76 @@
 
   --shadow-float: 0 24px 60px -24px rgb(100 113 104 / 0.28);
   --shadow-card: 0 12px 32px -16px rgb(100 113 104 / 0.22);
+  /* DESIGN.md §5, artefactos sobre Sala Oscura: "sombra amplia y suave por
+     debajo… se lee como una pantalla encendida en una sala a media luz." A
+     dark-coloured shadow is invisible against `night` (#141C19 is already
+     near-black), so the visible half of this is a wide, low-opacity NEUTRAL
+     (off-white, not signal-blue) halo — deliberately not tinted with the
+     accent, which would read as the "glow exterior" §3 bans. The second,
+     tighter dark layer is kept for contact/grounding depth even though it's
+     nearly imperceptible on `night` itself, so the card still reads right if
+     a future register ever sits between night and white. */
+  --shadow-glow: 0 30px 90px -12px rgb(244 246 244 / 0.20), 0 10px 28px -6px rgb(0 0 0 / 0.55);
 
   --container-content: 76.25rem; /* 1220px */
+}
+
+/*
+ * The register vocabulary (DESIGN.md §2/§5), in one place. `SectionRegister`
+ * (src/components/ui/SectionRegister.tsx) stamps `data-register="<name>"` on
+ * each section's full-bleed wrapper; every primitive that needs to react to
+ * the register it's rendered in reads one of these custom properties instead
+ * of hardcoding `text-ink`/`text-moss`/`border-whisper`/`shadow-card`. CSS
+ * custom properties inherit through the DOM by default, so a primitive
+ * nested arbitrarily deep under a `data-register="night"` section picks up
+ * the right values with no prop threading and no client-side context.
+ *
+ * Deliberately NOT applied to a primitive's own text when that primitive's
+ * background is a fixed opaque light fill regardless of register (DataCard,
+ * DecisionChain, StatusChip, ChatBubble, Accordion's row text, PilotForm's
+ * fields) — DESIGN.md §5 says those artefacts *keep* their white surface on
+ * `night`, so their internal ink/moss stay hardcoded on purpose: swapping
+ * them to `--text-primary` would turn white-on-white the moment the artefact
+ * sits on the dark register. Only each artefact's outer chrome (border +
+ * shadow) reacts, via `--card-border`/`--card-shadow`.
+ */
+:root {
+  --text-primary: var(--color-ink);
+  --text-secondary: var(--color-moss);
+  --border-subtle: var(--color-whisper);
+  --card-border: var(--color-whisper);
+  --card-shadow: var(--shadow-card);
+  /* Same idea as `--card-shadow`, for the handful of artefacts that use the
+     bigger `shadow-float` on light registers instead of `shadow-card`
+     (PilotForm and its success card) — kept as a separate variable rather
+     than reusing `--card-shadow` so those two don't shrink to the subtler
+     card shadow on light registers, only gain the glow on `night`. */
+  --card-shadow-strong: var(--shadow-float);
+  --btn-primary-bg: var(--color-ink);
+  --btn-primary-fg: var(--color-surface);
+  --accent-text: var(--color-signal-deep);
+}
+
+/* Campo Señal: Musgo falla (3.78:1, DESIGN.md §3). Secondary text goes Tinta
+   at 75% (6.17:1) instead — still §3's rule, not a fresh judgement call. */
+[data-register="signal-field"] {
+  --text-secondary: color-mix(in srgb, var(--color-ink) 75%, transparent);
+}
+
+/* Sala Oscura: primary text inverts to Superficie, secondary to Niebla
+   Clara, borders go Nocturno, artefact chrome drops its border and gains
+   the glow shadow above, and a primary CTA fill inverts (Superficie on
+   Sala Oscura, per §5) so a dark-ink button never vanishes against it. */
+[data-register="night"] {
+  --text-primary: var(--color-surface);
+  --text-secondary: var(--color-mist);
+  --border-subtle: var(--color-whisper-night);
+  --card-border: transparent;
+  --card-shadow: var(--shadow-glow);
+  --card-shadow-strong: var(--shadow-glow);
+  --btn-primary-bg: var(--color-surface);
+  --btn-primary-fg: var(--color-ink);
+  --accent-text: var(--color-signal);
 }
 
 @media (prefers-reduced-motion: no-preference) {

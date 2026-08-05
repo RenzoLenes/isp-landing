@@ -66,14 +66,27 @@ export function PilotForm() {
 
   if (submitted) {
     return (
+      // Was a translucent `bg-fiber/15` wash with no opaque base — safe
+      // while this section sat on a light register, but with no white
+      // backing of its own that tint composites toward near-black once the
+      // Pilot section's true background is `night`, taking `text-ink`/
+      // `text-moss` down with it. Rebuilt as the same white "artifact that
+      // glows" as the form it replaces (`bg-surface`, chrome-only border/
+      // shadow vars), with fiber reserved for a small confirmation dot —
+      // exactly the "confirmations" use DESIGN.md §3 allows, and the one
+      // place on the page fiber's 10.13:1-on-night measurement actually
+      // shows up.
       <div
         ref={successRef}
         role="status"
         tabIndex={-1}
-        className="rounded-3xl border border-fiber/40 bg-fiber/15 p-8"
+        className="rounded-3xl border border-[color:var(--card-border)] bg-surface p-8 shadow-[var(--card-shadow-strong)]"
       >
-        <p className="font-display text-2xl text-ink">{form.success.title}</p>
-        <p className="mt-2 leading-relaxed text-moss">{form.success.body}</p>
+        <div className="flex items-center gap-2.5">
+          <span aria-hidden className="size-2 shrink-0 rounded-full bg-fiber" />
+          <p className="font-display text-2xl text-ink">{form.success.title}</p>
+        </div>
+        <p className="mt-2 pl-[18px] leading-relaxed text-moss">{form.success.body}</p>
       </div>
     );
   }
@@ -82,7 +95,13 @@ export function PilotForm() {
     <form
       onSubmit={handleSubmit}
       noValidate
-      className="rounded-3xl border border-whisper bg-surface p-6 shadow-float md:p-8"
+      // Chrome-only register adaptation, same as DataCard/DecisionChain:
+      // this form is the Pilot section's own "artifact that glows" on
+      // `night` (§5) — the border drops and the shadow widens there, while
+      // every field/label inside stays hardcoded ink/moss since they sit on
+      // this card's own permanently-white fill, not on the section's
+      // register.
+      className="rounded-3xl border border-[color:var(--card-border)] bg-surface p-6 shadow-[var(--card-shadow-strong)] md:p-8"
     >
       <h3 className="font-display text-2xl text-ink">{form.title}</h3>
       <div className="mt-6 flex flex-col gap-5">

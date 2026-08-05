@@ -33,8 +33,10 @@ export function DecisionChain({
   const isCompact = density === "compact";
 
   return (
+    // Same chrome-only adaptation as DataCard: fill stays white always, only
+    // the border/shadow follow the register's `--card-border`/`--card-shadow`.
     <div
-      className={`rounded-3xl border border-whisper bg-surface shadow-card ${isCompact ? "p-4" : "p-6"} ${className}`}
+      className={`rounded-3xl border border-[color:var(--card-border)] bg-surface shadow-[var(--card-shadow)] ${isCompact ? "p-4" : "p-6"} ${className}`}
     >
       <ul className="flex flex-col">
         {checks.map((check, index) => (

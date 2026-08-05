@@ -27,8 +27,17 @@ export function DataCard({
 }) {
   const isCompact = density === "compact";
   return (
+    // DESIGN.md §5, "Artefactos sobre Sala Oscura": the card's fill stays
+    // `bg-surface` (white) no matter the register — that's the whole point,
+    // it reads as a lit screen — so only the OUTER chrome reacts: border and
+    // shadow read `--card-border`/`--card-shadow`, which `night` resolves to
+    // "transparent" + a wide soft glow instead of whisper + shadow-card.
+    // Every row/label/value below stays hardcoded ink/moss on purpose: they
+    // sit against this card's own always-white fill, never against the
+    // section's register directly, so they must NOT follow the same
+    // variables SectionHeading uses (that would go white-on-white).
     <div
-      className={`rounded-3xl border border-whisper bg-surface shadow-card ${isCompact ? "p-4" : "p-6"} ${className}`}
+      className={`rounded-3xl border border-[color:var(--card-border)] bg-surface shadow-[var(--card-shadow)] ${isCompact ? "p-4" : "p-6"} ${className}`}
     >
       <div className="flex items-center justify-between gap-3">
         <p className="text-sm font-medium text-ink">{title}</p>

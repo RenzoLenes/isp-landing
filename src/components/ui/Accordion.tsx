@@ -308,8 +308,14 @@ export function Accordion({
   });
 
   return (
+    // Same chrome-only register adaptation as DataCard/DecisionChain: the
+    // accordion's fill stays `bg-surface` regardless of register (it's an
+    // artifact, per DESIGN.md §5), only its outer border + shadow read the
+    // register-scoped custom properties. `divide-whisper` between rows stays
+    // hardcoded — those dividers sit against the card's own always-white
+    // fill, not the section background.
     <div
-      className={`divide-y divide-whisper overflow-hidden rounded-3xl border border-whisper bg-surface shadow-card ${className}`}
+      className={`divide-y divide-whisper overflow-hidden rounded-3xl border border-[color:var(--card-border)] bg-surface shadow-[var(--card-shadow)] ${className}`}
     >
       {items.map((item) => (
         <AccordionRow

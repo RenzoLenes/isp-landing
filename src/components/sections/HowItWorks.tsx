@@ -2,11 +2,13 @@ import { LANDING } from "@/content/landing";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Reveal } from "@/components/ui/Reveal";
 import { SignalFlow } from "@/components/sections/SignalFlow";
+import { SectionRegister } from "@/components/ui/SectionRegister";
 
 export function HowItWorks() {
   const { eyebrow, title } = LANDING.flow;
   return (
-    <section
+    <SectionRegister
+      register="signal-field"
       id="como-funciona"
       className="scroll-mt-28 px-4 py-[clamp(5rem,10vw,9rem)]"
     >
@@ -18,6 +20,6 @@ export function HowItWorks() {
           <SignalFlow />
         </Reveal>
       </div>
-    </section>
+    </SectionRegister>
   );
 }

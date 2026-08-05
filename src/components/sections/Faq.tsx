@@ -2,6 +2,7 @@ import { LANDING } from "@/content/landing";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Reveal } from "@/components/ui/Reveal";
 import { Accordion, type AccordionItem } from "@/components/ui/Accordion";
+import { SectionRegister } from "@/components/ui/SectionRegister";
 
 // No triad artifact here — see the ruling in faq-report.md's Part 3: this
 // section answers objections rather than asserting a product capability
@@ -18,7 +19,7 @@ export function Faq() {
   }));
 
   return (
-    <section className="px-4 py-[clamp(5rem,10vw,9rem)]">
+    <SectionRegister register="canvas" className="px-4 py-[clamp(5rem,10vw,9rem)]">
       <div className="mx-auto max-w-content">
         <Reveal>
           <SectionHeading eyebrow={eyebrow} title={title} body={body} align="center" />
@@ -29,6 +30,6 @@ export function Faq() {
           </div>
         </Reveal>
       </div>
-    </section>
+    </SectionRegister>
   );
 }

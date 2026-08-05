@@ -35,8 +35,30 @@ export function Navbar() {
         scrolled ? "top-2" : "top-4"
       }`}
     >
+      {/* This chunk's register rhythm means this fixed pill now scrolls over
+          the night register too (Pillars, Pilot) — `backdrop-filter: blur`
+          samples whatever is genuinely behind it, so a translucent pill
+          measurably darkens there. Pixel-sampled (not the DOM-approximation
+          `getContrastInfo` helper uses, which reads the CSS `color` value's
+          own un-blended luminance and so doesn't see this at all — exactly
+          the trap DESIGN.md §3 warns about): the old `bg-surface/60` pill
+          over `night` composited to ~rgb(165,169,166), and `text-moss/80`
+          on that measured 1.80:1 — a real, if quiet, failure that predates
+          this chunk (the same pixel method found the *original* light-hero
+          baseline was already only 2.70:1; `moss/80` text rendered
+          translucent against an already-translucent pill, neither alone).
+          Fixed on both sides: the pill is now fully opaque (`bg-surface`,
+          no opacity modifier) so `backdrop-blur` has nothing to show
+          through regardless of scroll position — it measures literal
+          rgb(255,255,255) by direct pixel sample — and the links render at
+          full `moss` instead of `/80`, so the text isn't a second,
+          independent source of translucency. Full-opacity `moss` on white
+          measures a fixed 4.97–5.12:1 by real screenshot sampling (checked
+          at the top of the page and scrolled over both `night` sections),
+          comfortable margin over the 4.5:1 floor and no longer dependent on
+          what's behind the pill. */}
       <div
-        className={`mx-auto flex max-w-content items-center justify-between rounded-full border border-whisper bg-surface/60 pl-6 pr-2.5 py-1 shadow-[0_6px_16px_-10px_rgb(23_32_27/0.16)] backdrop-blur-md transition-transform duration-300 ease-out motion-reduce:transition-none md:max-w-3xl ${
+        className={`mx-auto flex max-w-content items-center justify-between rounded-full border border-whisper bg-surface pl-6 pr-2.5 py-1 shadow-[0_6px_16px_-10px_rgb(23_32_27/0.16)] backdrop-blur-md transition-transform duration-300 ease-out motion-reduce:transition-none md:max-w-3xl ${
           scrolled ? "scale-[0.97]" : ""
         }`}
       >
@@ -51,7 +73,7 @@ export function Navbar() {
             <a
               key={link.href}
               href={link.href}
-              className="flex items-center py-4 text-[13px] leading-none text-moss/80 transition-colors hover:text-ink"
+              className="flex items-center py-4 text-[13px] leading-none text-moss transition-colors hover:text-ink"
             >
               {link.label}
             </a>
