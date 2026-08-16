@@ -278,9 +278,19 @@ export function ProductConsole() {
                     <button
                       key={item.id}
                       {...tabProps(item.id)}
-                      className={`relative flex min-h-11 shrink-0 items-center gap-2 overflow-hidden whitespace-nowrap rounded-[10px] px-3 text-[12.5px] font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal lg:w-full lg:rounded-[9px] lg:px-2.5 lg:text-left ${
+                      /*
+                       * Fondo SÓLIDO, no degradado, y es funcional: los
+                       * degradados no transicionan. Con `bg-gradient-to-b` la
+                       * pastilla oscura se teletransportaba de una fila a
+                       * otra en el mismo fotograma —lo más brusco de todo el
+                       * cambio de vista— porque `transition-colors` no tenía
+                       * nada que interpolar. En sólido, el resaltado se funde
+                       * de una pestaña a la siguiente. A simple vista es el
+                       * mismo color.
+                       */
+                      className={`relative flex min-h-11 shrink-0 items-center gap-2 overflow-hidden whitespace-nowrap rounded-[10px] px-3 text-[12.5px] font-medium transition-[background-color,color,box-shadow] duration-300 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal lg:w-full lg:rounded-[9px] lg:px-2.5 lg:text-left ${
                         active === item.id
-                          ? "bg-gradient-to-b from-ink/90 to-ink text-surface shadow-[0_6px_14px_-6px_rgba(23,32,27,0.6)]"
+                          ? "bg-ink text-surface shadow-[0_6px_14px_-6px_rgba(23,32,27,0.6)]"
                           : "text-steel hover:bg-sunk/60 hover:text-ink"
                       }`}
                     >
@@ -342,7 +352,11 @@ export function ProductConsole() {
           {/* Cabecera de la ventana */}
           <div className="flex shrink-0 items-center justify-between gap-3 border-b border-whisper px-4 py-2.5">
             <div className="flex min-w-0 items-center gap-3">
-              <h3 className="truncate text-[15px] font-semibold tracking-tight text-ink">
+              <h3
+                key={active}
+                data-console-label
+                className="truncate text-[15px] font-semibold tracking-tight text-ink"
+              >
                 {activeLabel}
               </h3>
               <div className="hidden items-center gap-2 sm:flex">
@@ -365,7 +379,9 @@ export function ProductConsole() {
               </span>
               <span className="flex items-center gap-1.5 rounded-[10px] border border-signal/40 bg-surface px-3 py-1.5 text-[12.5px] font-medium text-ink shadow-[0_1px_2px_rgba(16,24,40,0.05)]">
                 <SparkleIcon size={13} className="text-signal" />
-                <span className="whitespace-nowrap">{view.action}</span>
+                <span key={active} data-console-label className="whitespace-nowrap">
+                  {view.action}
+                </span>
               </span>
             </div>
           </div>

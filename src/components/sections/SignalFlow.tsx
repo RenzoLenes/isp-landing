@@ -34,13 +34,13 @@ import {
  * igual como índice manual.
  */
 
-/* Estaba en 7000 y se hacía largo: quien ya leyó el paso se queda esperando
+/* Empezó en 7000 y se hacía largo: quien ya leyó el paso se queda esperando
    delante de una pantalla quieta, y esperar es exactamente lo que un carrusel
-   automático no debe provocar. 5000 da tiempo a leer el cuerpo del paso —que
-   aquí es un párrafo, no una etiqueta— sin que sobre. Es más lento que los
-   3000 de la consola del hero a propósito: allí sólo hay que mirar, aquí hay
-   que leer. */
-const DWELL_MS = 5000;
+   automático no debe provocar. 4000 da para leer el cuerpo del paso sin que
+   sobre. Sigue siendo más lento que los 3000 de la consola del hero a
+   propósito: allí sólo hay que mirar, aquí hay que leer un párrafo — y ese
+   párrafo además tarda medio segundo en terminar de desplegarse. */
+const DWELL_MS = 4000;
 
 const ICONS: Record<FlowIcon, (props: { size: number; className?: string }) => ReactNode> = {
   mensaje: WhatsAppIcon,

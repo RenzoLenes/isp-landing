@@ -201,16 +201,31 @@
   animation: console-rail linear forwards;
 }
 
-/* La entrada de cada vista de la consola. Corta y con muy poco recorrido: es
-   una app cambiando de sección, no una diapositiva. Con más desplazamiento
-   parecería que la ventana se mueve, y la ventana no se mueve nunca. */
+/* La entrada de cada vista de la consola.
+   Arranca en 0.25 de opacidad y no en 0: el contenido viejo ya se ha ido
+   cuando esto empieza, así que partir de cero deja un fotograma de ventana
+   vacía — y ese parpadeo en blanco es lo que se lee como un corte seco. Poco
+   recorrido a propósito: con más parecería que la ventana se mueve, y la
+   ventana no se mueve nunca. */
 @keyframes console-view {
-  from { opacity: 0; transform: translateY(6px); }
+  from { opacity: 0.25; transform: translateY(10px); }
   to   { opacity: 1; transform: none; }
 }
 
 [data-console-view] {
-  animation: console-view 0.34s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: console-view 0.46s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* El título y la acción de la cabecera cambian con el cuerpo. Si se
+   sustituyeran de golpe mientras el cuerpo funde, la ventana cambiaría en dos
+   tiempos. Sin desplazamiento: son textos cortos anclados a su sitio. */
+@keyframes console-label {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+[data-console-label] {
+  animation: console-label 0.34s ease-out both;
 }
 
 @keyframes flow-slide {
@@ -257,6 +272,7 @@
   [data-flow-pop],
   [data-console-rail],
   [data-console-view],
+  [data-console-label],
   [data-typing-dot] {
     animation: none;
   }
