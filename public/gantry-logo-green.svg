@@ -1,0 +1,11 @@
+<svg width="717" height="701" viewBox="0 0 717 701" xmlns="http://www.w3.org/2000/svg">
+  <!-- Green variant: transparent bg, full mark + wordmark in brand green #00E599 -->
+  <g fill="#00E599">
+    <polygon points="330,200 346,190 346,346 330,346"/>
+    <polygon points="418,229 434,219 434,346 418,346"/>
+    <polygon points="286,313 434,219 434,239 286,332"/>
+  </g>
+  <text x="359" y="461" text-anchor="middle"
+        font-family="'Montserrat','Century Gothic','Futura','Helvetica Neue',Arial,sans-serif"
+        font-size="74" font-weight="400" letter-spacing="13" fill="#00E599">GANTRY</text>
+</svg>

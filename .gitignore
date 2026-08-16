@@ -13,6 +13,11 @@
 # testing
 /coverage
 
+# playwright
+/e2e/screenshots/
+/test-results/
+/playwright-report/
+
 # next.js
 /.next/
 /out/
@@ -32,6 +37,8 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# La plantilla sí se versiona: no lleva secretos, solo los nombres.
+!.env.example
 
 # vercel
 .vercel
@@ -39,3 +46,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# SDD workspace (agent scratch)
+.superpowers/
+
+# Skills y utilería de agentes (no forman parte de la landing).
+/.agents/
+/.claude/
+/skills-lock.json

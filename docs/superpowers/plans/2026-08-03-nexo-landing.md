@@ -51,6 +51,7 @@ npm install -D vitest
   --color-ink: #17201b;
   --color-moss: #647168;
   --color-blue: #5aabff;
+  --color-blue-deep: #4a9ef5; /* único hover del azul de acción */
   --color-lavender: #a7a9eb;
   --color-fiber: #7ad8ad;
   --color-coral: #e78668;
@@ -62,7 +63,7 @@ npm install -D vitest
   --shadow-float: 0 24px 60px -24px rgb(100 113 104 / 0.28);
   --shadow-card: 0 12px 32px -16px rgb(100 113 104 / 0.22);
 
-  --spacing-content: 76.25rem; /* 1220px */
+  --container-content: 76.25rem; /* 1220px */
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -80,7 +81,9 @@ body {
 }
 ```
 
-> Nota: `--spacing-content` habilita `max-w-content` (Tailwind 4 deriva `max-w-*` de la escala `--spacing-*`).
+> Nota: en Tailwind 4 las utilidades `max-w-<nombre>` derivan del namespace `--container-*` (verificado en `node_modules/tailwindcss/theme.css`, v4.3.3), **no** de `--spacing-*`. Por eso el token es `--container-content`, y habilita `max-w-content` = 1220px.
+>
+> **Verificación obligatoria de este paso:** tras el build, confirmar que la utilidad existe realmente — por ejemplo agregando temporalmente `max-w-content` a un elemento y comprobando en el CSS generado (`.next/static/css/*.css`) que aparece `max-width:76.25rem`. Si no aparece, el token está en el namespace equivocado y todas las secciones perderían el ancho máximo de 1220px sin error visible.
 
 - [ ] **Step 3: Reemplazar `src/app/layout.tsx` completo**
 
@@ -377,6 +380,7 @@ export const LANDING = {
         whatsapp: { label: "WhatsApp de contacto", placeholder: "Ej. +51 999 888 777" },
       },
       submit: "Enviar solicitud",
+      sending: "Enviando…",
       success: {
         title: "Recibimos tu solicitud.",
         body: "Te escribimos por WhatsApp en menos de 48 horas para coordinar los siguientes pasos.",
@@ -433,7 +437,7 @@ import type { ReactNode } from "react";
 
 const VARIANTS = {
   primary:
-    "bg-blue text-white hover:bg-[#4a9ef5] active:translate-y-px shadow-card",
+    "bg-blue text-surface hover:bg-blue-deep active:translate-y-px shadow-card",
   ghost:
     "border border-whisper bg-surface/60 text-ink hover:border-ink/20 active:translate-y-px",
 } as const;
@@ -651,9 +655,7 @@ export function Navbar() {
           ))}
         </nav>
         <div className="hidden md:block">
-          <ButtonLink href={cta.href} className="min-h-10 px-5 py-2">
-            {cta.label}
-          </ButtonLink>
+          <ButtonLink href={cta.href}>{cta.label}</ButtonLink>
         </div>
         <button
           type="button"
@@ -1248,30 +1250,55 @@ git commit -m "feat: casos de uso con escenas de conversación animadas"
 import { motion, useReducedMotion } from "motion/react";
 import { LANDING } from "@/content/landing";
 
-function Connector({ index }: { index: number }) {
+const DOT_POSITIONS = [0.25, 0.5, 0.75];
+
+function SignalDot({
+  className,
+  style,
+  delay,
+}: {
+  className: string;
+  style: React.CSSProperties;
+  delay: number;
+}) {
   const reduceMotion = useReducedMotion();
+  return (
+    <motion.span
+      className={`absolute size-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-lavender ${className}`}
+      style={style}
+      animate={reduceMotion ? undefined : { opacity: [0.2, 1, 0.2] }}
+      transition={{
+        duration: 1.8,
+        repeat: Infinity,
+        ease: "easeInOut",
+        delay,
+      }}
+    />
+  );
+}
+
+function Connector({ index }: { index: number }) {
   return (
     <div
       aria-hidden
-      className="relative mx-auto h-10 w-px bg-gradient-to-b from-lavender/60 to-lavender/20 md:mx-0 md:mt-5 md:h-px md:flex-1 md:bg-gradient-to-r"
+      className="relative mx-auto h-10 w-px bg-gradient-to-b from-lavender/60 to-lavender/20 lg:mx-0 lg:mt-5 lg:h-px lg:w-auto lg:flex-1 lg:bg-gradient-to-r"
     >
-      {[0.25, 0.5, 0.75].map((position, dot) => (
-        <motion.span
-          key={position}
-          className="absolute size-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-lavender max-md:left-1/2 md:top-1/2"
-          style={{
-            top: `${position * 100}%`,
-            left: undefined,
-          }}
-          // En md+ el conector es horizontal: posicionamos por left vía CSS var
-          data-position={position}
-          animate={reduceMotion ? undefined : { opacity: [0.2, 1, 0.2] }}
-          transition={{
-            duration: 1.8,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: index * 0.4 + dot * 0.3,
-          }}
+      {/* Apilado: conector vertical, puntos distribuidos por `top`. */}
+      {DOT_POSITIONS.map((position, dot) => (
+        <SignalDot
+          key={`v-${position}`}
+          className="left-1/2 lg:hidden"
+          style={{ top: `${position * 100}%` }}
+          delay={index * 0.4 + dot * 0.3}
+        />
+      ))}
+      {/* En fila: conector horizontal, puntos distribuidos por `left`. */}
+      {DOT_POSITIONS.map((position, dot) => (
+        <SignalDot
+          key={`h-${position}`}
+          className="top-1/2 hidden lg:block"
+          style={{ left: `${position * 100}%` }}
+          delay={index * 0.4 + dot * 0.3}
         />
       ))}
     </div>
@@ -1281,17 +1308,16 @@ function Connector({ index }: { index: number }) {
 export function SignalFlow() {
   const { steps } = LANDING.flow;
   return (
-    <ol className="mt-16 flex flex-col md:flex-row md:items-start md:gap-4">
+    <ol className="mt-16 flex flex-col lg:flex-row lg:items-start">
       {steps.map((step, i) => (
-        <li key={step.title} className="contents">
-          <div className="flex flex-col items-center text-center md:w-56">
-            <span
-              className={`flex size-11 items-center justify-center rounded-full border text-sm font-medium [font-variant-numeric:tabular-nums] ${
-                i === steps.length - 1
-                  ? "border-fiber/50 bg-fiber/15 text-ink"
-                  : "border-blue/40 bg-blue/10 text-ink"
-              }`}
-            >
+        <li
+          key={step.title}
+          className={`flex flex-col items-center lg:flex-row lg:items-start ${
+            i < steps.length - 1 ? "lg:flex-1" : ""
+          }`}
+        >
+          <div className="flex flex-col items-center text-center lg:w-48">
+            <span className="flex size-11 items-center justify-center rounded-full border border-blue/40 bg-blue/10 text-sm font-medium text-ink [font-variant-numeric:tabular-nums]">
               {i + 1}
             </span>
             <h3 className="mt-4 font-medium text-ink">{step.title}</h3>
@@ -1305,7 +1331,15 @@ export function SignalFlow() {
 }
 ```
 
-> Nota sobre el `Connector`: en móvil es una línea vertical (dots posicionados con `top` %); en desktop es horizontal. Los dots usan `top: position*100%` que funciona en vertical; para el caso horizontal, en la implementación ajustar con clases responsive: `max-md:!left-1/2` ya centra en vertical, y en md+ usar `md:!top-1/2` con `left: position*100%`. Si el posicionamiento dual por style inline se complica, duplicar el marcador: un set `md:hidden` (vertical, `top`) y un set `hidden md:block` (horizontal, `left`) — misma animación de opacidad. Elegir la variante que quede más simple y legible.
+> Nota sobre el `Connector` (ambigüedad resuelta): un solo set de puntos no puede servir a las dos orientaciones, porque el `style` inline gana siempre sobre las clases responsive de Tailwind — con `style={{top}}` los puntos quedarían apilados en desktop en vez de distribuirse a lo largo de la línea horizontal. Por eso se renderizan **dos sets**: uno vertical (`md:hidden`, posicionado por `top`) y uno horizontal (`hidden md:block`, posicionado por `left`), compartiendo el componente `SignalDot` para no duplicar la animación. Solo un set es visible a la vez.
+>
+> El conector también necesita `md:w-auto` junto a `md:flex-1`: sin eso el `w-px` base sigue aplicando en desktop y la línea horizontal no crece.
+>
+> **Nota sobre el `<li>`:** un borrador anterior usaba `className="contents"` para que el bloque del paso y el conector fueran hermanos flex directos del `<ol>`. Se descartó: `display: contents` tiene un historial documentado de eliminar el elemento — y en algunas versiones de WebKit su subárbol completo — del árbol de accesibilidad, lo que dejaría a usuarios de lector de pantalla sin el texto de los pasos. Ahora el `<li>` conserva su caja y es él mismo un contenedor flex (columna en móvil, fila en desktop), con `md:flex-1` en todos menos el último para que los conectores repartan el espacio sobrante.
+>
+> **Nota sobre el breakpoint del flujo (desborde horizontal real):** el flujo pasa a fila en `lg`, no en `md`. Aritmética del contenedor: `section px-4` + `max-w-content` + `px-14` interno dejan ~624px útiles a 768px y ~880px a 1024px. Cuatro bloques de `w-56` (224px) suman 896px, así que a 768px desbordaban por 272px — scroll horizontal, prohibido por el spec — y a 1024px seguían pasándose por 16px. Con `lg:` + `lg:w-48` (192px) el total baja a 768px, dejando ~37px por conector a 1024px y ~113px a 1440px. Además se quitó `shrink-0`: si algún caso queda justo, los pasos se comprimen en vez de desbordar.
+>
+> **Nota sobre el badge del último paso:** el borrador lo pintaba con `fiber`. Se descartó: la restricción global reserva el verde fibra exclusivamente para confirmaciones, y "Tu equipo, cuando hace falta" es una escalación, no una confirmación. Los cuatro badges usan `blue`.
 
 - [ ] **Step 2: Crear `src/components/sections/HowItWorks.tsx`**
 
@@ -1449,6 +1483,19 @@ describe("validatePilotForm", () => {
   it("acepta números con espacios, guiones y prefijo internacional", () => {
     expect(validatePilotForm({ ...VALID, whatsapp: "999-888-777" })).toEqual({});
   });
+
+  it("acepta los límites de 6 y 15 dígitos", () => {
+    expect(validatePilotForm({ ...VALID, whatsapp: "123456" })).toEqual({});
+    expect(
+      validatePilotForm({ ...VALID, whatsapp: "+123456789012345" }),
+    ).toEqual({});
+  });
+
+  it("rechaza más de 15 dígitos", () => {
+    expect(
+      validatePilotForm({ ...VALID, whatsapp: "+1234567890123456" }).whatsapp,
+    ).toBe("Ingresa un número válido (solo dígitos, espacios, + y -).");
+  });
 });
 ```
 
@@ -1575,9 +1622,15 @@ export function PilotForm() {
               placeholder={form.fields[field].placeholder}
               aria-invalid={Boolean(errors[field])}
               aria-describedby={errors[field] ? `pilot-${field}-error` : undefined}
-              onChange={(e) =>
-                setData((prev) => ({ ...prev, [field]: e.target.value }))
-              }
+              onChange={(e) => {
+                const value = e.target.value;
+                setData((prev) => ({ ...prev, [field]: value }));
+                // Limpia el error en cuanto el usuario corrige: si no, el mensaje
+                // y aria-invalid quedan obsoletos junto a un campo ya válido.
+                setErrors((prev) =>
+                  prev[field] ? { ...prev, [field]: undefined } : prev,
+                );
+              }}
               className="min-h-11 w-full rounded-xl border border-whisper bg-fog px-4 py-2.5 text-sm text-ink placeholder:text-moss/60 focus:outline-2 focus:outline-offset-1 focus:outline-blue"
             />
             {errors[field] ? (
@@ -1594,9 +1647,9 @@ export function PilotForm() {
       <button
         type="submit"
         disabled={sending}
-        className="mt-7 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-blue px-6 py-3 text-sm font-medium text-white shadow-card transition-[background-color,transform] duration-200 hover:bg-[#4a9ef5] active:translate-y-px disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue"
+        className="mt-7 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-blue px-6 py-3 text-sm font-medium text-surface shadow-card transition-[background-color,transform] duration-200 hover:bg-blue-deep active:translate-y-px disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue"
       >
-        {sending ? "Enviando…" : form.submit}
+        {sending ? form.sending : form.submit}
       </button>
     </form>
   );

@@ -1,26 +1,263 @@
 @import "tailwindcss";
 
+@theme {
+  --color-canvas: #f0f4f9; /* was `fog` — base de secciones neutras */
+  --color-surface: #ffffff;
+  --color-sunk: #e6ecf4; /* was `fog-deep` — burbujas del sistema, cabeceras hundidas */
+  --color-night: #0f1824; /* fondo a sangre del registro oscuro */
+  --color-ink: #131d2a;
+  --color-steel: #58697e; /* secundario SOLO sobre canvas/surface. Era `steel` (#647168), un gris VERDE: toda la paleta neutra tenía el verde por encima del rojo y del azul, y sobre el cielo la página se leía verdosa. Ahora la familia es fría (B >= G >= R) y acompaña al Campo Señal. */
+  --color-mist: #dde5ee; /* secundario sobre night */
+  --color-whisper: rgb(19 29 42 / 0.10);
+  --color-whisper-night: rgb(240 244 249 / 0.14);
+  /* Campo Señal: es el color base del cielo (`ui/SkyField.tsx`), no un azul
+     decorativo suelto. Se subió de #cbe0f5 al azul dominante del degradado
+     atmosférico para que, si el cielo no llegara a pintar, la sección caiga en
+     el mismo tono en vez de en un celeste más pálido. */
+  --color-signal-field: #a4d1f6;
+  --color-signal: #3e86d9; /* reemplaza a `blue` */
+  --color-signal-deep: #1b4f92; /* reemplaza a `blue-deep` */
+  /* Fibra (#7AD8AD) se retiró: el verde no acompañaba al Campo Señal ni al
+     resto de la landing, y sostener dos acentos contradecía la regla de uno
+     solo (§3). Los estados positivos —"Al día", "Cerrado", "Conexión
+     verificada", el resultado de un flujo— pasaron a un tinte de Señal. El rojo
+     de Coral se queda: un error TIENE que distinguirse del acento. */
+  --color-coral: #e78668; /* solo bordes/fondos de error */
+  --color-coral-deep: #c2451f; /* texto de error — 5.04:1 sobre blanco, cumple AA */
+
+  /* Una sola familia (DESIGN.md §5): la voz Qipeline es Inter en todos los
+     roles, con la jerarquía llevada por peso y tracking. `--font-display` se
+     conserva como alias para no tocar cada call site de `font-display`, pero
+     resuelve a la misma cara. */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  --shadow-float: 0 24px 60px -24px rgb(88 105 126 / 0.30);
+  --shadow-card: 0 12px 32px -16px rgb(88 105 126 / 0.24);
+  /* DESIGN.md §5, artefactos sobre Sala Oscura: "sombra amplia y suave por
+     debajo… se lee como una pantalla encendida en una sala a media luz." A
+     dark-coloured shadow is invisible against `night` (#141C19 is already
+     near-black), so the visible half of this is a wide, low-opacity NEUTRAL
+     (off-white, not signal-blue) halo — deliberately not tinted with the
+     accent, which would read as the "glow exterior" §3 bans. The second,
+     tighter dark layer is kept for contact/grounding depth even though it's
+     nearly imperceptible on `night` itself, so the card still reads right if
+     a future register ever sits between night and white. */
+  --shadow-glow: 0 30px 90px -12px rgb(240 244 249 / 0.20), 0 10px 28px -6px rgb(0 0 0 / 0.55);
+
+  --container-content: 76.25rem; /* 1220px */
+}
+
+/*
+ * The register vocabulary (DESIGN.md §2/§5), in one place. `SectionRegister`
+ * (src/components/ui/SectionRegister.tsx) stamps `data-register="<name>"` on
+ * each section's full-bleed wrapper; every primitive that needs to react to
+ * the register it's rendered in reads one of these custom properties instead
+ * of hardcoding `text-ink`/`text-steel`/`border-whisper`/`shadow-card`. CSS
+ * custom properties inherit through the DOM by default, so a primitive
+ * nested arbitrarily deep under a `data-register="night"` section picks up
+ * the right values with no prop threading and no client-side context.
+ *
+ * Deliberately NOT applied to a primitive's own text when that primitive's
+ * background is a fixed opaque light fill regardless of register (DataCard,
+ * DecisionChain, StatusChip, ChatBubble, Accordion's row text, PilotForm's
+ * fields) — DESIGN.md §5 says those artefacts *keep* their white surface on
+ * `night`, so their internal ink/steel stay hardcoded on purpose: swapping
+ * them to `--text-primary` would turn white-on-white the moment the artefact
+ * sits on the dark register. Only each artefact's outer chrome (border +
+ * shadow) reacts, via `--card-border`/`--card-shadow`.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --text-primary: var(--color-ink);
+  --text-secondary: var(--color-steel);
+  --border-subtle: var(--color-whisper);
+  --card-border: var(--color-whisper);
+  --card-shadow: var(--shadow-card);
+  /* Same idea as `--card-shadow`, for the handful of artefacts that use the
+     bigger `shadow-float` on light registers instead of `shadow-card`
+     (PilotForm and its success card) — kept as a separate variable rather
+     than reusing `--card-shadow` so those two don't shrink to the subtler
+     card shadow on light registers, only gain the glow on `night`. */
+  --card-shadow-strong: var(--shadow-float);
+  --btn-primary-bg: var(--color-ink);
+  --btn-primary-fg: var(--color-surface);
+  --accent-text: var(--color-signal-deep);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* Campo Señal: Acero falla (3.78:1, DESIGN.md §3). Secondary text goes Tinta
+   at 75% (6.17:1) instead — still §3's rule, not a fresh judgement call. */
+[data-register="signal-field"] {
+  --text-secondary: color-mix(in srgb, var(--color-ink) 75%, transparent);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* Sala Oscura: primary text inverts to Superficie, secondary to Niebla
+   Clara, borders go Nocturno, artefact chrome drops its border and gains
+   the glow shadow above, and a primary CTA fill inverts (Superficie on
+   Sala Oscura, per §5) so a dark-ink button never vanishes against it. */
+[data-register="night"] {
+  --text-primary: var(--color-surface);
+  --text-secondary: var(--color-mist);
+  --border-subtle: var(--color-whisper-night);
+  --card-border: transparent;
+  --card-shadow: var(--shadow-glow);
+  --card-shadow-strong: var(--shadow-glow);
+  --btn-primary-bg: var(--color-surface);
+  --btn-primary-fg: var(--color-ink);
+  --accent-text: var(--color-signal);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
   }
 }
 
+/*
+ * Backstop for `[data-motion-settle]` (see Hero.tsx's `Beat`, Reveal.tsx,
+ * WhatsAppThread.tsx, DecisionChain.tsx): `useReducedMotion()` from `motion/react`
+ * returns `null` during SSR and resolves the *real* answer synchronously on
+ * the client's very first render — so whenever a component used that value
+ * to pick its `initial` prop, the server's HTML and the client's first
+ * render could disagree, and React would throw hydration error #418 and
+ * discard the whole tree for a full client-only remount (confirmed with a
+ * production build — this reproduced on every load under
+ * `prefers-reduced-motion: reduce`, not intermittently; the intermittency
+ * Playwright saw was a race in when that emergency remount landed relative
+ * to its assertions). The fix that removes the error is to stop computing
+ * `initial` from `reduceMotion` at all — it's now the same object
+ * regardless, so server and client never disagree — and enforce "already
+ * settled, no animating in" here instead, in CSS, which the browser applies
+ * from the very first paint (even pre-hydration) and which overrides any
+ * inline style the animation writes, `!important` beating inline style.
+ */
+@media (prefers-reduced-motion: reduce) {
+  [data-motion-settle] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/*
+ * Deriva del cielo (DESIGN.md §7). La usan los dos cielos de la página: el de
+ * la cabecera (`ui/SkyField.tsx`) y el del panel de «Cómo funciona». Las dos
+ * capas van a velocidades distintas para leer como parallax lento; la amplitud
+ * está en px, no en %, para que un blob de 60vw no recorra medio viewport —
+ * esto es clima, no un carrusel.
+ */
+@keyframes sky-drift {
+  from { transform: translateX(-28px); }
+  to   { transform: translateX(28px); }
+}
+
+.sky-drift-slow {
+  animation: sky-drift 52s ease-in-out infinite alternate;
+}
+
+.sky-drift-slower {
+  animation: sky-drift 84s ease-in-out infinite alternate-reverse;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sky-drift-slow,
+  .sky-drift-slower {
+    animation: none;
+    transform: none;
+  }
+}
+
+/*
+ * Carrusel de «Cómo funciona» (`sections/SignalFlow.tsx`).
+ *
+ * Dos animaciones, las dos en CSS y no en JS a propósito: se disparan al
+ * remontar un nodo con `key`, así que no hay estado que sincronizar ni
+ * `initial` que pueda discrepar entre servidor y cliente.
+ *
+ * El raíl mide el tiempo que le queda al paso activo. Su estado normal es
+ * lleno (`scaleY(1)`), y la animación lo trae desde vacío: así, cuando el
+ * automático está parado —o apagado por preferencia del sistema— basta con no
+ * animar para que el raíl se pinte entero, que es justo lo que debe decir un
+ * paso elegido a mano.
+ */
+@keyframes flow-rail {
+  from { transform: scaleY(0); }
+  to   { transform: scaleY(1); }
+}
+
+[data-flow-rail="running"] {
+  animation: flow-rail linear forwards;
+}
+
+@keyframes flow-slide {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: none; }
+}
+
+[data-flow-slide] {
+  animation: flow-slide 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/*
+ * Entrada escalonada de las filas del artefacto: las comprobaciones de la
+ * consulta llegan una tras otra, las dos ramas de la decisión se dibujan antes
+ * que la respuesta. El retardo lo pone cada fila en línea (`FlowArtifacts`),
+ * y `both` mantiene la fila invisible hasta que le toca — sin él, todas se
+ * pintarían de golpe y la cascada sólo existiría en el papel.
+ */
+@keyframes flow-pop {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+
+[data-flow-pop] {
+  animation: flow-pop 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/*
+ * «Escribiendo…». Es el único bucle perpetuo de la página además de la nube, y
+ * se lo gana: es lo único que dice que algo está ocurriendo AHORA.
+ */
+@keyframes typing-dot {
+  0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
+  30%           { opacity: 1;   transform: translateY(-2px); }
+}
+
+[data-typing-dot] {
+  animation: typing-dot 1.3s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-flow-rail="running"],
+  [data-flow-slide],
+  [data-flow-pop],
+  [data-typing-dot] {
+    animation: none;
+  }
+
+  /* Sin animación los tres puntos quedarían al 100%: apagados y planos dicen
+     «esperando» igual de bien, y no compiten con el mensaje de al lado. */
+  [data-typing-dot] {
+    opacity: 0.55;
+  }
+}
+
+/*
+ * Retícula de cuadros redondeados (referencia Qipeline, cierre de página). Es
+ * un mosaico SVG como el papel tapiz del hilo: se rasteriza una vez y se
+ * repite. Va detrás del cierre, que era un plano de color liso — la textura es
+ * lo que evita que la sección más importante de la página (la del formulario)
+ * se lea como un rectángulo vacío.
+ *
+ * El trazo va en Superficie a baja opacidad porque el cierre es Sala Oscura:
+ * una retícula en Tinta sobre Nocturno sería invisible.
+ */
+.grid-pattern {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='132' height='132'%3E%3Cg fill='none' stroke='%23F0F4F9' stroke-opacity='0.07' stroke-width='1.2'%3E%3Crect x='6' y='6' width='54' height='54' rx='14'/%3E%3Crect x='72' y='6' width='54' height='54' rx='14'/%3E%3Crect x='6' y='72' width='54' height='54' rx='14'/%3E%3Crect x='72' y='72' width='54' height='54' rx='14'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+::selection {
+  background: rgb(62 134 217 / 0.25); /* --color-signal at 25% */
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-variant-ligatures: common-ligatures;
 }
