@@ -104,6 +104,10 @@ test.describe("Hero (Qipeline skeleton)", () => {
     // La ventana recorta desbordes (`overflow: hidden`, para que un nodo del
     // lienzo mal colocado no escape del marco) pero en su estado natural no
     // corta nada, en ninguna de las vistas.
+    // Sin recorrido automatico: esta prueba mide el marco, no el movimiento, y
+    // una vista que cambia sola durante la medicion la volveria intermitente.
+    await page.emulateMedia({ reducedMotion: "reduce" });
+
     for (const width of [390, 1440]) {
       await page.setViewportSize({ width, height: 900 });
       await page.goto("/");
@@ -127,6 +131,7 @@ test.describe("Hero (Qipeline skeleton)", () => {
     // 574px el lienzo de flujo, 420px las tablas) y al cambiar de pestana la
     // consola saltaba, arrastrando todo lo que hay debajo. La ventana lleva
     // altura fija en escritorio justamente para eso.
+    await page.emulateMedia({ reducedMotion: "reduce" });
     await page.setViewportSize({ width: 1440, height: 1200 });
     await page.goto("/");
 
@@ -153,6 +158,10 @@ test.describe("Hero (Qipeline skeleton)", () => {
     // La consola dejo de ser una captura (`role="img"`) para ser una demo
     // navegable, asi que se verifica el patron ARIA completo: una sola pestana
     // seleccionada, roving tabindex, y flechas moviendo la seleccion.
+    // Sin recorrido automatico: aqui se verifica el patron ARIA y el estado
+    // por defecto, y ambos son los mismos con o sin movimiento. Con el
+    // recorrido corriendo, "Conversaciones abre por defecto" caduca a los 3s.
+    await page.emulateMedia({ reducedMotion: "reduce" });
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/");
 
@@ -194,5 +203,70 @@ test.describe("Hero (Qipeline skeleton)", () => {
     await expect(tabs.filter({ hasText: "Cobranza" })).toHaveAttribute("aria-selected", "true");
     await page.keyboard.press("Home");
     await expect(conversaciones).toHaveAttribute("aria-selected", "true");
+  });
+
+  /*
+   * El recorrido guiado de la consola.
+   *
+   * Existe porque la consola parece una captura y nadie hace clic en una
+   * captura: Automatizaciones, Tickets y Cobranza solo las veia quien
+   * adivinaba que la barra lateral era pulsable. Lo que se fija aqui es que
+   * se mueva sola, que se calle en cuanto la persona toma el mando, y que no
+   * se mueva NUNCA con el movimiento reducido.
+   */
+  test.describe("recorrido guiado de la consola", () => {
+    const titulo = (page: import("@playwright/test").Page) =>
+      page.locator("#gantry-console h3");
+
+    test("avanza sola y termina la vuelta donde empezo, sin seguir moviendose", async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width: 1440, height: 900 });
+      await page.goto("/");
+
+      // Avanza sin que nadie toque nada.
+      await expect(titulo(page)).toHaveText("Automatizaciones", { timeout: 8_000 });
+
+      // Seis vistas a 3s: la vuelta vuelve a casa. Si parara en "Equipo", el
+      // hero se quedaria enseñando la vista menos interesante a todo el que
+      // llegue despues.
+      await expect(titulo(page)).toHaveText("Conversaciones", { timeout: 25_000 });
+
+      // Y una vuelta es UNA vuelta: no es un bucle perpetuo (DESIGN.md §9).
+      await page.waitForTimeout(5_000);
+      await expect(titulo(page)).toHaveText("Conversaciones");
+      await expect(page.locator("[data-console-rail]")).toHaveCount(0);
+    });
+
+    test("un clic toma el mando y la consola ya no vuelve a moverse", async ({ page }) => {
+      await page.setViewportSize({ width: 1440, height: 900 });
+      await page.goto("/");
+
+      await page.locator("#gantry-console-tab-tickets").click();
+      await expect(titulo(page)).toHaveText("Tickets");
+
+      // Mas de dos turnos del recorrido: si siguiera vivo, ya habria saltado.
+      await page.waitForTimeout(7_000);
+      await expect(titulo(page)).toHaveText("Tickets");
+      await expect(page.locator("[data-console-rail]")).toHaveCount(0);
+    });
+
+    test("con movimiento reducido no arranca, y el rotulo sigue diciendo que es navegable", async ({
+      page,
+    }) => {
+      await page.emulateMedia({ reducedMotion: "reduce" });
+      await page.setViewportSize({ width: 1440, height: 900 });
+      await page.goto("/");
+
+      await page.waitForTimeout(7_000);
+      await expect(titulo(page)).toHaveText("Conversaciones");
+      await expect(page.locator("[data-console-rail]")).toHaveCount(0);
+
+      // El rotulo es la UNICA señal que queda aqui: sin el, la consola vuelve
+      // a parecer una captura para quien pidio menos movimiento.
+      await expect(
+        page.locator("#gantry-console").getByText(LANDING.hero.console.hint),
+      ).toBeVisible();
+    });
   });
 });

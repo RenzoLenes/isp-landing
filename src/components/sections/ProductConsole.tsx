@@ -1,7 +1,8 @@
 "use client";
 
-import { useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { LANDING, type ConsoleNavGroup, type ConsoleViewId } from "@/content/landing";
+import { useMotionAllowed } from "@/lib/useMotionAllowed";
 import { GantryMark } from "@/components/ui/GantryMark";
 import {
   BranchIcon,
@@ -86,11 +87,74 @@ const TAB_ORDER: ConsoleViewId[] = GROUPS.flatMap((group) =>
 const tabId = (id: ConsoleViewId) => `gantry-console-tab-${id}`;
 const panelId = (id: ConsoleViewId) => `gantry-console-panel-${id}`;
 
+/*
+ * El recorrido guiado.
+ *
+ * El problema que resuelve no es que falte movimiento: es que la consola
+ * parece una captura, y nadie hace clic en una captura. Automatizaciones,
+ * Tickets y Cobranza son las vistas que sostienen la promesa de la página, y
+ * hasta ahora sólo las veía quien adivinaba que la barra lateral era
+ * pulsable.
+ *
+ * Da UNA vuelta y se para. No es un bucle perpetuo: la página tiene dos
+ * (§9), la nube y los tres puntos, y los dos se los ganan. Empieza y termina
+ * en Conversaciones a propósito — si parara en «Equipo», el hero se quedaría
+ * enseñando la vista menos interesante a todo el que llegue después.
+ */
+const TOUR_MS = 3000;
+/** Volver a casa: un salto por vista, el último devuelve a Conversaciones. */
+const TOUR_STEPS = TAB_ORDER.length;
+
 export function ProductConsole() {
   // Conversaciones abre por defecto: es la vista que cuenta la promesa de la
   // página (WhatsApp con el contexto del cliente al lado).
   const [active, setActive] = useState<ConsoleViewId>("conversaciones");
   const tabRefs = useRef(new Map<ConsoleViewId, HTMLButtonElement>());
+
+  /** Saltos dados. Al llegar a `TOUR_STEPS` el recorrido se acabó solo. */
+  const [step, setStep] = useState(0);
+  /** Apagado a mano: una vez apagado no vuelve a encenderse en toda la visita. */
+  const [stopped, setStopped] = useState(false);
+  const [hovered, setHovered] = useState(false);
+  /* No arranca al cargar, sino cuando la consola está de verdad en pantalla:
+     en un móvil queda bajo el pliegue y la vuelta se gastaría sin que nadie
+     la viera. */
+  const [inView, setInView] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  const touring = useMotionAllowed() && inView && !stopped && step < TOUR_STEPS;
+
+  useEffect(() => {
+    const node = rootRef.current;
+    if (!node) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setInView(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.2 },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!touring || hovered) return;
+    const id = window.setTimeout(() => {
+      setActive(
+        (prev) => TAB_ORDER[(TAB_ORDER.indexOf(prev) + 1) % TAB_ORDER.length],
+      );
+      setStep((n) => n + 1);
+    }, TOUR_MS);
+    return () => window.clearTimeout(id);
+  }, [touring, hovered, step]);
+
+  /** Cualquier gesto de la persona apaga el recorrido para siempre. */
+  function takeOver() {
+    setStopped(true);
+  }
 
   const view = c.views[active];
   const activeLabel =
@@ -105,6 +169,7 @@ export function ProductConsole() {
     const KEYS = ["ArrowDown", "ArrowRight", "ArrowUp", "ArrowLeft", "Home", "End"];
     if (!KEYS.includes(event.key)) return;
     event.preventDefault();
+    takeOver();
 
     const index = TAB_ORDER.indexOf(active);
     let next: ConsoleViewId;
@@ -129,7 +194,13 @@ export function ProductConsole() {
       // Roving tabindex: sólo la pestaña activa está en el orden de
       // tabulación; a las demás se llega con las flechas.
       tabIndex: active === id ? 0 : -1,
-      onClick: () => setActive(id),
+      onClick: () => {
+        setActive(id);
+        takeOver();
+      },
+      // También al enfocar: quien llega con el tabulador está tomando el
+      // mando, y que la vista le cambie sola bajo el foco sería hostil.
+      onFocus: takeOver,
       onKeyDown: handleKeyDown,
       ref: (el: HTMLButtonElement | null) => {
         if (el) tabRefs.current.set(id, el);
@@ -141,6 +212,12 @@ export function ProductConsole() {
   return (
     <div
       id="gantry-console"
+      ref={rootRef}
+      // El hover sólo PAUSA, no apaga: quien pasa el ratón por encima
+      // probablemente va a hacer clic, y no quiero que la vista le cambie
+      // debajo del cursor justo entonces.
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       className="w-full rounded-[24px] border border-white/70 bg-[#eaf2fb]/90 p-2 shadow-[0_60px_140px_-40px_rgba(23,58,102,0.45)] backdrop-blur-sm"
     >
       {/*
@@ -194,7 +271,7 @@ export function ProductConsole() {
                     <button
                       key={item.id}
                       {...tabProps(item.id)}
-                      className={`flex min-h-11 shrink-0 items-center gap-2 whitespace-nowrap rounded-[10px] px-3 text-[12.5px] font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal lg:w-full lg:rounded-[9px] lg:px-2.5 lg:text-left ${
+                      className={`relative flex min-h-11 shrink-0 items-center gap-2 overflow-hidden whitespace-nowrap rounded-[10px] px-3 text-[12.5px] font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal lg:w-full lg:rounded-[9px] lg:px-2.5 lg:text-left ${
                         active === item.id
                           ? "bg-gradient-to-b from-ink/90 to-ink text-surface shadow-[0_6px_14px_-6px_rgba(23,32,27,0.6)]"
                           : "text-steel hover:bg-sunk/60 hover:text-ink"
@@ -202,12 +279,45 @@ export function ProductConsole() {
                     >
                       {VIEW_ICONS[item.id]}
                       {item.label}
+
+                      {/* El reloj del recorrido. Va DENTRO de la pastilla
+                          activa porque la pastilla es una caja horizontal en
+                          las dos disposiciones —columna en escritorio, tira
+                          en móvil— y así una sola pieza sirve a ambas. Sin
+                          este reloj, una vista que cambia sola se lee como un
+                          fallo; es la misma lección del carrusel de «Cómo
+                          funciona».
+
+                          La `key` incluye `hovered` para que al soltar el
+                          ratón el raíl vuelva a empezar igual que el
+                          temporizador: si sólo se pausara el CSS, la línea y
+                          el reloj real acabarían contando cosas distintas. */}
+                      {touring && active === item.id ? (
+                        <span
+                          aria-hidden
+                          className="absolute inset-x-0 bottom-0 h-[2px] bg-surface/20"
+                        >
+                          <span
+                            key={`${step}-${hovered}`}
+                            data-console-rail
+                            className="block size-full origin-left bg-signal-field"
+                            style={{ animationDuration: `${TOUR_MS}ms` }}
+                          />
+                        </span>
+                      ) : null}
                     </button>
                   ))}
                 </div>
               </div>
             ))}
           </div>
+
+          {/* Dice que esto se puede tocar. Con el recorrido corriendo explica
+              qué significa el movimiento; con `prefers-reduced-motion`, donde
+              el recorrido no arranca nunca, es la única señal que queda. */}
+          <p className="mt-2 text-balance px-1 text-[11px] leading-snug text-steel/80 lg:mt-3 lg:px-2.5">
+            {c.hint}
+          </p>
         </aside>
 
         {/*

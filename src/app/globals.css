@@ -187,6 +187,20 @@
   animation: flow-rail linear forwards;
 }
 
+/* El reloj del recorrido de la consola del hero. Es hermano de `flow-rail`
+   pero en horizontal: allí el raíl vive en el costado de una fila alta; aquí
+   va dentro de la pastilla de la pestaña activa, que es una caja horizontal
+   tanto en la barra lateral de escritorio como en la tira de móvil — una
+   sola pieza sirve a las dos disposiciones. */
+@keyframes console-rail {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+[data-console-rail] {
+  animation: console-rail linear forwards;
+}
+
 @keyframes flow-slide {
   from { opacity: 0; transform: translateY(12px); }
   to   { opacity: 1; transform: none; }
@@ -229,8 +243,18 @@
   [data-flow-rail="running"],
   [data-flow-slide],
   [data-flow-pop],
+  [data-console-rail],
   [data-typing-dot] {
     animation: none;
+  }
+
+  /* El recorrido de la consola ni siquiera arranca aquí (lo decide JS con
+     `useMotionAllowed`), así que el raíl no debería llegar a pintarse. Esto
+     es el cinturón por si alguna vez se monta sin ese guardia: sin animación,
+     `scaleX(1)` dejaría la línea entera encendida y parecería un progreso
+     terminado que nadie ha recorrido. */
+  [data-console-rail] {
+    transform: scaleX(0);
   }
 
   /* Sin animación los tres puntos quedarían al 100%: apagados y planos dicen

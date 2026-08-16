@@ -221,6 +221,11 @@ export const LANDING = {
     // seis pantallas inventadas por separado.
     console: {
       label: "Consola de Gantry",
+      // La consola parece una captura, y nadie hace clic en una captura. Este
+      // rótulo dice que está viva. Cumple doble función: explica qué significa
+      // el recorrido automático mientras corre, y es la ÚNICA señal que queda
+      // con `prefers-reduced-motion`, donde el recorrido no arranca nunca.
+      hint: "Demo navegable — ábrela donde quieras",
       search: "Buscar",
       toggleLabel: "Modo piloto",
       zoom: "100%",

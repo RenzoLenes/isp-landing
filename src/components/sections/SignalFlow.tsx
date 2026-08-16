@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { LANDING } from "@/content/landing";
 import type { FlowIcon } from "@/content/landing";
 import { CLOUD_WISPS } from "@/lib/cloudTile";
+import { useMotionAllowed } from "@/lib/useMotionAllowed";
 import { FlowArtifactView } from "@/components/sections/FlowArtifacts";
 import {
   ArrowRightIcon,
@@ -33,7 +34,13 @@ import {
  * igual como índice manual.
  */
 
-const DWELL_MS = 7000;
+/* Estaba en 7000 y se hacía largo: quien ya leyó el paso se queda esperando
+   delante de una pantalla quieta, y esperar es exactamente lo que un carrusel
+   automático no debe provocar. 5000 da tiempo a leer el cuerpo del paso —que
+   aquí es un párrafo, no una etiqueta— sin que sobre. Es más lento que los
+   3000 de la consola del hero a propósito: allí sólo hay que mirar, aquí hay
+   que leer. */
+const DWELL_MS = 5000;
 
 const ICONS: Record<FlowIcon, (props: { size: number; className?: string }) => ReactNode> = {
   mensaje: WhatsAppIcon,
@@ -41,27 +48,6 @@ const ICONS: Record<FlowIcon, (props: { size: number; className?: string }) => R
   accion: BranchIcon,
   equipo: UserIcon,
 };
-
-const REDUCE_MOTION = "(prefers-reduced-motion: reduce)";
-
-/**
- * ¿Puede moverse solo? Se lee con `useSyncExternalStore` y no con un
- * `useState` encendido desde un efecto: en el servidor no hay `matchMedia`, y
- * la instantánea de servidor —«no, quieto»— es exactamente el arranque que
- * queremos, así que servidor y primer render del cliente nunca discrepan. Es
- * el mismo cuidado con la hidratación que documenta `Reveal`.
- */
-function useMotionAllowed() {
-  return useSyncExternalStore(
-    (onChange) => {
-      const query = window.matchMedia(REDUCE_MOTION);
-      query.addEventListener("change", onChange);
-      return () => query.removeEventListener("change", onChange);
-    },
-    () => !window.matchMedia(REDUCE_MOTION).matches,
-    () => false,
-  );
-}
 
 const tabId = (i: number) => `flow-step-tab-${i}`;
 const panelId = (i: number) => `flow-step-panel-${i}`;
