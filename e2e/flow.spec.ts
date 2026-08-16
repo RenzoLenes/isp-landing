@@ -91,6 +91,27 @@ test.describe("Cómo funciona — carrusel", () => {
     await expect(panel(page)).toContainText(muestra(steps[1]));
   });
 
+  test("el ratón apoyado en la sección no congela el carrusel", async ({ page }) => {
+    // Regresión real: el hover que PAUSA estaba en el contenedor de toda la
+    // sección, no en las pestañas. Bastaba con que el cursor descansara sobre
+    // el texto o sobre el panel —que es justo dónde queda al bajar leyendo—
+    // para que el carrusel se quedara clavado en el paso 1 y pareciera roto.
+    // Pausar tiene un solo motivo: no cambiarle la vista a quien va a hacer
+    // clic. Eso son las pestañas, no media página.
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await page.goto("/");
+    await page.locator("#como-funciona").scrollIntoViewIfNeeded();
+
+    const caja = await page.locator("#como-funciona").boundingBox();
+    if (!caja) throw new Error("no se encontró la sección");
+    // El centro del panel del cielo, en la mitad derecha.
+    await page.mouse.move(caja.x + caja.width * 0.78, caja.y + caja.height / 2);
+
+    await expect(tabs(page).nth(1)).toHaveAttribute("aria-selected", "true", {
+      timeout: 15_000,
+    });
+  });
+
   test("un clic elige el paso y apaga el automático", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 1000 });
     await page.goto("/");

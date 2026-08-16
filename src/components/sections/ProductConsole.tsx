@@ -213,11 +213,6 @@ export function ProductConsole() {
     <div
       id="gantry-console"
       ref={rootRef}
-      // El hover sólo PAUSA, no apaga: quien pasa el ratón por encima
-      // probablemente va a hacer clic, y no quiero que la vista le cambie
-      // debajo del cursor justo entonces.
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
       className="w-full rounded-[24px] border border-white/70 bg-[#eaf2fb]/90 p-2 shadow-[0_60px_140px_-40px_rgba(23,58,102,0.45)] backdrop-blur-sm"
     >
       {/*
@@ -260,7 +255,19 @@ export function ProductConsole() {
               atributo no puede seguirla sin JavaScript. El manejador de
               teclado acepta los dos ejes, así que las flechas funcionan en
               ambas formas. */}
-          <div role="tablist" aria-label={c.label} className="flex gap-1 overflow-x-auto lg:flex-col lg:gap-0 lg:overflow-x-visible">
+          {/* El hover PAUSA el recorrido, y sólo desde aquí: quien lleva el
+              cursor a una pestaña va a hacer clic, y cambiarle la vista justo
+              entonces sería hostil. Estuvo en el contenedor de toda la
+              consola y era un error — la consola ocupa media pantalla, así
+              que el cursor caía encima sin más al bajar leyendo y el
+              recorrido se congelaba pareciendo roto. */}
+          <div
+            role="tablist"
+            aria-label={c.label}
+            onMouseEnter={() => setHovered(true)}
+            onMouseLeave={() => setHovered(false)}
+            className="flex gap-1 overflow-x-auto lg:flex-col lg:gap-0 lg:overflow-x-visible"
+          >
             {GROUPS.map((group) => (
               <div key={group.label} className="contents lg:block">
                 <p className="hidden px-2.5 pb-1 pt-4 text-[10.5px] font-medium text-steel/80 lg:block">
@@ -370,7 +377,17 @@ export function ProductConsole() {
             tabIndex={0}
             className="lg:min-h-0 lg:flex-1"
           >
-            {VIEW_BODIES[active]}
+            {/* La vista entra con un fundido corto en vez de aparecer de
+                golpe. Cambiar seis pantallas a cuerpo descubierto se veía
+                como un parpadeo, no como navegar: sin transición el ojo lee
+                un salto de imagen, no un cambio de sección.
+
+                Se dispara al remontar por `key`, igual que el carrusel de
+                «Cómo funciona» — CSS puro, sin estado de animación que
+                sincronizar ni `initial` que pueda discrepar al hidratar. */}
+            <div key={active} data-console-view className="h-full">
+              {VIEW_BODIES[active]}
+            </div>
           </div>
         </div>
       </div>

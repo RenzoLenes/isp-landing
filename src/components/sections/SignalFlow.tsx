@@ -98,11 +98,7 @@ export function SignalFlow() {
   const step = steps[active];
 
   return (
-    <div
-      className="grid items-center gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.02fr)] lg:gap-16"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-    >
+    <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.02fr)] lg:gap-16">
       {/* Columna de texto: titular, entradilla e índice de pasos. */}
       <div>
         <p className="text-sm font-medium uppercase tracking-[0.18em] text-[color:var(--text-secondary)]">
@@ -115,10 +111,19 @@ export function SignalFlow() {
           {body}
         </p>
 
+        {/* El hover pausa AQUÍ y sólo aquí.
+            Estaba en el contenedor de toda la sección, y eso lo rompía: basta
+            con que el cursor descanse en cualquier parte mientras alguien lee
+            —que es justo lo que pasa al bajar con el ratón a media pantalla—
+            para que el carrusel se congelara y pareciera roto. La intención
+            era «no le cambies la vista a quien está a punto de hacer clic», y
+            eso son las pestañas, no media página. */}
         <ul
           role="tablist"
           aria-orientation="vertical"
           aria-label={eyebrow}
+          onMouseEnter={() => setHovered(true)}
+          onMouseLeave={() => setHovered(false)}
           className="mt-9 border-t border-[color:var(--border-subtle)]"
         >
           {steps.map((item, i) => {

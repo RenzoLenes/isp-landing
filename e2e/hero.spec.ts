@@ -238,6 +238,22 @@ test.describe("Hero (Qipeline skeleton)", () => {
       await expect(page.locator("[data-console-rail]")).toHaveCount(0);
     });
 
+    test("el ratón apoyado sobre la consola no congela el recorrido", async ({ page }) => {
+      // Misma regresión que en «Cómo funciona»: el hover que pausa estaba en
+      // el contenedor entero. La consola ocupa media pantalla, así que el
+      // cursor caía encima sin más al bajar leyendo y el recorrido se
+      // quedaba clavado. Pausar sólo tiene sentido sobre las pestañas.
+      await page.setViewportSize({ width: 1440, height: 900 });
+      await page.goto("/");
+
+      const caja = await page.locator("#gantry-console").boundingBox();
+      if (!caja) throw new Error("no se encontró la consola");
+      // El centro del contenido, lejos de la barra de pestañas.
+      await page.mouse.move(caja.x + caja.width * 0.7, caja.y + caja.height / 2);
+
+      await expect(titulo(page)).toHaveText("Automatizaciones", { timeout: 8_000 });
+    });
+
     test("un clic toma el mando y la consola ya no vuelve a moverse", async ({ page }) => {
       await page.setViewportSize({ width: 1440, height: 900 });
       await page.goto("/");

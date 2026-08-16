@@ -201,6 +201,18 @@
   animation: console-rail linear forwards;
 }
 
+/* La entrada de cada vista de la consola. Corta y con muy poco recorrido: es
+   una app cambiando de sección, no una diapositiva. Con más desplazamiento
+   parecería que la ventana se mueve, y la ventana no se mueve nunca. */
+@keyframes console-view {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
+
+[data-console-view] {
+  animation: console-view 0.34s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
 @keyframes flow-slide {
   from { opacity: 0; transform: translateY(12px); }
   to   { opacity: 1; transform: none; }
@@ -244,6 +256,7 @@
   [data-flow-slide],
   [data-flow-pop],
   [data-console-rail],
+  [data-console-view],
   [data-typing-dot] {
     animation: none;
   }
