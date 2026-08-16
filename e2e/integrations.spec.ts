@@ -1,4 +1,9 @@
 import { test, expect } from "@playwright/test";
+
+// Los nodos se localizan por `data-integration-*`, no por forma de clases
+// (`div.w-40.shrink-0`, `div.shadow-float`). Ese planteamiento ataba la prueba
+// al ancho y a la sombra de cada nodo: rediseñar la tarjeta —darle su glifo y
+// su linea de rol— la rompia sin que nada estuviera mal.
 import { LANDING } from "../src/content/landing";
 
 // The Integrations convergence diagram was rebuilt twice for defects before
@@ -45,7 +50,7 @@ test.describe("Integrations diagram", () => {
         const desktopRow = section.locator("div.lg\\:flex").first();
         await expect(desktopRow).toBeVisible();
 
-        const cards = desktopRow.locator("div.w-40.shrink-0");
+        const cards = desktopRow.locator("[data-integration-node]");
         await expect(cards).toHaveCount(LANDING.integrations.systems.length);
 
         const widths: number[] = [];
@@ -58,7 +63,7 @@ test.describe("Integrations diagram", () => {
         widths.forEach((w, i) => {
           expect(
             w,
-            `card #${i} (${LANDING.integrations.systems[i]}) width vs first card's ${first}`,
+            `card #${i} (${LANDING.integrations.systems[i].name}) width vs first card's ${first}`,
           ).toBeCloseTo(first, 0);
         });
       });
@@ -102,9 +107,48 @@ test.describe("Integrations diagram", () => {
         for (let i = 0; i < (await beams.count()); i++) {
           const beam = beams.nth(i);
           await expect(beam).toHaveAttribute("aria-hidden", "true");
-          const d = await beam.locator("path").first().getAttribute("d");
-          expect(d, `beam #${i} path data`).toBeTruthy();
+
+          // `expect(...).toHaveAttribute` reintenta; `getAttribute` no. El
+          // `d` se calcula midiendo el layout, así que leerlo de una sola vez
+          // era una carrera: unas veces llegaba tarde y el test se ponía rojo
+          // sin que la página tuviera nada malo.
+          const path = beam.locator("path").first();
+          await expect(path, `beam #${i} path data`).toHaveAttribute("d", /.+/);
+          const d = await path.getAttribute("d");
           expect(parseBeamPath(d ?? ""), `beam #${i} path parses`).not.toBeNull();
+        }
+      });
+
+      test("el diagrama nunca se sale del viewport ni del contenedor", async ({ page }) => {
+        // Regresion reportada: las tarjetas se veian cortadas por la izquierda.
+        // No se reprodujo midiendo, pero la fila heredaba los 1220px del
+        // contenedor de lectura y quedaba dispersa, asi que ahora lleva tope
+        // propio. Esta prueba fija el limite duro por si vuelve a crecer.
+        await page.goto("/");
+        const section = page.locator("section", {
+          has: page.getByText(LANDING.integrations.title, { exact: true }),
+        });
+        const desktopRow = section.locator("div.lg\\:flex").first();
+
+        const rowBox = await desktopRow.boundingBox();
+        if (!rowBox) throw new Error("no se pudo medir la fila");
+        const vw = page.viewportSize()!.width;
+
+        for (const sel of [
+          "[data-integration-node]",
+          "[data-integration-hub]",
+          "[data-integration-output]",
+        ]) {
+          const nodes = desktopRow.locator(sel);
+          for (let i = 0; i < (await nodes.count()); i++) {
+            const b = await nodes.nth(i).boundingBox();
+            if (!b) throw new Error(`no se pudo medir ${sel} #${i}`);
+            expect(b.x, `${sel} #${i} borde izquierdo ${b.x}`).toBeGreaterThanOrEqual(-0.5);
+            expect(
+              b.x + b.width,
+              `${sel} #${i} borde derecho ${b.x + b.width} vs viewport ${vw}`,
+            ).toBeLessThanOrEqual(vw + 0.5);
+          }
         }
       });
 
@@ -117,9 +161,9 @@ test.describe("Integrations diagram", () => {
         });
         const desktopRow = section.locator("div.lg\\:flex").first();
 
-        const cards = desktopRow.locator("div.w-40.shrink-0");
-        const hub = desktopRow.locator("div.shadow-float").first();
-        const output = desktopRow.locator("div.shadow-card.text-center").first();
+        const cards = desktopRow.locator("[data-integration-node]");
+        const hub = desktopRow.locator("[data-integration-hub]");
+        const output = desktopRow.locator("[data-integration-output]");
         const beams = desktopRow.locator("svg[data-animated-beam]");
 
         const hubBox = await hub.boundingBox();
