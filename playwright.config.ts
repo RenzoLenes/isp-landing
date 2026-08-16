@@ -44,13 +44,29 @@ export default defineConfig({
     {
       command: `node e2e/supabase-stub.mjs`,
       url: `http://localhost:${STUB_PORT}/`,
-      reuseExistingServer: !process.env.CI,
+      reuseExistingServer: false,
       timeout: 20_000,
     },
     {
       command: `npm run build && npm run start -- -p ${PORT}`,
       url: BASE_URL,
-      reuseExistingServer: !process.env.CI,
+      // NUNCA reutilizar un servidor ya levantado, ni en local.
+      //
+      // Estaba en `!process.env.CI` y eso abrió un agujero real: si quedaba
+      // un `next start` de una sesión manual —arrancado con el `.env.local`
+      // de VERDAD—, Playwright lo reutilizaba y las variables del stub de
+      // abajo no llegaban a ninguna parte. Resultado: la suite escribiendo
+      // solicitudes de prueba en la tabla que el equipo lee para llamar a la
+      // gente. Pasó, y se detectó de rebote porque el test del camino de
+      // error empezó a fallar (el insert «que debía fallar» funcionaba).
+      //
+      // Con `false`, un puerto ocupado hace que la suite falle en voz alta en
+      // vez de escribir donde no debe. Ese es el fallo que queremos.
+      //
+      // Ojo al matar el servidor a mano: `npm run start` deja un
+      // `next-server` hijo que sobrevive a que mates al padre. Hay que matar
+      // por puerto (`lsof -tnP -i tcp:3100`), no por el proceso de npm.
+      reuseExistingServer: false,
       timeout: 180_000,
       env: {
         SUPABASE_URL: `http://localhost:${STUB_PORT}`,
