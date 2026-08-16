@@ -1,76 +1,119 @@
+import type { ReactNode } from "react";
 import { LANDING } from "@/content/landing";
 import type { PillarArtifact } from "@/content/landing";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Reveal } from "@/components/ui/Reveal";
-import { DataCard } from "@/components/ui/DataCard";
-import { DecisionChain } from "@/components/ui/DecisionChain";
 import { StatusChip } from "@/components/ui/StatusChip";
 import { SectionRegister } from "@/components/ui/SectionRegister";
+import { BranchIcon, CheckIcon, TicketIcon, UserIcon } from "@/components/ui/console-icons";
 
-/**
- * The ticket artifact reuses `DataCard`'s row/footer rhythm but replaces its
- * header: the ticket id sits alone on a raised top bar, visually separated
- * from the data rows below by its own `bg-sunk` fill and `border-b`.
- * Pillars 1 and 3 both render "ficha"-shaped data, so this header treatment —
- * not typeface — is what keeps them from reading as the same card with a
- * different chip. The id is set in Geist (this project loads no mono face)
- * with tabular numerals and loosened tracking to read as a distinct record.
+/*
+ * Rejilla de tres tarjetas, adaptada de la referencia Qipeline: cada una es
+ * texto arriba y, abajo, una **miniatura de UI real** sobre un lavado de
+ * color, no un icono decorativo. Sustituye al zigzag de artefactos grandes,
+ * que ocupaba tres pantallas para decir tres cosas.
+ *
+ * Nota de sistema: la guía general desaconseja «tres tarjetas iguales en
+ * fila», y con razón — suele ser el relleno por defecto de cualquier landing.
+ * Aquí se acepta como excepción deliberada porque las tarjetas NO son iguales:
+ * cada una lleva dentro un artefacto distinto (ficha, cadena de decisión,
+ * ticket) que es la prueba de lo que el texto afirma. Lo que la guía prohíbe
+ * es la fila de tres cajas con un icono y un párrafo; esto no lo es.
+ *
+ * El lavado de color sale SIEMPRE de Señal (§3, un solo acento). La referencia
+ * usa azul, morado y verde; aquí varía la intensidad, no el matiz — tres
+ * matices distintos habrían roto la regla de un acento por tres sitios a la vez.
  */
-function TicketCard({
-  artifact,
+
+const WASH = [
+  "from-signal/[0.14] to-signal/[0.02]",
+  "from-signal/[0.20] to-signal/[0.03]",
+  "from-signal/[0.11] to-signal/[0.02]",
+] as const;
+
+/** Fila de dato en miniatura: la unidad de todos los artefactos de abajo. */
+function MiniRow({
+  label,
+  value,
+  strong,
 }: {
-  artifact: Extract<PillarArtifact, { kind: "ticket" }>;
+  label: string;
+  value: ReactNode;
+  strong?: boolean;
 }) {
   return (
-    // Same chrome-only register adaptation as DataCard/DecisionChain: the
-    // card's own fill (and its `bg-sunk` header, and every row inside)
-    // stays exactly as-is, since it's always white regardless of the
-    // section's register. Only the outer border/shadow read the vars.
-    <div className="overflow-hidden rounded-3xl border border-[color:var(--card-border)] bg-surface shadow-[var(--card-shadow)]">
-      <div className="flex items-center justify-between gap-3 border-b border-whisper bg-sunk px-6 py-4">
-        <p className="text-sm font-medium tracking-wide text-ink [font-variant-numeric:tabular-nums]">
-          {artifact.title}
-        </p>
-        <StatusChip label={artifact.status} tone="neutral" />
-      </div>
-      <dl className="px-6 pb-2 pt-2">
-        {artifact.rows.map((row) => (
-          <div
-            key={row.label}
-            className="flex items-center justify-between gap-4 border-t border-whisper py-2.5 first:border-t-0"
-          >
-            <dt className="text-xs text-moss">{row.label}</dt>
-            <dd className="text-sm text-ink [font-variant-numeric:tabular-nums]">
-              {row.value}
-            </dd>
-          </div>
-        ))}
-      </dl>
-      <div className="flex items-center justify-between gap-4 border-t border-whisper px-6 py-4">
-        <span className="text-xs text-moss">{artifact.footerLabel}</span>
-        <span className="text-sm font-medium text-ink [font-variant-numeric:tabular-nums]">
-          {artifact.footerValue}
-        </span>
-      </div>
+    <div className="flex items-center justify-between gap-2 border-t border-whisper px-3 py-1.5 text-[11.5px] first:border-t-0">
+      <span className="truncate text-steel">{label}</span>
+      <span className={`shrink-0 ${strong ? "font-medium text-ink" : "text-ink"}`}>{value}</span>
     </div>
   );
 }
 
-/** Narrows `PillarArtifact` on `kind` and renders the matching primitive. */
-function PillarArtifactView({ artifact }: { artifact: PillarArtifact }) {
+function MiniCard({ children }: { children: ReactNode }) {
+  return (
+    <div className="rounded-[12px] border border-whisper bg-surface shadow-[0_6px_16px_-8px_rgba(19,29,42,0.25)]">
+      {children}
+    </div>
+  );
+}
+
+/** La miniatura que corresponde a cada pilar; es la prueba de lo que afirma. */
+function PillarArtifactMini({ artifact }: { artifact: PillarArtifact }) {
   switch (artifact.kind) {
     case "ficha":
       return (
-        <DataCard
-          title={artifact.title}
-          status={{ label: artifact.status, tone: "ok" }}
-          rows={artifact.rows}
-        />
+        <MiniCard>
+          <div className="flex items-center justify-between gap-2 px-3 py-2">
+            <span className="flex items-center gap-1.5 text-[12px] font-medium text-ink">
+              <UserIcon size={13} className="text-steel" />
+              {artifact.title}
+            </span>
+            <StatusChip label={artifact.status} tone="ok" />
+          </div>
+          <div className="border-t border-whisper">
+            {artifact.rows.slice(0, 3).map((row) => (
+              <MiniRow key={row.label} label={row.label} value={row.value} strong />
+            ))}
+          </div>
+        </MiniCard>
       );
+
     case "decision":
-      return <DecisionChain checks={artifact.checks} outcome={artifact.outcome} />;
+      return (
+        <MiniCard>
+          {artifact.checks.slice(0, 3).map((check) => (
+            <MiniRow key={check.question} label={check.question} value={check.answer} strong />
+          ))}
+          <p className="flex items-center gap-1.5 border-t border-whisper px-3 py-2 text-[11.5px] font-medium text-signal-deep">
+            <BranchIcon size={13} />
+            {artifact.outcome}
+          </p>
+        </MiniCard>
+      );
+
     case "ticket":
-      return <TicketCard artifact={artifact} />;
+      return (
+        <MiniCard>
+          <div className="flex items-center justify-between gap-2 bg-sunk/60 px-3 py-2">
+            <span className="flex items-center gap-1.5 text-[12px] font-medium tabular-nums text-ink">
+              <TicketIcon size={13} className="text-steel" />
+              {artifact.title}
+            </span>
+            <StatusChip label={artifact.status} tone="neutral" />
+          </div>
+          <div className="border-t border-whisper">
+            {artifact.rows.slice(0, 2).map((row) => (
+              <MiniRow key={row.label} label={row.label} value={row.value} />
+            ))}
+          </div>
+          <p className="flex items-center gap-1.5 border-t border-whisper px-3 py-2 text-[11.5px] text-ink">
+            <CheckIcon size={13} className="text-signal" />
+            <span className="text-steel">{artifact.footerLabel}:</span>
+            <span className="font-medium">{artifact.footerValue}</span>
+          </p>
+        </MiniCard>
+      );
+
     default: {
       const exhaustive: never = artifact;
       return exhaustive;
@@ -81,46 +124,51 @@ function PillarArtifactView({ artifact }: { artifact: PillarArtifact }) {
 export function Pillars() {
   const { eyebrow, title, items } = LANDING.pillars;
   return (
-    // Sala Oscura (DESIGN.md §2, row 3): "the system thinking," the
-    // artifacts glow like lit screens in a dimmed room.
     <SectionRegister
-      register="night"
+      register="canvas"
       id="producto"
       className="scroll-mt-28 px-4 py-[clamp(5rem,10vw,9rem)]"
     >
       <div className="mx-auto max-w-content">
         <Reveal>
-          <SectionHeading eyebrow={eyebrow} title={title} />
+          <SectionHeading eyebrow={eyebrow} title={title} align="center" />
         </Reveal>
-        <div className="mt-16 flex flex-col gap-16 md:gap-20">
+
+        <div className="mt-14 grid gap-5 md:grid-cols-3">
           {items.map((pillar, i) => (
-            <Reveal key={pillar.number}>
-              <div
-                className={`grid items-center gap-8 md:grid-cols-2 md:gap-14 ${
-                  i % 2 === 1 ? "md:[&>*:first-child]:order-2" : ""
-                }`}
-              >
-                <div>
-                  {/* `--accent-text`: signal-deep on light registers,
-                      signal itself on night — signal-deep (#1B4F92) is
-                      nearly as dark as `night` (#141C19) and would all but
-                      disappear; plain signal measures 4.64:1 against night
-                      (table, §3), comfortably clearing the 3:1 large-text
-                      floor this numeral needs. */}
-                  <p className="font-display text-6xl text-[color:var(--accent-text)]">
+            <Reveal key={pillar.number} delay={i * 0.08}>
+              <article className="flex h-full flex-col overflow-hidden rounded-[20px] border border-whisper bg-surface shadow-card">
+                <div className="px-6 pb-5 pt-7 text-center">
+                  {/* El número se conserva porque los pilares SON una
+                      secuencia — el propio título lo dice: «Responde, decide y
+                      escala. En ese orden». Numerar contenido que no lleva
+                      orden sería decoración; aquí informa. */}
+                  <p
+                    data-pillar-number
+                    className="text-[12px] font-medium tabular-nums tracking-[0.18em] text-[color:var(--accent-text)]"
+                  >
                     {pillar.number}
                   </p>
-                  <h3 className="mt-3 font-display text-3xl leading-tight text-balance text-[color:var(--text-primary)] md:text-4xl">
+                  <h3 className="mt-2 text-balance font-display text-[1.35rem] font-medium leading-tight tracking-[-0.02em] text-ink">
                     {pillar.title}
                   </h3>
-                  <p className="mt-4 max-w-[58ch] leading-relaxed text-[color:var(--text-secondary)]">
-                    {pillar.body}
-                  </p>
+                  <p className="mt-3 text-[13.5px] leading-relaxed text-steel">{pillar.body}</p>
                 </div>
-                <div className="mx-auto w-full max-w-sm md:mx-0">
-                  <PillarArtifactView artifact={pillar.artifact} />
+
+                {/* Altura FIJA y anclado abajo (`mt-auto`). Los tres textos
+                    miden distinto, así que con un lavado de altura automática
+                    las miniaturas arrancaban a tres alturas diferentes y la
+                    rejilla se veía desalineada. Fijándola, los tres lavados
+                    empiezan y acaban en la misma línea sin importar el copy.
+                    Y entra la miniatura entera: recortarla a media fila leía
+                    como un fallo de maquetación, no como una captura que
+                    sigue más allá del borde. */}
+                <div
+                  className={`mt-auto h-[188px] bg-gradient-to-b px-5 pt-6 ${WASH[i % WASH.length]}`}
+                >
+                  <PillarArtifactMini artifact={pillar.artifact} />
                 </div>
-              </div>
+              </article>
             </Reveal>
           ))}
         </div>

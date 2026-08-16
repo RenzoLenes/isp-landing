@@ -1,7 +1,7 @@
 // Vendored from 21st.dev — ddoemonn, "Accordion" (demo id 23530), approved by
 // the client. Original source: .superpowers/21st/accordion-source.tsx.
 // Adaptations from that source (see .superpowers/21st/NOTAS-accordion.md):
-//   - stone-* colours -> project tokens (surface, whisper, ink, moss, sunk)
+//   - stone-* colours -> project tokens (surface, whisper, ink, steel, sunk)
 //   - focus #4568FF -> our `signal` token, expressed as an outline (matching
 //     ButtonLink/PilotForm's `focus-visible:outline-*-signal` elsewhere on the
 //     page) rather than the source's inset box-shadow — inset because the
@@ -308,15 +308,14 @@ export function Accordion({
   });
 
   return (
-    // Same chrome-only register adaptation as DataCard/DecisionChain: the
-    // accordion's fill stays `bg-surface` regardless of register (it's an
-    // artifact, per DESIGN.md §5), only its outer border + shadow read the
-    // register-scoped custom properties. `divide-whisper` between rows stays
-    // hardcoded — those dividers sit against the card's own always-white
-    // fill, not the section background.
-    <div
-      className={`divide-y divide-whisper overflow-hidden rounded-3xl border border-[color:var(--card-border)] bg-surface shadow-[var(--card-shadow)] ${className}`}
-    >
+    // Cada pregunta es su PROPIA tarjeta, separadas por aire, en vez de una
+    // lista continua con divisores (adaptado de la referencia Qipeline). Con
+    // divisores la sección leía como una tabla de contenidos; separadas, cada
+    // objeción se lee como una pieza que se puede abrir. El cromo por tarjeta
+    // sigue la adaptación por registro de DataCard/DecisionChain: el relleno
+    // es siempre `bg-surface` (es un artefacto, §5) y sólo borde y sombra leen
+    // las variables del registro.
+    <div className={`flex flex-col gap-3 ${className}`}>
       {items.map((item) => (
         <AccordionRow
           key={item.id}
@@ -362,11 +361,17 @@ function AccordionRow({
   }, [ref, open]);
 
   return (
-    <div>
+    <div
+      className={`overflow-hidden rounded-[18px] border bg-surface transition-colors duration-150 ${
+        open
+          ? "border-signal/30 shadow-[var(--card-shadow)]"
+          : "border-[color:var(--card-border)] shadow-[0_1px_2px_rgba(19,29,42,0.05)]"
+      }`}
+    >
       <div role="heading" aria-level={headingLevel}>
         <button
           {...header}
-          className="flex min-h-11 w-full items-center gap-4 px-5 py-4 text-left transition-colors duration-150 hover:bg-sunk/60 focus-visible:bg-signal/[0.06] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-signal"
+          className="flex min-h-11 w-full items-center gap-4 px-5 py-4 text-left transition-colors duration-150 hover:bg-sunk/40 focus-visible:bg-signal/[0.06] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-signal"
         >
           <span
             className={`min-w-0 flex-1 text-base font-medium transition-colors duration-150 ${
@@ -377,30 +382,32 @@ function AccordionRow({
           </span>
 
           {item.meta ? (
-            <span className="shrink-0 text-sm tabular-nums text-moss">
+            <span className="shrink-0 text-sm tabular-nums text-steel">
               {item.meta}
             </span>
           ) : null}
 
-          <motion.svg
-            width="16"
-            height="16"
-            viewBox="0 0 256 256"
-            fill="none"
+          {/* Botón circular con «+» que gira 45° hasta ser una «×» (referencia
+              Qipeline). Es UN solo par de trazos rotando, no dos iconos que se
+              intercambian: así el cambio es continuo y no da un salto. */}
+          <motion.span
             aria-hidden="true"
-            className="shrink-0 text-moss"
+            className={`flex size-8 shrink-0 items-center justify-center rounded-full transition-colors duration-150 ${
+              open ? "bg-signal/12 text-signal-deep" : "bg-sunk text-steel"
+            }`}
             initial={false}
-            animate={{ rotate: open ? 180 : 0 }}
+            animate={{ rotate: open ? 45 : 0 }}
             transition={reduced ? { duration: 0 } : CHEVRON}
           >
-            <path
-              d="M208 96l-80 80-80-80"
-              stroke="currentColor"
-              strokeWidth="16"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </motion.svg>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M12 5v14M5 12h14"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+            </svg>
+          </motion.span>
         </button>
       </div>
       <motion.div
@@ -437,7 +444,7 @@ function AccordionRow({
                   ? { duration: 0.18, ease: EASE }
                   : { duration: 0.14, ease: EXIT_EASE }
             }
-            className="px-5 pb-5 pt-4 text-base leading-relaxed text-moss"
+            className="px-5 pb-5 pt-4 text-base leading-relaxed text-steel"
           >
             {item.content}
           </motion.div>

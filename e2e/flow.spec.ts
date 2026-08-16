@@ -1,155 +1,147 @@
 import { test, expect } from "@playwright/test";
+import { LANDING } from "../src/content/landing";
 
-// SignalFlow (the "Cómo funciona" route) switches from a stacked column to a
-// row at Tailwind's `lg` breakpoint (1024px). The container-arithmetic
-// comment in SignalFlow.tsx claims only 112px of margin at exactly 1024px
-// for 3 connectors, so this is the tightest point in the layout.
+/*
+ * «Cómo funciona» pasó de una rejilla de cuatro tarjetas a un carrusel de dos
+ * columnas: índice de pasos a la izquierda, panel de cielo a la derecha
+ * (DESIGN.md §6). Estas pruebas se reescribieron con ese cambio — las
+ * anteriores medían alturas de maquetas y columnas de rejilla, y ya no hay
+ * rejilla.
+ *
+ * Lo que se fija ahora es lo que puede romperse sin que se vea:
+ *   · sólo hay UN paso en pantalla, y es el que dice la pestaña activa;
+ *   · el carrusel avanza solo — es la razón de ser del componente;
+ *   · y se para en cuanto alguien toca, que es lo que impide que la página
+ *     te quite de las manos el paso que estabas leyendo.
+ */
 
-test.describe("Flow row breakpoint", () => {
-  test("at 1024px the four steps share the same row (approximately equal y)", async ({
+const { steps, stepLabel } = LANDING.flow;
+
+/**
+ * Un texto que SÓLO aparece en el artefacto de ese paso. Se deriva del
+ * contenido en vez de escribirse a mano para que las pruebas no se queden
+ * mirando frases que ya no existen.
+ */
+function muestra(step: (typeof steps)[number]): string {
+  const a = step.artifact;
+  switch (a.kind) {
+    case "chat":
+      return a.messages[0].text;
+    case "consulta":
+      return a.rows[0].label;
+    case "decision":
+      return a.question;
+    case "ticket":
+      return a.assignee.name;
+  }
+}
+
+const tabs = (page: import("@playwright/test").Page) =>
+  page.locator("#como-funciona [role='tab']");
+const panel = (page: import("@playwright/test").Page) =>
+  page.locator("#como-funciona [role='tabpanel']");
+
+test.describe("Cómo funciona — carrusel", () => {
+  test("abre en el primer paso y sólo enseña ese", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await page.goto("/");
+
+    await expect(tabs(page)).toHaveCount(steps.length);
+    for (let i = 0; i < steps.length; i++) {
+      await expect(tabs(page).nth(i)).toContainText(steps[i].title);
+    }
+
+    await expect(tabs(page).nth(0)).toHaveAttribute("aria-selected", "true");
+    await expect(panel(page)).toContainText(`${stepLabel} 1`);
+    await expect(panel(page)).toContainText(muestra(steps[0]));
+    // El artefacto del paso 2 no puede estar en pantalla a la vez.
+    await expect(panel(page)).not.toContainText(muestra(steps[1]));
+  });
+
+  test("cada paso enseña su propio artefacto, no la misma ficha cuatro veces", async ({
     page,
   }) => {
-    await page.setViewportSize({ width: 1024, height: 900 });
+    // El defecto que arregló este componente: los cuatro pasos pintaban la
+    // misma pieza de dos renglones, así que el mensaje no parecía un mensaje
+    // ni la decisión una decisión. Si alguien vuelve a unificarlos, aquí se
+    // ve — cada paso trae un texto que sólo existe en su artefacto.
+    await page.setViewportSize({ width: 1440, height: 1000 });
     await page.goto("/");
 
-    const items = page.locator("#como-funciona ol > li");
-    await expect(items).toHaveCount(4);
-
-    const tops: number[] = [];
-    for (let i = 0; i < 4; i++) {
-      const artifact = items.nth(i).locator(":scope > div").first();
-      const box = await artifact.boundingBox();
-      if (!box) throw new Error(`step ${i} has no box`);
-      tops.push(box.y);
-    }
-
-    const min = Math.min(...tops);
-    const max = Math.max(...tops);
-    expect(
-      max - min,
-      `step tops at 1024px: ${JSON.stringify(tops)}`,
-    ).toBeLessThanOrEqual(4);
-  });
-
-  test("below 1024px the four steps stack (distinct y)", async ({ page }) => {
-    await page.setViewportSize({ width: 768, height: 1400 });
-    await page.goto("/");
-
-    const items = page.locator("#como-funciona ol > li");
-    await expect(items).toHaveCount(4);
-
-    const tops: number[] = [];
-    for (let i = 0; i < 4; i++) {
-      const artifact = items.nth(i).locator(":scope > div").first();
-      const box = await artifact.boundingBox();
-      if (!box) throw new Error(`step ${i} has no box`);
-      tops.push(box.y);
-    }
-
-    for (let i = 1; i < tops.length; i++) {
-      expect(
-        tops[i] - tops[i - 1],
-        `step ${i - 1} -> ${i} vertical gap at 768px: ${JSON.stringify(tops)}`,
-      ).toBeGreaterThan(20);
-    }
-  });
-
-  test("connectors between steps have non-zero width at 1024px", async ({ page }) => {
-    await page.setViewportSize({ width: 1024, height: 900 });
-    await page.goto("/");
-
-    const connectors = page.locator('#como-funciona ol > li > div[aria-hidden="true"]');
-    await expect(connectors).toHaveCount(3);
-
-    for (let i = 0; i < 3; i++) {
-      const thread = connectors.nth(i).locator("div.hidden.h-px.w-full");
-      const box = await thread.boundingBox();
-      expect(box?.width ?? 0, `connector #${i} thread width at 1024px`).toBeGreaterThan(0);
-    }
-  });
-
-  // Regression coverage for the "staircase" bug: the four step artifacts have
-  // different intrinsic heights (a 4-line chat bubble, a 2-row DataCard, a
-  // 3-line decision rule, a 2-line ticket chip), so top-aligning them made
-  // each <h3> start at a different y and left the connectors floating above
-  // the artifacts' top edges instead of running through their centre. These
-  // checks run at both `lg` (1024px, the narrowest row layout, where the
-  // chat bubble wraps to its tallest) and `xl` (1280px, wider columns).
-  for (const width of [1024, 1280]) {
-    test(`step headings share the same y at ${width}px`, async ({ page }) => {
-      await page.setViewportSize({ width, height: 900 });
-      await page.goto("/");
-
-      const headings = page.locator("#como-funciona ol > li h3");
-      await expect(headings).toHaveCount(4);
-
-      const ys: number[] = [];
-      for (let i = 0; i < 4; i++) {
-        const box = await headings.nth(i).boundingBox();
-        if (!box) throw new Error(`heading ${i} has no box`);
-        ys.push(box.y);
+    for (let i = 0; i < steps.length; i++) {
+      await tabs(page).nth(i).click();
+      await expect(panel(page)).toContainText(muestra(steps[i]));
+      for (let j = 0; j < steps.length; j++) {
+        if (j !== i) await expect(panel(page)).not.toContainText(muestra(steps[j]));
       }
+    }
+  });
 
-      const min = Math.min(...ys);
-      const max = Math.max(...ys);
-      expect(
-        max - min,
-        `heading y at ${width}px: ${JSON.stringify(ys)}`,
-      ).toBeLessThanOrEqual(2);
+  test("avanza solo al paso siguiente", async ({ page }) => {
+    // La sección tiene que entrar en pantalla: es su único trabajo sin que
+    // nadie toque nada, y si el temporizador se rompe la página se queda
+    // congelada en el paso 1 sin dar ningún síntoma.
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await page.goto("/");
+    await page.locator("#como-funciona").scrollIntoViewIfNeeded();
+
+    await expect(tabs(page).nth(1)).toHaveAttribute("aria-selected", "true", {
+      timeout: 15_000,
     });
+    await expect(panel(page)).toContainText(muestra(steps[1]));
+  });
 
-    test(`connectors' vertical centre falls inside the artifacts' vertical span at ${width}px`, async ({
-      page,
-    }) => {
-      await page.setViewportSize({ width, height: 900 });
-      await page.goto("/");
+  test("un clic elige el paso y apaga el automático", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await page.goto("/");
 
-      const items = page.locator("#como-funciona ol > li");
-      await expect(items).toHaveCount(4);
+    await tabs(page).nth(3).click();
+    await expect(tabs(page).nth(3)).toHaveAttribute("aria-selected", "true");
+    await expect(panel(page)).toContainText(steps[3].handoff);
 
-      // Intersection of the four artifacts' vertical spans (not their
-      // wrapping band, which is a fixed height by construction and would
-      // pass trivially). Centring each artifact in a shared band makes this
-      // intersection non-empty and roughly symmetric around the row centre;
-      // it's the tightest bound the connector centre must land well within.
-      let spanTop = -Infinity;
-      let spanBottom = Infinity;
-      for (let i = 0; i < 4; i++) {
-        const band = items.nth(i).locator(":scope > div > div").first();
-        const artifact = band.locator(":scope > *").first();
-        const box = await artifact.boundingBox();
-        if (!box) throw new Error(`artifact ${i} has no box`);
-        spanTop = Math.max(spanTop, box.y);
-        spanBottom = Math.min(spanBottom, box.y + box.height);
-      }
-      expect(spanTop, `artifact vertical spans did not overlap at ${width}px`).toBeLessThan(
-        spanBottom,
-      );
+    // Pasado el tiempo de un paso completo sigue donde lo dejaron.
+    await page.waitForTimeout(9_000);
+    await expect(tabs(page).nth(3)).toHaveAttribute("aria-selected", "true");
+  });
 
-      // A pixel-exact ">= spanTop" bound is too weak: before the fix, the
-      // connector sat at the artifacts' shared *top* edge (all top-aligned
-      // by `lg:items-start`), which coincides with `spanTop` whenever the
-      // shortest artifact happens to start the span — so it would pass a
-      // boundary-inclusive check despite being the exact bug this test
-      // exists to catch. Requiring the centre a real margin inside the span
-      // (not just at its edge) makes that regression fail here.
-      const margin = 10;
-      const connectors = page.locator('#como-funciona ol > li > div[aria-hidden="true"]');
-      await expect(connectors).toHaveCount(3);
-      for (let i = 0; i < 3; i++) {
-        const dot = connectors.nth(i).locator("span.rounded-full").first();
-        const box = await dot.boundingBox();
-        if (!box) throw new Error(`connector ${i} dot has no box`);
-        const centerY = box.y + box.height / 2;
-        expect(
-          centerY,
-          `connector #${i} dot centre (${centerY}) at ${width}px vs artifact span [${spanTop}, ${spanBottom}]`,
-        ).toBeGreaterThanOrEqual(spanTop + margin);
-        expect(
-          centerY,
-          `connector #${i} dot centre (${centerY}) at ${width}px vs artifact span [${spanTop}, ${spanBottom}]`,
-        ).toBeLessThanOrEqual(spanBottom - margin);
-      }
-    });
-  }
+  test("las flechas recorren los pasos", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await page.goto("/");
+
+    await tabs(page).nth(0).click();
+    await tabs(page).nth(0).focus();
+    await page.keyboard.press("ArrowDown");
+    await expect(tabs(page).nth(1)).toBeFocused();
+    await expect(tabs(page).nth(1)).toHaveAttribute("aria-selected", "true");
+
+    await page.keyboard.press("End");
+    await expect(tabs(page).nth(steps.length - 1)).toHaveAttribute("aria-selected", "true");
+  });
+
+  test("el panel no cambia de tamaño entre pasos", async ({ page }) => {
+    // Los cuatro pasos traen textos de largos distintos. Sin altura fija el
+    // panel encoge y crece en cada salto automático, y el bloque entero baila.
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await page.goto("/");
+
+    const alturas: number[] = [];
+    for (let i = 0; i < steps.length; i++) {
+      await tabs(page).nth(i).click();
+      const box = await panel(page).boundingBox();
+      if (!box) throw new Error(`el panel del paso ${i} no tiene caja`);
+      alturas.push(Math.round(box.height));
+    }
+    expect(new Set(alturas).size, `alturas: ${JSON.stringify(alturas)}`).toBe(1);
+  });
+
+  test("en móvil el índice y el panel se apilan", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 900 });
+    await page.goto("/");
+
+    const primeraPestaña = await tabs(page).nth(0).boundingBox();
+    const caja = await panel(page).boundingBox();
+    if (!primeraPestaña || !caja) throw new Error("falta una caja");
+    expect(caja.y).toBeGreaterThan(primeraPestaña.y);
+    expect(caja.width).toBeLessThanOrEqual(390);
+  });
 });

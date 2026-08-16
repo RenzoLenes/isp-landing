@@ -7,8 +7,33 @@ export function SectionHeading({
   eyebrow: string;
   title: string;
   body?: string;
-  align?: "left" | "center";
+  /**
+   * `split` pone el título a la izquierda y el cuerpo a la derecha, en dos
+   * columnas (referencia Qipeline). Existe porque la página había quedado
+   * con TODOS los encabezados centrados, y esa simetría repetida sección
+   * tras sección se lee como plantilla. Sólo se aplica donde hay `body`:
+   * sin cuerpo la columna derecha quedaría vacía.
+   */
+  align?: "left" | "center" | "split";
 }) {
+  if (align === "split" && body) {
+    return (
+      <div className="grid items-end gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,22rem)] md:gap-12">
+        <div>
+          <p className="text-sm font-medium uppercase tracking-[0.18em] text-[color:var(--text-secondary)]">
+            {eyebrow}
+          </p>
+          <h2 className="mt-4 text-balance font-display text-[clamp(1.9rem,2.6vw,3rem)] font-medium leading-[1.1] tracking-[-0.025em] text-[color:var(--text-primary)]">
+            {title}
+          </h2>
+        </div>
+        <p className="text-lg leading-relaxed text-[color:var(--text-secondary)] md:pb-1">
+          {body}
+        </p>
+      </div>
+    );
+  }
+
   const alignClass = align === "center" ? "text-center mx-auto" : "";
   return (
     <div className={`max-w-2xl ${alignClass}`}>
@@ -21,7 +46,7 @@ export function SectionHeading({
       <p className="text-sm font-medium uppercase tracking-[0.18em] text-[color:var(--text-secondary)]">
         {eyebrow}
       </p>
-      <h2 className="mt-4 font-display text-4xl leading-[1.08] text-balance text-[color:var(--text-primary)] md:text-5xl">
+      <h2 className="mt-4 font-display text-[clamp(1.9rem,2.6vw,3rem)] font-medium leading-[1.1] tracking-[-0.025em] text-balance text-[color:var(--text-primary)]">
         {title}
       </h2>
       {body ? (

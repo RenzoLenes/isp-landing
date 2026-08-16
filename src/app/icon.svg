@@ -1,0 +1,24 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!--
+    Icono de pestaña. Convención de archivo de Next (`app/icon.svg`): el enlace
+    del <head> lo pone el framework, no hay que declararlo en `metadata`.
+
+    Por qué azulejo sólido y no la marca suelta sobre transparente, que es como
+    vienen los assets de `public/`: a 16px, y con el cromo del navegador tan
+    pronto claro como oscuro, una marca en Tinta sobre transparente desaparece
+    la mitad de las veces. El azulejo en Nocturno con la marca en Superficie es
+    el mismo emparejamiento que ya usa la página en el registro de Sala Oscura
+    (§2), y se lee igual en las dos pestañas.
+
+    La geometría es LITERALMENTE la de `ui/GantryMark.tsx` — mismos tres
+    polígonos, mismo espacio de coordenadas— reescalada aquí con una
+    transformación en vez de copiada a mano: si la marca cambia, se cambia en
+    un sitio y estos puntos se pegan tal cual.
+  -->
+  <rect width="512" height="512" rx="112" fill="#0F1824"/>
+  <g fill="#FFFFFF" transform="translate(-565.53 -355.6) scale(2.2821)">
+    <polygon points="330,200 346,190 346,346 330,346"/>
+    <polygon points="418,229 434,219 434,346 418,346"/>
+    <polygon points="286,313 434,219 434,239 286,332"/>
+  </g>
+</svg>

@@ -3,12 +3,26 @@
 import { useEffect, useState } from "react";
 import { LANDING } from "@/content/landing";
 import { ButtonLink } from "@/components/ui/ButtonLink";
+import { GantryMark } from "@/components/ui/GantryMark";
 
-const SCROLL_THRESHOLD = 24;
-
+/*
+ * Barra al estilo Qipeline (DESIGN.md §6): transparente sobre el cielo, marca
+ * a la izquierda, enlaces centrados, una sola CTA oscura a la derecha. Nada de
+ * píldora blanca flotante ni de estado `scrolled` — la barra vive en la parte
+ * alta del cielo (que la máscara de nubes deja despejada justo para esto) y
+ * scrollea con la página, como en la referencia.
+ *
+ * `absolute` y no `fixed`: al no seguir al scroll ya no atraviesa registros
+ * oscuros, lo que elimina de raíz el problema de contraste que la píldora
+ * opaca existía para resolver (ver historial en git). Tinta sobre el azul más
+ * saturado del cielo (#A4D1F6) mide ~11:1.
+ *
+ * El menú móvil conserva su semántica: `aria-expanded`, cierre con Escape,
+ * objetivos táctiles de 44px y panel blanco opaco (sobre el cielo un panel
+ * translúcido dejaría el texto sin fondo estable).
+ */
 export function Navbar() {
   const [open, setOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
   const { brand, links, cta } = LANDING.nav;
 
   useEffect(() => {
@@ -20,76 +34,40 @@ export function Navbar() {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [open]);
 
-  useEffect(() => {
-    function handleScroll() {
-      setScrolled(window.scrollY > SCROLL_THRESHOLD);
-    }
-    handleScroll();
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
   return (
-    <header
-      className={`fixed inset-x-0 z-50 px-4 transition-[top] duration-300 ease-out motion-reduce:transition-none ${
-        scrolled ? "top-2" : "top-4"
-      }`}
-    >
-      {/* This chunk's register rhythm means this fixed pill now scrolls over
-          the night register too (Pillars, Pilot) — `backdrop-filter: blur`
-          samples whatever is genuinely behind it, so a translucent pill
-          measurably darkens there. Pixel-sampled (not the DOM-approximation
-          `getContrastInfo` helper uses, which reads the CSS `color` value's
-          own un-blended luminance and so doesn't see this at all — exactly
-          the trap DESIGN.md §3 warns about): the old `bg-surface/60` pill
-          over `night` composited to ~rgb(165,169,166), and `text-moss/80`
-          on that measured 1.80:1 — a real, if quiet, failure that predates
-          this chunk (the same pixel method found the *original* light-hero
-          baseline was already only 2.70:1; `moss/80` text rendered
-          translucent against an already-translucent pill, neither alone).
-          Fixed on both sides: the pill is now fully opaque (`bg-surface`,
-          no opacity modifier) so `backdrop-blur` has nothing to show
-          through regardless of scroll position — it measures literal
-          rgb(255,255,255) by direct pixel sample — and the links render at
-          full `moss` instead of `/80`, so the text isn't a second,
-          independent source of translucency. Full-opacity `moss` on white
-          measures a fixed 4.97–5.12:1 by real screenshot sampling (checked
-          at the top of the page and scrolled over both `night` sections),
-          comfortable margin over the 4.5:1 floor and no longer dependent on
-          what's behind the pill. */}
-      <div
-        className={`mx-auto flex max-w-content items-center justify-between rounded-full border border-whisper bg-surface pl-6 pr-2.5 py-1 shadow-[0_6px_16px_-10px_rgb(23_32_27/0.16)] backdrop-blur-md transition-transform duration-300 ease-out motion-reduce:transition-none md:max-w-3xl ${
-          scrolled ? "scale-[0.97]" : ""
-        }`}
-      >
+    <header className="absolute inset-x-0 top-0 z-50 px-6 pt-7 sm:px-10">
+      <div className="relative mx-auto flex w-full items-center justify-between lg:max-w-[min(1440px,78vw)]">
         <a
           href="#"
-          className="flex min-h-11 items-center font-display text-2xl leading-none text-ink"
+          className="flex min-h-11 items-center gap-2 text-ink"
         >
-          {brand}
+          <GantryMark size={24} />
+          <span className="font-display text-[clamp(1.0625rem,1.2vw,1.375rem)] font-semibold tracking-tight leading-none">
+            {brand}
+          </span>
         </a>
-        <nav aria-label="Principal" className="hidden items-center gap-7 md:flex">
+
+        <nav
+          aria-label="Principal"
+          className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-12 text-[clamp(0.9375rem,0.95vw,1.0625rem)] text-ink md:flex"
+        >
           {links.map((link) => (
             <a
               key={link.href}
               href={link.href}
-              className="flex items-center py-4 text-[13px] leading-none text-moss transition-colors hover:text-ink"
+              className="flex items-center py-4 leading-none transition-opacity hover:opacity-60"
             >
               {link.label}
             </a>
           ))}
         </nav>
+
         <div className="hidden md:block">
-          {/* Fix 4 (hero-fixes-report.md): unify the two primary CTAs — the
-              hero's is `ink`, so the nav's now matches instead of staying
-              `signal`, per the references (Qipeline uses the same dark
-              treatment in both). Signal remains the accent for links, focus
-              rings, and the triad's context node; it's no longer used as a
-              CTA fill anywhere on the page. */}
           <ButtonLink href={cta.href} variant="ink" size="sm">
             {cta.label}
           </ButtonLink>
         </div>
+
         <button
           type="button"
           aria-expanded={open}
@@ -109,7 +87,7 @@ export function Navbar() {
       </div>
 
       {open ? (
-        <div className="mx-auto mt-2 max-w-content rounded-3xl border border-whisper bg-surface/95 p-6 shadow-float backdrop-blur-md md:hidden">
+        <div className="mx-auto mt-3 rounded-[20px] bg-surface p-6 shadow-[0_24px_60px_-24px_rgba(23,58,102,0.4)] md:hidden">
           <nav aria-label="Principal móvil" className="flex flex-col gap-4">
             {links.map((link) => (
               <a

@@ -1,58 +1,83 @@
 import { test, expect } from "@playwright/test";
-import { LANDING } from "../src/content/landing";
-import { contrastRatio, darkestInRect, loadScreenshotCanvas, readPixel } from "./helpers/pixel-contrast";
+import { loadScreenshotCanvas, readPixel } from "./helpers/pixel-contrast";
 
-// Chunk C (spec Part 1a/1b/1c, docs/superpowers/specs/2026-08-04-gantry-realineamiento.md)
-// strengthened three things that had shipped too weak to read as the
-// Qipeline-style hero the client's references show: the gradient field, the
-// headline scale, and the product console's width. These checks encode the
-// "presence, not just structure" bar so a future edit that quietly dials any
-// of them back down fails loudly instead of just looking flatter in a
-// screenshot nobody re-checks.
+/*
+ * El hero: cielo, escala del titular y ancho de la consola.
+ *
+ * Estas pruebas se reescribieron con el rediseño (Campo Señal convertido en un
+ * cielo real, DESIGN.md §7). Antes fijaban **píxeles absolutos**: "el titular
+ * mide más de 78px a 1440px", "la consola ocupa más del 0.90 del viewport".
+ * Ese planteamiento resultó ser justo el defecto que el rediseño corrigió — un
+ * tamaño fijo sólo acierta a un ancho concreto y descuadra en el resto.
+ *
+ * Ahora fijan la **proporción**, que es la regla real del sistema (§5 y §8):
+ * el titular mide el mismo porcentaje del viewport a cualquier ancho, y la
+ * consola también. Así una futura regresión a tamaños fijos falla aquí en vez
+ * de pasar desapercibida.
+ */
 
-test.describe("Hero atmosphere (gradient field, headline scale, console width)", () => {
-  test("the gradient field exists, sits behind content, and is inert", async ({ page }) => {
+const HEADLINE_VW = 4.4; // DESIGN.md §5
+const CONSOLE_VW = 78; // DESIGN.md §8
+
+test.describe("Hero atmosphere (cielo, escala del titular, ancho de consola)", () => {
+  test("el cielo existe, se pinta detrás del contenido y es inerte", async ({ page }) => {
     await page.goto("/");
-    const field = page.locator("#gradient-field");
-    await expect(field).toHaveCount(1);
-    await expect(field).toHaveAttribute("aria-hidden", "true");
+    const sky = page.locator("#sky-field");
+    await expect(sky).toHaveCount(1);
+    await expect(sky).toHaveAttribute("aria-hidden", "true");
 
-    const style = await field.evaluate((el) => {
+    const style = await sky.evaluate((el) => {
       const cs = getComputedStyle(el);
       return { zIndex: cs.zIndex, pointerEvents: cs.pointerEvents, position: cs.position };
     });
-    expect(Number(style.zIndex), `z-index ${style.zIndex} should be negative`).toBeLessThan(0);
-    expect(style.pointerEvents, "pointer-events should be none").toBe("none");
+    // `-z-10` no es decorativo (DESIGN.md §7, trampa 2): un `absolute` con
+    // z-index automático se pinta por encima del texto de los elementos no
+    // posicionados y taparía el titular.
+    expect(Number(style.zIndex), `z-index ${style.zIndex} debe ser negativo`).toBeLessThan(0);
+    expect(style.pointerEvents, "pointer-events debe ser none").toBe("none");
+    expect(style.position).toBe("absolute");
 
-    // It should actually cover real area behind the hero, not a 0x0 stub.
-    const box = await field.boundingBox();
-    if (!box) throw new Error("gradient field has no box");
+    const box = await sky.boundingBox();
+    if (!box) throw new Error("el cielo no tiene caja");
     expect(box.width).toBeGreaterThan(0);
     expect(box.height).toBeGreaterThan(400);
   });
 
-  test("the field is a real, visible tint — not a near-invisible wash", async ({ page }) => {
-    // The pre-chunk-C field peaked at ~4% opacity and read as flat from a
-    // normal viewing distance (spec Part 1a's diagnosis). Confirm the
-    // strengthened field actually shifts pixel colour away from plain canvas
-    // (#F4F6F4) by a real margin, sampled from an actual screenshot — not
-    // computed styles, which is exactly the measurement chunk A's own
-    // contrast helper is blind to (see e2e/helpers/contrast.ts's doc
-    // comment).
+  test("el titular no queda tapado por el cielo", async ({ page }) => {
+    // Regresión concreta ya vivida: el cielo se montó sin `-z-10` y el titular
+    // desapareció de la página aun estando en el DOM con opacidad 1. Medir el
+    // píxel es lo único que lo detecta; el DOM decía que todo estaba bien.
+    await page.setViewportSize({ width: 1280, height: 1000 });
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("/");
+    await page.waitForLoadState("networkidle");
+
+    const heading = page.locator("main > section").first().getByRole("heading", { level: 1 });
+    const box = await heading.boundingBox();
+    if (!box) throw new Error("el titular no tiene caja");
+
+    const canvasId = await loadScreenshotCanvas(page);
+    // Barrido horizontal por la mitad de la primera línea: alguno de estos
+    // puntos tiene que caer sobre un trazo de letra en Tinta.
+    let darkest = 255;
+    for (let i = 1; i < 40; i++) {
+      const p = await readPixel(page, canvasId, box.x + (box.width * i) / 40, box.y + box.height * 0.22);
+      darkest = Math.min(darkest, (p.r + p.g + p.b) / 3);
+    }
+    expect(darkest, `el píxel más oscuro del titular es ${darkest.toFixed(0)} (Tinta ≈ 26)`).toBeLessThan(90);
+  });
+
+  test("el cielo es un tinte real, no un lavado casi invisible", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 1000 });
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("/");
     await page.waitForLoadState("networkidle");
 
     const canvasId = await loadScreenshotCanvas(page);
-    // A point inside the field's own bounding box, biased toward the
-    // right/upper area where the patches are concentrated, clear of the
-    // navbar and of any text/console content.
-    const fieldBox = await page.locator("#gradient-field").boundingBox();
-    if (!fieldBox) throw new Error("gradient field has no box");
-    const sampleX = fieldBox.x + fieldBox.width * 0.82;
-    const sampleY = fieldBox.y + fieldBox.height * 0.32;
-    const pixel = await readPixel(page, canvasId, sampleX, sampleY);
+    const box = await page.locator("#sky-field").boundingBox();
+    if (!box) throw new Error("el cielo no tiene caja");
+    // Punto alto y a la derecha: dentro del cielo, lejos del nav y de texto.
+    const pixel = await readPixel(page, canvasId, box.x + box.width * 0.86, box.y + box.height * 0.18);
 
     const canvas = { r: 244, g: 246, b: 244 };
     const distance = Math.sqrt(
@@ -60,87 +85,43 @@ test.describe("Hero atmosphere (gradient field, headline scale, console width)",
     );
     expect(
       distance,
-      `sampled field pixel rgb(${pixel.r},${pixel.g},${pixel.b}) vs canvas rgb(244,246,244), distance ${distance.toFixed(1)}`,
+      `píxel del cielo rgb(${pixel.r},${pixel.g},${pixel.b}) vs Lienzo rgb(244,246,244), distancia ${distance.toFixed(1)}`,
     ).toBeGreaterThan(10);
+    // Y además tiene que ser azul, no un gris cualquiera.
+    expect(pixel.b, `el azul (${pixel.b}) debe superar al rojo (${pixel.r})`).toBeGreaterThan(pixel.r);
   });
 
-  test("the headline's computed font-size at 1440px clears the pre-chunk-C ceiling", async ({
-    page,
-  }) => {
-    // Before chunk C the headline's `clamp()` topped out at 4.75rem (76px)
-    // and stayed there from ~1375px up — the spec's "too small, breaks into
-    // three ordinary lines" complaint. The new ceiling is 5.25rem (84px).
-    // Floor set at 78px: comfortably above the *old* maximum, so this fails
-    // if the scale ever regresses toward it, with a little slack for a
-    // future retune that doesn't go all the way back down.
-    await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto("/");
-    const heading = page.locator("main > section").first().getByRole("heading", { level: 1 });
-    const fontSize = await heading.evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
-    expect(fontSize, `headline font-size ${fontSize}px at 1440px`).toBeGreaterThan(78);
-  });
-
-  test("the console's rendered width at 1440px is a dominant fraction of the viewport", async ({
-    page,
-  }) => {
-    // Spec Part 1c: the console should read as a dominant product shot, not
-    // an illustration with wide margins — it's allowed to exceed the 1220px
-    // text container. Measured after the chunk C widen: ~0.956 at 1440px
-    // (container arithmetic in chunk-c-report.md). Floor set at 0.90 —
-    // comfortably below the measured value, but well above the old
-    // max-w-content-capped console's ratio (1220/1440 ≈ 0.847), so this
-    // fails if a future change re-narrows it back toward the old cap.
-    await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto("/");
-    const console_ = page.locator('[role="img"][aria-label*="Captura ilustrativa"]');
-    const box = await console_.boundingBox();
-    if (!box) throw new Error("console has no box");
-    const fraction = box.width / 1440;
-    expect(fraction, `console width ${box.width}px is ${fraction.toFixed(3)} of 1440px viewport`).toBeGreaterThanOrEqual(
-      0.9,
-    );
-  });
-
-  test("hero eyebrow, headline and subtitle stay AA-compliant over the strongest part of the field", async ({
-    page,
-  }) => {
-    // The direct test of spec Part 1a's central tension: a much stronger
-    // field must not push any hero text below WCAG AA. Sampled from a real
-    // screenshot (not the DOM-based helper in contrast.spec.ts, which
-    // ignores background-image entirely) at the widest tested viewport,
-    // where the field's patches sit furthest into the text column's
-    // reading area.
-    await page.setViewportSize({ width: 1440, height: 1000 });
-    await page.emulateMedia({ reducedMotion: "reduce" });
-    await page.goto("/");
-    await page.waitForLoadState("networkidle");
-
-    const heroSection = page.locator("main > section").first();
-    const badge = heroSection.locator("span").first();
-    const heading = heroSection.getByRole("heading", { level: 1 });
-    const subtitle = heroSection.getByText(LANDING.hero.subtitle, { exact: true });
-
-    const canvasId = await loadScreenshotCanvas(page);
-
-    async function measure(locator: typeof badge, requiredRatio: number, label: string) {
-      const rect = await locator.boundingBox();
-      if (!rect) throw new Error(`${label} has no box`);
-      const fg = await darkestInRect(page, canvasId, rect);
-      // Background sampled just above the element's horizontal centre —
-      // the same local backdrop (including the gradient field) the glyphs
-      // render on, clear of the glyphs themselves.
-      const bg = await readPixel(page, canvasId, rect.x + rect.width / 2, Math.max(0, rect.y - 8));
-      const ratio = contrastRatio(fg, bg);
+  test("el titular mantiene su proporción del viewport en todo el rango", async ({ page }) => {
+    // La regla es proporcional (§5). La fórmula anterior sumaba un `rem` fijo
+    // y tocaba techo a ~1400px, así que en un portátil el titular quedaba
+    // clavado mientras el resto de la página seguía escalando.
+    for (const width of [1280, 1440, 1512]) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto("/");
+      const heading = page.locator("main > section").first().getByRole("heading", { level: 1 });
+      const fontSize = await heading.evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
+      const expected = (width * HEADLINE_VW) / 100;
       expect(
-        ratio,
-        `${label}: fg rgb(${fg.r},${fg.g},${fg.b}) vs bg rgb(${bg.r},${bg.g},${bg.b}) = ${ratio.toFixed(2)}:1 (needs >=${requiredRatio}:1)`,
-      ).toBeGreaterThanOrEqual(requiredRatio);
+        Math.abs(fontSize - expected),
+        `a ${width}px el titular mide ${fontSize}px; ${HEADLINE_VW}vw serían ${expected.toFixed(1)}px`,
+      ).toBeLessThan(1.5);
     }
+  });
 
-    await measure(badge, 4.5, "badge (eyebrow)");
-    // Headline is >=24px at every viewport this page ships (44px floor even
-    // at 320px), so it's WCAG "large text" — 3:1 floor.
-    await measure(heading, 3, "headline");
-    await measure(subtitle, 4.5, "subtitle");
+  test("la consola mantiene su proporción del viewport en todo el rango", async ({ page }) => {
+    // §8: tope proporcional `min(1320px, 78vw)`. Por debajo de ~1692px manda
+    // el 78vw, así que la fracción es constante.
+    for (const width of [1280, 1440, 1512]) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto("/");
+      const console_ = page.locator("#gantry-console");
+      const box = await console_.boundingBox();
+      if (!box) throw new Error("la consola no tiene caja");
+      const fraction = (box.width / width) * 100;
+      expect(
+        Math.abs(fraction - CONSOLE_VW),
+        `a ${width}px la consola ocupa ${fraction.toFixed(1)}% del viewport; se esperaba ~${CONSOLE_VW}%`,
+      ).toBeLessThan(3);
+    }
   });
 });

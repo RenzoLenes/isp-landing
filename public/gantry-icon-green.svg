@@ -1,0 +1,8 @@
+<svg width="200" height="200" viewBox="260 168 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Icon-only green: transparent bg, full mark in brand green #00E599 -->
+  <g fill="#00E599">
+    <polygon points="330,200 346,190 346,346 330,346"/>
+    <polygon points="418,229 434,219 434,346 418,346"/>
+    <polygon points="286,313 434,219 434,239 286,332"/>
+  </g>
+</svg>

@@ -1,5 +1,36 @@
-import type { Ref } from "react";
-import { LANDING } from "@/content/landing";
+import type { ReactNode, Ref } from "react";
+import { LANDING, type ConsoleIntegrationIcon, type IntegrationSystem } from "@/content/landing";
+import { GantryMark } from "@/components/ui/GantryMark";
+import {
+  CodeIcon,
+  HubIcon,
+  RouterIcon,
+  WavesIcon,
+  WhatsAppIcon,
+} from "@/components/ui/console-icons";
+
+/*
+ * El mismo vocabulario de glifos que usa la consola (vista Integraciones), a
+ * propósito: son las dos caras de la misma promesa y deben hablar igual. NO
+ * son los logotipos reales de MikroWisp, WiMovil ni WispHub — marcas de
+ * terceros — sino un glifo que dice qué ES cada sistema.
+ */
+/*
+ * Ancho del nodo de salida en escritorio, en px. Igual que `CARD_WIDTH` en el
+ * diagrama: el haz ancla en el CENTRO del nodo, así que necesita la mitad para
+ * salir por su borde. Antes el nodo era `lg:w-auto` y el desplazamiento un
+ * `-82` medido a mano sobre ESA cadena de texto — cambiar el copy lo
+ * desalineaba en silencio.
+ */
+export const OUTPUT_WIDTH = 224; // debe coincidir con la clase `lg:w-56`
+
+const SYSTEM_ICONS: Record<ConsoleIntegrationIcon, ReactNode> = {
+  router: <RouterIcon size={18} />,
+  waves: <WavesIcon size={18} />,
+  hub: <HubIcon size={18} />,
+  chat: <WhatsAppIcon size={18} />,
+  code: <CodeIcon size={18} />,
+};
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Reveal } from "@/components/ui/Reveal";
 import { SignalThread } from "@/components/ui/SignalThread";
@@ -18,20 +49,27 @@ import { IntegrationsBeamDiagram } from "@/components/sections/IntegrationsBeamD
 // same card so the four beams start at a uniform x — see that file for why
 // the uniform width still matters with Animated Beam.
 export function SystemCard({
-  name,
+  system,
   className = "",
   ref,
 }: {
-  name: string;
+  system: IntegrationSystem;
   className?: string;
   ref?: Ref<HTMLDivElement>;
 }) {
   return (
     <div
       ref={ref}
-      className={`min-w-0 rounded-2xl border border-whisper bg-surface px-4 py-3 text-sm font-medium text-ink shadow-card ${className}`}
+      data-integration-node
+      className={`flex min-w-0 items-center gap-3 rounded-2xl border border-whisper bg-surface px-3.5 py-3 shadow-card ${className}`}
     >
-      {name}
+      <span className="flex size-9 shrink-0 items-center justify-center rounded-[11px] bg-sunk text-steel">
+        {SYSTEM_ICONS[system.icon]}
+      </span>
+      <span className="min-w-0">
+        <span className="block truncate text-sm font-medium text-ink">{system.name}</span>
+        <span className="block truncate text-[11.5px] text-steel">{system.role}</span>
+      </span>
     </div>
   );
 }
@@ -60,37 +98,58 @@ export function SystemCard({
  */
 export function HubNode({
   label,
+  role,
   ref,
 }: {
   label: string;
+  role: string;
   ref?: Ref<HTMLDivElement>;
 }) {
   return (
-    <div ref={ref} className="relative flex shrink-0 flex-col items-center">
+    <div className="relative flex shrink-0 flex-col items-center">
       <div
         aria-hidden
-        className="absolute inset-0 -z-10 rounded-[1.75rem] bg-signal/40 blur-2xl"
+        className="absolute inset-x-0 top-0 -z-10 h-24 rounded-[1.75rem] bg-signal/40 blur-2xl lg:h-28"
       />
-      <div className="flex size-24 items-center justify-center rounded-[1.75rem] border border-signal/50 bg-surface shadow-float lg:size-28">
-        <span className="text-lg font-semibold text-ink">{label}</span>
+      {/* La marca de Gantry ES el nodo: antes era su nombre en texto, que en
+          un diagrama de logotipos leía como el eslabón sin identidad. */}
+      <div
+        ref={ref}
+        data-integration-hub
+        className="flex size-24 flex-col items-center justify-center gap-1.5 rounded-[1.75rem] border border-signal/50 bg-surface text-ink shadow-float lg:size-28"
+      >
+        <GantryMark size={30} />
+        <span className="text-sm font-semibold tracking-tight">{label}</span>
       </div>
+      <span className="mt-2 max-w-[8rem] text-center text-[11.5px] leading-snug text-steel">
+        {role}
+      </span>
     </div>
   );
 }
 
 export function OutputNode({
   label,
+  role,
   ref,
 }: {
   label: string;
+  role: string;
   ref?: Ref<HTMLDivElement>;
 }) {
   return (
     <div
       ref={ref}
-      className="flex w-full max-w-[12rem] items-center justify-center rounded-2xl border border-fiber/40 bg-fiber/15 px-4 py-3 text-center text-sm font-medium text-ink shadow-card lg:w-auto"
+      data-integration-output
+      className="flex w-full max-w-xs items-center gap-3 rounded-2xl border border-signal/35 bg-signal/10 px-3.5 py-3 shadow-card lg:w-56 lg:max-w-none"
     >
-      {label}
+      <span className="flex size-9 shrink-0 items-center justify-center rounded-[11px] bg-surface text-signal-deep">
+        <WhatsAppIcon size={19} />
+      </span>
+      <span className="min-w-0">
+        <span className="block truncate text-sm font-medium text-ink">{label}</span>
+        <span className="block truncate text-[11.5px] text-steel">{role}</span>
+      </span>
     </div>
   );
 }
@@ -109,6 +168,7 @@ function VerticalConnector({ color }: { color: string }) {
 export function Integrations() {
   const { eyebrow, title, body, systems, hub, output, trust } =
     LANDING.integrations;
+  const { hubRole, outputRole } = LANDING.integrations;
 
   return (
     <SectionRegister register="surface" className="px-4 py-[clamp(5rem,10vw,9rem)]">
@@ -118,7 +178,7 @@ export function Integrations() {
             eyebrow={eyebrow}
             title={title}
             body={body}
-            align="center"
+            align="split"
           />
         </Reveal>
 
@@ -126,21 +186,21 @@ export function Integrations() {
         <Reveal delay={0.15}>
           <ol className="mt-16 flex flex-col items-center gap-3 lg:hidden">
             {systems.map((system) => (
-              <li key={system} className="w-full max-w-xs">
-                <SystemCard name={system} />
+              <li key={system.name} className="w-full max-w-xs">
+                <SystemCard system={system} />
               </li>
             ))}
             <li aria-hidden>
               <VerticalConnector color="bg-signal" />
             </li>
             <li>
-              <HubNode label={hub} />
+              <HubNode label={hub} role={hubRole} />
             </li>
             <li aria-hidden>
-              <VerticalConnector color="bg-fiber" />
+              <VerticalConnector color="bg-signal" />
             </li>
             <li className="w-full max-w-xs">
-              <OutputNode label={output} />
+              <OutputNode label={output} role={outputRole} />
             </li>
           </ol>
         </Reveal>
@@ -149,14 +209,20 @@ export function Integrations() {
             ahora con Animated Beam (curvas animadas) en vez de los hilos
             punteados rectos. Ver IntegrationsBeamDiagram.tsx. */}
         <Reveal delay={0.15}>
-          <IntegrationsBeamDiagram systems={systems} hub={hub} output={output} />
+          <IntegrationsBeamDiagram
+            systems={systems}
+            hub={hub}
+            hubRole={hubRole}
+            output={output}
+            outputRole={outputRole}
+          />
         </Reveal>
 
         <Reveal delay={0.3}>
-          {/* Objection-handler: a tinted fiber accent gives the claim more
+          {/* Objection-handler: a tinted Señal accent gives the claim more
               weight than ordinary body copy, without borrowing the vocabulary
               of a live status indicator (no dot, no chip, no "activo"). */}
-          <div className="mx-auto mt-14 max-w-xl rounded-2xl border border-fiber/30 bg-fiber/10 px-6 py-5 text-center shadow-card">
+          <div className="mx-auto mt-14 max-w-xl rounded-2xl border border-signal/25 bg-signal/[0.07] px-6 py-5 text-center shadow-card">
             <p className="text-lg font-medium leading-relaxed text-ink md:text-xl">
               {trust}
             </p>

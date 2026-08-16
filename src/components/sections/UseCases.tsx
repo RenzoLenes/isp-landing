@@ -5,12 +5,13 @@ import { DataCard } from "@/components/ui/DataCard";
 import { ResultCard } from "@/components/ui/ResultCard";
 import { SignalThread } from "@/components/ui/SignalThread";
 import { SectionRegister } from "@/components/ui/SectionRegister";
-import { ChatScene } from "@/components/sections/ChatScene";
+import { WhatsAppThread } from "@/components/ui/WhatsAppThread";
+import { withQuoteBubbles } from "@/components/ui/QuoteBubble";
 
 /**
  * Connector between the lookup (context) and the result (action). Only the
  * top node is drawn here — the thread terminates into `ResultCard`'s own
- * leading fiber dot, which reads as the action node. A second fiber dot here
+ * leading accent dot, which reads as the action node. A second dot here
  * would stack a few pixels above it as a redundant double dot.
  */
 function Connector() {
@@ -25,10 +26,10 @@ function Connector() {
 }
 
 export function UseCases() {
-  const { eyebrow, title, items } = LANDING.useCases;
+  const { eyebrow, title, items, daySeparator, composerPlaceholder } = LANDING.useCases;
   return (
     <SectionRegister
-      register="canvas"
+      register="surface"
       id="casos"
       className="scroll-mt-28 px-4 py-[clamp(5rem,10vw,9rem)]"
     >
@@ -45,13 +46,17 @@ export function UseCases() {
                 }`}
               >
                 <div>
-                  <span className="rounded-full border border-whisper bg-surface px-3 py-1 text-xs font-medium text-moss">
+                  <span className="rounded-full border border-whisper bg-surface px-3 py-1 text-xs font-medium text-steel">
                     {useCase.tag}
                   </span>
-                  <h3 className="mt-4 font-display text-3xl leading-tight text-balance md:text-4xl">
-                    {useCase.title}
+                  {/* Las frases del cliente van como burbuja, no entre
+                      comillas angulares: a este cuerpo las « » son dos marcas
+                      grandes que meten ruido, y aquí hay una forma más
+                      literal de decir que lo escribió un cliente. */}
+                  <h3 className="mt-4 font-display text-3xl leading-[1.25] text-balance md:text-4xl">
+                    {withQuoteBubbles(useCase.title)}
                   </h3>
-                  <p className="mt-4 max-w-[58ch] leading-relaxed text-moss">
+                  <p className="mt-4 max-w-[58ch] leading-relaxed text-steel">
                     {useCase.description}
                   </p>
                   <div className="mt-6 flex max-w-sm flex-col">
@@ -63,8 +68,21 @@ export function UseCases() {
                     />
                   </div>
                 </div>
-                <div className="mx-auto w-full max-w-md">
-                  <ChatScene label={useCase.chatLabel} chat={useCase.chat} />
+                {/* El mismo hilo que la consola del hero, no una tarjeta con
+                    burbujas genéricas: es el mismo producto enseñado dos
+                    veces y tiene que verse igual. `stagger` escalona las
+                    burbujas al entrar en pantalla, que es lo único que esta
+                    escena añade sobre la del hero. */}
+                <div className="mx-auto w-full max-w-xl">
+                  <WhatsAppThread
+                    contact={useCase.contact}
+                    daySeparator={daySeparator}
+                    messages={useCase.chat}
+                    composerPlaceholder={composerPlaceholder}
+                    scale="comfortable"
+                    stagger
+                    className="rounded-[20px] border border-whisper shadow-float"
+                  />
                 </div>
               </div>
             </Reveal>

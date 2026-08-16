@@ -32,7 +32,7 @@ export function DataCard({
     // it reads as a lit screen — so only the OUTER chrome reacts: border and
     // shadow read `--card-border`/`--card-shadow`, which `night` resolves to
     // "transparent" + a wide soft glow instead of whisper + shadow-card.
-    // Every row/label/value below stays hardcoded ink/moss on purpose: they
+    // Every row/label/value below stays hardcoded ink/steel on purpose: they
     // sit against this card's own always-white fill, never against the
     // section's register directly, so they must NOT follow the same
     // variables SectionHeading uses (that would go white-on-white).
@@ -50,7 +50,7 @@ export function DataCard({
             key={row.label}
             className={`flex items-center justify-between gap-4 border-t border-whisper first:pt-0 last:pb-0 ${isCompact ? "py-2" : "py-2.5"}`}
           >
-            <dt className="text-xs text-moss">{row.label}</dt>
+            <dt className="text-xs text-steel">{row.label}</dt>
             <dd className="text-sm text-ink [font-variant-numeric:tabular-nums]">
               {row.value}
             </dd>

@@ -1,0 +1,12 @@
+<svg width="200" height="200" viewBox="260 168 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Variante Tinta: la marca sobre el Campo Señal y sobre registros claros.
+       El verde de marca (#00E599) es un neón saturado al 100%: sobre el cielo
+       celeste vibraba y competía con el titular, y la landing sostiene un solo
+       acento (Señal azul), no dos. La marca pasa a Tinta y el color queda para
+       la interfaz. Ver DESIGN.md §4. -->
+  <g fill="#17201B">
+    <polygon points="330,200 346,190 346,346 330,346"/>
+    <polygon points="418,229 434,219 434,346 418,346"/>
+    <polygon points="286,313 434,219 434,239 286,332"/>
+  </g>
+</svg>

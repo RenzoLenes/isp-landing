@@ -43,65 +43,52 @@ test.describe("Contrast (computed, WCAG AA)", () => {
     );
   });
 
-  test("pixel-sampled: navbar link contrast at the top of the page and scrolled over night", async ({
+  test("pixel-sampled: navbar link contrast over the sky at the top of the page", async ({
     page,
   }) => {
-    // This is the check that actually matters (see the comment above and
-    // Navbar.tsx's own): real screenshot, real composited pixels, sampled
-    // safely inside the pill's own fill (not at its edge, where anti-
-    // aliasing/shadow bleed briefly reads darker and produces a false
-    // failure) rather than trusting computed styles.
+    // La barra ya no es una pildora fija que atraviesa registros (DESIGN.md
+    // §6): es transparente, absoluta, y scrollea con la pagina, asi que el
+    // unico fondo que puede tener detras es la franja alta del cielo — que la
+    // mascara de nubes deja despejada precisamente para esto. Se mide el
+    // pixel real: glifo mas oscuro del enlace contra el cielo a su lado.
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("/");
     await page.waitForLoadState("networkidle");
 
-    async function measure(label: string) {
-      const canvasId = await loadScreenshotCanvas(page);
-      const pill = page.locator("header > div").first();
-      const link = page.locator('nav[aria-label="Principal"] a').first();
-      const pillRect = await pill.boundingBox();
-      const rect = await link.boundingBox();
-      if (!rect || !pillRect) throw new Error(`${label}: no box`);
-      const fg = await darkestInRect(page, canvasId, rect);
-      const bg = await readPixel(
-        page,
-        canvasId,
-        rect.x + rect.width + 15,
-        pillRect.y + pillRect.height / 2,
-      );
-      const ratio = contrastRatio(fg, bg);
-      expect(
-        ratio,
-        `${label}: fg rgb(${fg.r},${fg.g},${fg.b}) vs bg rgb(${bg.r},${bg.g},${bg.b}) = ${ratio.toFixed(2)}:1`,
-      ).toBeGreaterThanOrEqual(4.5);
-    }
+    // La premisa del diseno: si la barra volviera a ser fija, volveria a
+    // atravesar el registro nocturno y esta prueba dejaria de cubrir ese
+    // caso — fallar aqui obliga a reintroducir la medicion sobre `night`.
+    const position = await page
+      .locator("header")
+      .first()
+      .evaluate((el) => getComputedStyle(el).position);
+    expect(position, "la barra debe scrollear con la pagina, no ser fija").toBe("absolute");
 
-    await measure("top of page (signal-field behind the pill)");
-
-    await page.locator("#producto").scrollIntoViewIfNeeded();
-    await page.waitForTimeout(200);
-    await measure("scrolled over Pillars (night behind the pill)");
-
-    await page.locator("#piloto").scrollIntoViewIfNeeded();
-    await page.waitForTimeout(200);
-    await measure("scrolled over Pilot (night behind the pill)");
+    const canvasId = await loadScreenshotCanvas(page);
+    const link = page.locator('nav[aria-label="Principal"] a').first();
+    const rect = await link.boundingBox();
+    if (!rect) throw new Error("navbar link: no box");
+    const fg = await darkestInRect(page, canvasId, rect);
+    const bg = await readPixel(page, canvasId, rect.x + rect.width + 24, rect.y + rect.height / 2);
+    const ratio = contrastRatio(fg, bg);
+    expect(
+      ratio,
+      `navbar link sobre el cielo: fg rgb(${fg.r},${fg.g},${fg.b}) vs bg rgb(${bg.r},${bg.g},${bg.b}) = ${ratio.toFixed(2)}:1`,
+    ).toBeGreaterThanOrEqual(4.5);
   });
 
-  test("pillar numbers (--accent-text on night)", async ({ page }) => {
-    // Pillars moved from the light canvas register to Sala Oscura this
-    // chunk (DESIGN.md §2 row 3), so the pillar number's accent had to move
-    // with it: `text-signal-deep` (a near-black blue that would nearly
-    // vanish on `night`) is gone, replaced by `--accent-text`, which the
-    // `night` register resolves to plain `signal` instead (4.64:1 per
-    // DESIGN.md §3's table). Selector follows: the class is no longer
-    // `text-signal-deep`, it's now an arbitrary-value class reading a CSS
-    // custom property (see globals.css's `--accent-text`).
+  test("numeros de pilar (--accent-text sobre Superficie)", async ({ page }) => {
+    // Pillars volvio a Superficie con el rediseño en tarjetas (DESIGN.md §2),
+    // asi que `--accent-text` resuelve a Señal Profundo, no a Señal. El
+    // numero se localiza por `data-pillar-number` y no por su clase de
+    // tamaño: el rediseño lo bajo de `text-6xl` a un numeral pequeño sobre el
+    // titulo, y un selector atado al tamaño se rompe con cada retoque.
     await page.goto("/");
-    const info = await report("pillar number '01'", page, () =>
-      page.locator("#producto p.font-display.text-6xl").first(),
+    const info = await report("numero de pilar '01'", page, () =>
+      page.locator("[data-pillar-number]").first(),
     );
-    expect(info.ratio, `pillar number contrast ${info.ratio.toFixed(2)}:1`).toBeGreaterThanOrEqual(
+    expect(info.ratio, `contraste del numero ${info.ratio.toFixed(2)}:1`).toBeGreaterThanOrEqual(
       info.requiredRatio,
     );
   });
@@ -174,7 +161,7 @@ test.describe("Contrast (computed, WCAG AA) — Sala Oscura (night register)", (
     expect(title.ratio).toBeGreaterThanOrEqual(title.requiredRatio);
 
     const bullet = await report("Pilot bullet (--text-secondary on night)", page, () =>
-      page.getByText(LANDING.pilot.bullets[0], { exact: true }),
+      page.getByText(LANDING.pilot.bullets[0].body, { exact: true }),
     );
     expect(bullet.ratio).toBeGreaterThanOrEqual(bullet.requiredRatio);
   });
@@ -192,7 +179,7 @@ test.describe("Contrast (computed, WCAG AA) — Sala Oscura (night register)", (
     expect(tagline.ratio).toBeGreaterThanOrEqual(tagline.requiredRatio);
   });
 
-  test("pixel-sampled: Pillars heading and Pilot bullet against the real rendered night background", async ({
+  test("pixel-sampled: Pillars heading on Superficie and Pilot bullet on the real rendered night background", async ({
     page,
   }) => {
     // Same method as hero-atmosphere.spec.ts's field check, applied to the
@@ -261,16 +248,34 @@ test.describe("Contrast (computed, WCAG AA) — Sala Oscura (night register)", (
 
     await page.emulateMedia({ reducedMotion: "reduce" });
 
+    // Pillars ya no es Sala Oscura sino Superficie (DESIGN.md §2): la
+    // oscuridad se reservó para el cierre. Aquí el glifo es el píxel MÁS
+    // OSCURO sobre un fondo claro, así que la medición es la contraria a la
+    // del Piloto — usar `lightestInRect` aquí encontraría el blanco del fondo
+    // y daría un 1:1 engañoso.
     await page.goto("/#producto");
     await page.waitForLoadState("networkidle");
     const pillarsCanvas = await loadScreenshotCanvas(page);
     const heading = page.getByRole("heading", { level: 2, name: LANDING.pillars.title });
-    await measureLightOnDark(heading, pillarsCanvas, 3, "Pillars title, pixel-sampled");
+    const headingRect = await heading.boundingBox();
+    if (!headingRect) throw new Error("Pillars title has no box");
+    const pillarsBg = await readPixel(
+      page,
+      pillarsCanvas,
+      Math.max(0, headingRect.x - 6),
+      headingRect.y + headingRect.height / 2,
+    );
+    const pillarsFg = await darkestInRect(page, pillarsCanvas, headingRect);
+    const pillarsRatio = contrastRatio(pillarsFg, pillarsBg);
+    expect(
+      pillarsRatio,
+      `Pillars title, pixel-sampled: fg rgb(${pillarsFg.r},${pillarsFg.g},${pillarsFg.b}) vs bg rgb(${pillarsBg.r},${pillarsBg.g},${pillarsBg.b}) = ${pillarsRatio.toFixed(2)}:1 (needs >=3:1)`,
+    ).toBeGreaterThanOrEqual(3);
 
     await page.goto("/#piloto");
     await page.waitForLoadState("networkidle");
     const pilotCanvas = await loadScreenshotCanvas(page);
-    const bullet = page.getByText(LANDING.pilot.bullets[0], { exact: true });
+    const bullet = page.getByText(LANDING.pilot.bullets[0].body, { exact: true });
     await measureLightOnDark(bullet, pilotCanvas, 4.5, "Pilot bullet, pixel-sampled");
   });
 });

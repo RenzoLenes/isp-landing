@@ -10,7 +10,7 @@ import { motion, useReducedMotion } from "motion/react";
  * the server's child list and the client's first-render child list disagree
  * whenever the device actually prefers reduced motion — a structural
  * hydration mismatch, which is worse than the plain attribute mismatches in
- * Hero.tsx/Reveal.tsx/ChatScene.tsx/DecisionChain.tsx (see their comments):
+ * Hero.tsx/Reveal.tsx/WhatsAppThread.tsx/DecisionChain.tsx (see their comments):
  * React throws hydration error #418 for it and discards the whole tree for
  * a full client remount. A deferred/mounted-flag fix (matching SSR on the
  * first client render, then correcting after mount) avoids that error, but
@@ -51,7 +51,15 @@ export function SignalThread({
           isVertical ? "border-l border-dashed" : "border-t border-dashed"
         }`}
       />
+      {/* `data-signal-pulse` es el anclaje para los tests. Antes se
+          localizaba por forma de clases (`div[aria-hidden] > div.absolute
+          .inset-0:not(.border-signal)`), un selector estructural que
+          empezó a capturar también la capa de atmósfera de `SkyField` —
+          igual de `aria-hidden` e igual de `absolute inset-0`— y hacía
+          fallar la prueba de movimiento reducido contra un elemento que no
+          era éste. Un atributo explícito no colisiona. */}
       <motion.div
+        data-signal-pulse
         className="absolute inset-0"
         initial={{ opacity: 0 }}
         animate={

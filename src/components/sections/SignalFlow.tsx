@@ -1,184 +1,282 @@
-import { LANDING } from "@/content/landing";
-import type { ArtifactRow, FlowStep } from "@/content/landing";
-import { ChatBubble } from "@/components/ui/ChatBubble";
-import { DataCard } from "@/components/ui/DataCard";
-import { SignalThread } from "@/components/ui/SignalThread";
+"use client";
 
-/**
- * Ancho de columna por tipo de artefacto, por breakpoint de fila.
+import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
+import { LANDING } from "@/content/landing";
+import type { FlowIcon } from "@/content/landing";
+import { CLOUD_WISPS } from "@/lib/cloudTile";
+import { FlowArtifactView } from "@/components/sections/FlowArtifacts";
+import {
+  ArrowRightIcon,
+  BranchIcon,
+  DatabaseIcon,
+  UserIcon,
+  WhatsAppIcon,
+} from "@/components/ui/console-icons";
+
+/*
+ * «Cómo funciona», como carrusel de dos columnas — la anatomía de la
+ * referencia: a la izquierda el titular y un índice de filas separadas por
+ * hilos; a la derecha un panel de cielo del que emerge la ilustración.
  *
- * Aritmética de contenedor (ver informe de la ola final de fixes): el ancho
- * útil es `min(viewport − 32, 1220) − 112`. A `lg` (1024px) eso da 880px; a
- * `xl` (1280px) y por encima, el clamp de 1220 ya está activo, así que el
- * ancho útil es constante en 1108px.
+ * Antes eran cuatro tarjetas en fila. Cuatro tarjetas obligan a leerlas todas
+ * a la vez y a repartir el mismo espacio entre las cuatro, así que ninguna
+ * podía explicarse: el cuerpo de cada paso cabía en una línea y la
+ * ilustración quedaba del tamaño de un sello. Aquí sólo hay un paso a la vez,
+ * y por eso puede contarse entero — texto largo a la izquierda, artefacto
+ * grande a la derecha.
  *
- * El contenido mínimo de la fila es la suma de los cuatro anchos de columna
- * más 3 × 32px de piso de conector (`min-w-8` en `StepConnector`):
- *
- *   breakpoint │ mensaje │ consulta │ decisión │ resultado │ contenido │ conectores │ útil │ margen
- *   lg         │ 160     │ 192      │ 160      │ 160       │ 672       │ 96         │ 880  │ 112
- *   xl         │ 224     │ 256      │ 224      │ 224       │ 928       │ 96         │ 1108 │ 84
- *
- * `consulta` reutiliza `DataCard` en `density="compact"` (`p-4`, 32px de
- * chroma horizontal en vez de los 48px de `p-6`) — por eso su columna es
- * siempre 32px más ancha que las otras tres (que llevan su propio chroma
- * interno): 160/192 a `lg`, 224/256 a `xl`. Esa relación (consulta = resto +
- * 32) se mantiene al escalar, así que el área de contenido real es
- * equivalente entre las cuatro columnas en ambos breakpoints.
- *
- * A `xl` sobraban 340px (1108 − 672) con los anchos de `lg` sin cambios —
- * eso partía la copia en líneas de tres palabras. Se escalaron los cuatro
- * anchos hasta dejar 84px de margen a `xl`, suficiente para nunca cortar y
- * para que el texto respire.
+ * Avanza solo cada `DWELL_MS`, que es lo que hace que la secuencia se lea sin
+ * tocar nada. El raíl de la izquierda pinta ese tiempo mientras corre: sin él,
+ * un cambio automático parece un fallo. Y se detiene EN CUANTO alguien toca —
+ * clic, teclado o foco — porque a partir de ahí quien manda es la persona, no
+ * el reloj. Con `prefers-reduced-motion` no arranca nunca: la sección funciona
+ * igual como índice manual.
  */
-const COLUMN_WIDTH: Record<FlowStep["kind"], string> = {
-  mensaje: "lg:w-40 xl:w-56",
-  consulta: "lg:w-48 xl:w-64",
-  decision: "lg:w-40 xl:w-56",
-  resultado: "lg:w-40 xl:w-56",
+
+const DWELL_MS = 7000;
+
+const ICONS: Record<FlowIcon, (props: { size: number; className?: string }) => ReactNode> = {
+  mensaje: WhatsAppIcon,
+  sistema: DatabaseIcon,
+  accion: BranchIcon,
+  equipo: UserIcon,
 };
 
-/** Color del nodo en cada conector, según la categoría de la tríada a la que se entra. */
-const JUNCTION_COLOR = ["bg-signal", "bg-signal", "bg-fiber"] as const;
+const REDUCE_MOTION = "(prefers-reduced-motion: reduce)";
 
 /**
- * Banda vertical uniforme para los cuatro artefactos, sólo en el breakpoint
- * de fila (`lg` y por encima). Los artefactos tienen alturas intrínsecas muy
- * distintas (burbuja de chat de 4 líneas, `DataCard` de 2 filas, regla de
- * decisión de 3 líneas, chip de resultado de 2 líneas); sin una banda común,
- * cada `<h3>` arranca a una altura distinta (escalera) y el conector —
- * anclado al tope de la fila por `lg:items-start` — queda flotando por
- * encima del centro real de los artefactos en vez de atravesarlos.
- *
- * Altura medida (build de producción, Chromium, `reducedMotion: reduce`):
- * el artefacto más alto es la burbuja de "mensaje" a `lg` (columna de
- * 160px, texto envuelve a 4 líneas) con 161.8px. A `xl` las columnas son
- * más anchas y el más alto pasa a ser el `DataCard` de "consulta" con
- * 124px — siempre por debajo del máximo de `lg`. `lg:h-44` (176px) cubre
- * el caso más alto medido con ~14px de aire (161.8 → 176).
- *
- * Se usa en dos lugares: como altura del contenedor que centra cada
- * artefacto (`items-center` centra verticalmente dentro de la banda) y como
- * altura del `StepConnector`, para que su centro vertical —ya centrado por
- * `items-center`— coincida exactamente con el centro de la banda sin
- * necesidad de un offset manual. Si la copia crece, este es el único valor
- * a ajustar.
+ * ¿Puede moverse solo? Se lee con `useSyncExternalStore` y no con un
+ * `useState` encendido desde un efecto: en el servidor no hay `matchMedia`, y
+ * la instantánea de servidor —«no, quieto»— es exactamente el arranque que
+ * queremos, así que servidor y primer render del cliente nunca discrepan. Es
+ * el mismo cuidado con la hidratación que documenta `Reveal`.
  */
-const ARTIFACT_BAND = "lg:h-44";
-
-function StepMessage({ line }: { line: string }) {
-  return (
-    <div className="w-full rounded-2xl border border-whisper bg-surface/80 p-3 shadow-float backdrop-blur-md">
-      <ChatBubble from="cliente">{line}</ChatBubble>
-    </div>
+function useMotionAllowed() {
+  return useSyncExternalStore(
+    (onChange) => {
+      const query = window.matchMedia(REDUCE_MOTION);
+      query.addEventListener("change", onChange);
+      return () => query.removeEventListener("change", onChange);
+    },
+    () => !window.matchMedia(REDUCE_MOTION).matches,
+    () => false,
   );
 }
 
-function StepQuery({
-  system,
-  rows,
-}: {
-  system: string;
-  rows: readonly ArtifactRow[];
-}) {
-  return (
-    <DataCard title={system} rows={rows} density="compact" className="w-full" />
-  );
-}
-
-function StepDecision({
-  condition,
-  outcome,
-}: {
-  condition: string;
-  outcome: string;
-}) {
-  return (
-    <div className="w-full rounded-3xl border border-whisper bg-surface p-4 shadow-card">
-      <p className="text-xs text-moss">{condition}</p>
-      <div className="mt-2.5 flex items-center gap-2 border-t border-whisper pt-2.5">
-        <span aria-hidden className="size-2 shrink-0 rounded-full bg-signal" />
-        <span aria-hidden className="text-moss">
-          →
-        </span>
-        <p className="text-sm font-medium text-ink">{outcome}</p>
-      </div>
-    </div>
-  );
-}
-
-function StepResult({ result }: { result: string }) {
-  return (
-    <div className="w-full rounded-2xl border border-fiber/40 bg-fiber/15 px-4 py-3">
-      <div className="flex items-center gap-2.5">
-        <span aria-hidden className="size-2 shrink-0 rounded-full bg-fiber" />
-        <p className="text-sm font-medium text-ink [font-variant-numeric:tabular-nums]">
-          {result}
-        </p>
-      </div>
-    </div>
-  );
-}
-
-/** Narrows `FlowStep` on `kind` and renders the matching artifact. */
-function FlowStepArtifact({ step }: { step: FlowStep }) {
-  switch (step.kind) {
-    case "mensaje":
-      return <StepMessage line={step.line} />;
-    case "consulta":
-      return <StepQuery system={step.system} rows={step.rows} />;
-    case "decision":
-      return <StepDecision condition={step.condition} outcome={step.outcome} />;
-    case "resultado":
-      return <StepResult result={step.result} />;
-    default: {
-      const exhaustive: never = step;
-      return exhaustive;
-    }
-  }
-}
-
-/** Segmento del hilo de señal entre dos pasos: vertical al apilar, horizontal en fila. */
-function StepConnector({ color }: { color: string }) {
-  return (
-    <div
-      aria-hidden
-      className={`flex shrink-0 flex-col items-center gap-1.5 py-1 lg:min-w-8 lg:flex-1 lg:flex-row lg:justify-center lg:gap-2 lg:py-0 ${ARTIFACT_BAND}`}
-    >
-      <span className={`size-1.5 shrink-0 rounded-full ${color}`} />
-      <div className="h-8 w-px lg:hidden">
-        <SignalThread orientation="vertical" />
-      </div>
-      <div className="hidden h-px w-full lg:block">
-        <SignalThread orientation="horizontal" />
-      </div>
-    </div>
-  );
-}
+const tabId = (i: number) => `flow-step-tab-${i}`;
+const panelId = (i: number) => `flow-step-panel-${i}`;
 
 export function SignalFlow() {
-  const { steps } = LANDING.flow;
+  const { steps, stepLabel, eyebrow, title, body } = LANDING.flow;
+
+  const [active, setActive] = useState(0);
+  /* Apagado a mano: una vez apagado no vuelve a encenderse en toda la visita. */
+  const [stopped, setStopped] = useState(false);
+  const [hovered, setHovered] = useState(false);
+  const tabRefs = useRef(new Map<number, HTMLButtonElement>());
+
+  const running = useMotionAllowed() && !stopped;
+
+  useEffect(() => {
+    if (!running || hovered) return;
+    const id = window.setTimeout(
+      () => setActive((i) => (i + 1) % steps.length),
+      DWELL_MS,
+    );
+    return () => window.clearTimeout(id);
+  }, [active, running, hovered, steps.length]);
+
+  /** Cualquier gesto de la persona apaga el automático para siempre. */
+  function select(index: number) {
+    setActive(index);
+    setStopped(true);
+  }
+
+  function handleKeyDown(event: React.KeyboardEvent) {
+    const KEYS = ["ArrowDown", "ArrowRight", "ArrowUp", "ArrowLeft", "Home", "End"];
+    if (!KEYS.includes(event.key)) return;
+    event.preventDefault();
+
+    let next: number;
+    if (event.key === "Home") next = 0;
+    else if (event.key === "End") next = steps.length - 1;
+    else {
+      const delta = event.key === "ArrowDown" || event.key === "ArrowRight" ? 1 : -1;
+      next = (active + delta + steps.length) % steps.length;
+    }
+
+    select(next);
+    tabRefs.current.get(next)?.focus();
+  }
+
+  const step = steps[active];
+
   return (
-    <ol className="mt-16 flex flex-col items-center gap-2 lg:flex-row lg:items-start lg:gap-0">
-      {steps.map((step, i) => (
-        <li
-          key={step.title}
-          className={`flex w-full flex-col items-center text-center lg:flex-row lg:items-start lg:text-left ${
-            i < steps.length - 1 ? "lg:flex-1" : "lg:flex-none"
-          }`}
+    <div
+      className="grid items-center gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.02fr)] lg:gap-16"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      {/* Columna de texto: titular, entradilla e índice de pasos. */}
+      <div>
+        <p className="text-sm font-medium uppercase tracking-[0.18em] text-[color:var(--text-secondary)]">
+          {eyebrow}
+        </p>
+        <h2 className="mt-4 text-balance font-display text-[clamp(1.9rem,2.6vw,3rem)] font-medium leading-[1.1] tracking-[-0.025em] text-[color:var(--text-primary)]">
+          {title}
+        </h2>
+        <p className="mt-5 max-w-[52ch] text-lg leading-relaxed text-[color:var(--text-secondary)]">
+          {body}
+        </p>
+
+        <ul
+          role="tablist"
+          aria-orientation="vertical"
+          aria-label={eyebrow}
+          className="mt-9 border-t border-[color:var(--border-subtle)]"
         >
+          {steps.map((item, i) => {
+            const Icon = ICONS[item.icon];
+            const selected = i === active;
+            return (
+              <li key={item.title} role="presentation" className="border-b border-[color:var(--border-subtle)]">
+                <button
+                  type="button"
+                  role="tab"
+                  id={tabId(i)}
+                  aria-controls={panelId(i)}
+                  aria-selected={selected}
+                  tabIndex={selected ? 0 : -1}
+                  ref={(node) => {
+                    if (node) tabRefs.current.set(i, node);
+                    else tabRefs.current.delete(i);
+                  }}
+                  onClick={() => select(i)}
+                  onFocus={() => setStopped(true)}
+                  onKeyDown={handleKeyDown}
+                  className="group relative flex w-full min-h-11 items-start gap-3.5 py-4 pl-5 pr-2 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal"
+                >
+                  {/* El raíl: hueco cuando el paso está dormido, lleno cuando
+                      está activo. Si el automático corre, se llena de arriba
+                      abajo en el tiempo que dura el paso — es el reloj visible
+                      del carrusel. */}
+                  <span
+                    aria-hidden
+                    className="absolute inset-y-0 left-0 w-[2px] overflow-hidden bg-[color:var(--border-subtle)]"
+                  >
+                    {selected ? (
+                      <span
+                        key={`${active}-${running && !hovered}`}
+                        data-flow-rail={running && !hovered ? "running" : "still"}
+                        className="block size-full origin-top bg-signal"
+                        style={{ animationDuration: `${DWELL_MS}ms` }}
+                      />
+                    ) : null}
+                  </span>
+
+                  <Icon
+                    size={17}
+                    className={`mt-0.5 shrink-0 transition-colors ${
+                      selected ? "text-signal-deep" : "text-steel group-hover:text-ink"
+                    }`}
+                  />
+
+                  <span className="min-w-0 flex-1">
+                    <span
+                      className={`block text-[15px] font-medium transition-colors ${
+                        selected ? "text-ink" : "text-steel group-hover:text-ink"
+                      }`}
+                    >
+                      {item.title}
+                    </span>
+
+                    {/* Colapsa con `grid-template-rows` en vez de montarse y
+                        desmontarse: así la altura de la lista viaja en vez de
+                        saltar cada siete segundos. `aria-hidden` en el paso
+                        dormido mantiene el nombre accesible de la pestaña en
+                        su titular, sin arrastrar el párrafo. */}
+                    <span
+                      aria-hidden={!selected}
+                      className={`grid transition-[grid-template-rows,opacity] duration-500 ease-out ${
+                        selected ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+                      }`}
+                    >
+                      <span className="overflow-hidden">
+                        <span className="block pt-2 text-[13.5px] leading-relaxed text-steel">
+                          {item.body}
+                        </span>
+                      </span>
+                    </span>
+                  </span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+
+      {/* Panel de cielo. Altura fija: los cuatro pasos traen textos de largos
+          distintos y sin tope el panel encogería y crecería en cada salto. */}
+      <div
+        role="tabpanel"
+        id={panelId(active)}
+        aria-labelledby={tabId(active)}
+        tabIndex={0}
+        className="relative h-[410px] overflow-hidden rounded-[28px] border border-white/60 bg-[linear-gradient(180deg,#7dbdf1_0%,#9ecdf5_32%,#bbdef9_66%,#d6ebfb_100%)] shadow-[0_36px_70px_-40px_rgba(19,29,42,0.5)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal sm:h-[440px] lg:h-[465px]"
+      >
+        {/* El cielo del panel es el mismo de la cabecera, en pequeño: la
+            sección se apoya en la atmósfera de la página en vez de inventar
+            un fondo propio. Los blancos van bajos a propósito — al 45% el
+            azul se lavaba y el panel dejaba de leerse como cielo. */}
+        <div aria-hidden className="pointer-events-none absolute inset-0">
           <div
-            className={`flex w-full max-w-xs flex-col items-center text-center lg:max-w-none lg:items-start lg:text-left ${COLUMN_WIDTH[step.kind]}`}
-          >
-            <div className={`flex w-full items-center ${ARTIFACT_BAND}`}>
-              <FlowStepArtifact step={step} />
-            </div>
-            <h3 className="mt-4 font-medium text-ink">{step.title}</h3>
-            <p className="mt-2 text-sm leading-relaxed text-moss">{step.body}</p>
+            className="sky-drift-slower absolute inset-y-0 -left-[10%] -right-[10%] opacity-30"
+            style={{ backgroundImage: CLOUD_WISPS, backgroundSize: "780px 480px" }}
+          />
+          <div className="absolute -left-[18%] bottom-[-12%] h-[300px] w-[80%] rounded-full bg-white/30 blur-[90px]" />
+          <div className="absolute -right-[16%] top-[6%] h-[240px] w-[60%] rounded-full bg-white/20 blur-[100px]" />
+        </div>
+
+        {/* Todo lo que cambia va bajo una `key`: al cambiar de paso el bloque
+            se vuelve a montar y entra con la animación de `globals.css`. */}
+        <div
+          key={active}
+          data-flow-slide
+          className="absolute inset-0 flex flex-col justify-between px-5 py-7 sm:px-9 sm:py-9 lg:px-11"
+        >
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-[11px] font-medium uppercase tracking-[0.16em] text-signal-deep">
+              {stepLabel} {active + 1}
+              <span className="text-signal-deep/60"> / {steps.length}</span>
+            </span>
+            <span className="rounded-[8px] bg-white/70 px-2.5 py-1 text-[11px] font-medium text-signal-deep shadow-[0_6px_14px_-8px_rgba(19,29,42,0.5)]">
+              {step.chip}
+            </span>
           </div>
-          {i < steps.length - 1 ? <StepConnector color={JUNCTION_COLOR[i]} /> : null}
-        </li>
-      ))}
-    </ol>
+
+          {/* La lámina helada detrás del artefacto: da el grosor de la
+              referencia sin inventar contenido que no existe. Lo de dentro
+              cambia de forma en cada paso; esto no, y es parte de lo que
+              mantiene la secuencia leyéndose como una sola pieza. */}
+          <div className="relative">
+            <div
+              aria-hidden
+              className="absolute -inset-x-4 -inset-y-4 rounded-[22px] border border-white/55 bg-white/25"
+            />
+            <div className="relative">
+              <FlowArtifactView artifact={step.artifact} />
+            </div>
+          </div>
+
+          {/* El traspaso, en la píldora oscura de la referencia: dice qué pasa
+              al salir de este paso. Tres siguen solos; sólo uno llama a una
+              persona. Es el dato que convierte cuatro pasos en una cadena. */}
+          <p className="mx-auto flex items-center gap-2 rounded-full bg-ink px-4 py-2.5 text-center text-[12.5px] font-medium text-surface shadow-[0_14px_30px_-14px_rgba(19,29,42,0.8)]">
+            <ArrowRightIcon size={15} className="shrink-0 text-signal-field" />
+            {step.handoff}
+          </p>
+        </div>
+      </div>
+    </div>
   );
 }

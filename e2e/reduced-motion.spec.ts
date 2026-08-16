@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 
 // prefers-reduced-motion: reduce is implemented in 5 animated components
-// (SignalThread, Reveal, ChatScene, DecisionChain, Hero's Beat) but had
+// (SignalThread, Reveal, WhatsAppThread, DecisionChain, Hero's Beat) but had
 // never been exercised in an actual browser.
 // `test.use({ reducedMotion: ... })` is not available in this Playwright
 // version's `PlaywrightTestOptions` type (only `page.emulateMedia()` exposes
@@ -45,9 +45,10 @@ test.describe("Reduced motion", () => {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("/");
 
-    // Each SignalThread renders a static dashed line (`absolute inset-0
-    // border-signal ...`) plus a `motion.div` pulse holding the travelling
-    // dot — also `absolute inset-0` but without the `border-signal` class.
+    // Each SignalThread renders a static dashed line plus a `motion.div`
+    // pulse holding the travelling dot, tagged `data-signal-pulse`. That
+    // attribute replaced a class-shape selector which also matched
+    // `SkyField`'s atmosphere layer once the hero gained a real sky.
     //
     // That pulse node is now always mounted (conditionally *removing* it
     // based on `useReducedMotion()` — which resolves synchronously on the
@@ -59,9 +60,7 @@ test.describe("Reduced motion", () => {
     // completo, no los ralentizan") is that it is fully inert, not that the
     // DOM node itself is absent: opacity pinned at 0 (never visible) and no
     // infinite-repeat animation ever created for it.
-    const pulses = page.locator(
-      'div[aria-hidden="true"] > div.absolute.inset-0:not(.border-signal)',
-    );
+    const pulses = page.locator("[data-signal-pulse]");
     const count = await pulses.count();
     expect(count, "expected every SignalThread's pulse wrapper to exist").toBeGreaterThan(0);
 
@@ -70,9 +69,7 @@ test.describe("Reduced motion", () => {
     }
 
     const infiniteOnPulses = await page.evaluate(() => {
-      const nodes = document.querySelectorAll(
-        'div[aria-hidden="true"] > div.absolute.inset-0:not(.border-signal)',
-      );
+      const nodes = document.querySelectorAll("[data-signal-pulse]");
       let count = 0;
       for (const node of nodes) {
         for (const anim of node.getAnimations()) {
@@ -85,21 +82,27 @@ test.describe("Reduced motion", () => {
     expect(infiniteOnPulses, "infinite animations on SignalThread pulses under reduced motion").toBe(0);
   });
 
-  test("decision chain rows are already resolved without scrolling into view", async ({
-    page,
-  }) => {
+  test("las burbujas del hilo ya estan resueltas sin hacer scroll", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("/");
 
-    // Pillar 2's DecisionChain is well below the fold at load. Read its
-    // computed opacity WITHOUT scrolling it into view first — if reduced
-    // motion is respected, `initial={false}` means it never depended on
-    // `whileInView` firing to reach opacity: 1.
-    const row = page.locator("li", { hasText: "¿Tiene deuda?" });
-    await expect(row).toHaveCount(1);
-    const opacity = await row.evaluate((el) => getComputedStyle(el).opacity);
-    expect(opacity, "DecisionChain row opacity before any scroll").toBe("1");
+    // Antes esta prueba miraba `DecisionChain`, que se retiro al rediseñar
+    // Pillars en tarjetas. Lo que queda usando `whileInView` bajo el pliegue
+    // son las burbujas de los hilos de "Casos de uso" (`WhatsAppThread` con
+    // `stagger`). Misma premisa: se lee su opacidad SIN hacerlas visibles —
+    // si el movimiento reducido se respeta, nunca dependieron de que
+    // `whileInView` disparara para llegar a opacidad 1.
+    const bubble = page
+      .locator("#casos")
+      .getByText("Listo, ya pagué. Te mando la captura.", { exact: false })
+      .first();
+    await expect(bubble).toHaveCount(1);
+    const opacity = await bubble.evaluate((el) => {
+      const settled = el.closest("[data-motion-settle]") ?? el;
+      return getComputedStyle(settled).opacity;
+    });
+    expect(opacity, "opacidad de la burbuja antes de cualquier scroll").toBe("1");
   });
 
   test("hero headline and console are visible immediately (no cascade to wait out)", async ({
@@ -115,7 +118,7 @@ test.describe("Reduced motion", () => {
     );
     expect(headingOpacity, "hero headline opacity immediately after load").toBe("1");
 
-    const productConsole = page.locator('[role="img"][aria-label*="Captura ilustrativa"]');
+    const productConsole = page.locator("#gantry-console");
     const consoleOpacity = await productConsole.evaluate(
       (el) => getComputedStyle(el.parentElement ?? el).opacity,
     );

@@ -1,22 +1,22 @@
-import { LANDING } from "@/content/landing";
-import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Reveal } from "@/components/ui/Reveal";
 import { SignalFlow } from "@/components/sections/SignalFlow";
 import { SectionRegister } from "@/components/ui/SectionRegister";
 
+/*
+ * El encabezado ya no vive aquí: en el carrusel de dos columnas es la cabeza
+ * de la columna de texto, sobre el índice de pasos, no un bloque centrado
+ * encima de todo. Un `SectionHeading` centrado más una rejilla asimétrica
+ * debajo dejaban dos ejes distintos en la misma sección.
+ */
 export function HowItWorks() {
-  const { eyebrow, title } = LANDING.flow;
   return (
     <SectionRegister
-      register="signal-field"
+      register="canvas"
       id="como-funciona"
       className="scroll-mt-28 px-4 py-[clamp(5rem,10vw,9rem)]"
     >
-      <div className="mx-auto max-w-content rounded-[2.5rem] border border-whisper bg-surface/60 px-6 py-14 md:px-14">
+      <div className="mx-auto max-w-content">
         <Reveal>
-          <SectionHeading eyebrow={eyebrow} title={title} align="center" />
-        </Reveal>
-        <Reveal delay={0.15}>
           <SignalFlow />
         </Reveal>
       </div>
