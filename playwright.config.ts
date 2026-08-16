@@ -2,6 +2,8 @@ import { defineConfig, devices } from "@playwright/test";
 
 const PORT = 3100;
 const BASE_URL = `http://localhost:${PORT}`;
+/** PostgREST de mentira para la suite: ver `e2e/supabase-stub.mjs`. */
+const STUB_PORT = 3101;
 
 // Self-contained: `npx playwright test` builds the production bundle and
 // boots `next start` on a dedicated port, so this suite never depends on a
@@ -34,10 +36,26 @@ export default defineConfig({
       use: { ...devices["Desktop Chrome"] },
     },
   ],
-  webServer: {
-    command: `npm run build && npm run start -- -p ${PORT}`,
-    url: BASE_URL,
-    reuseExistingServer: !process.env.CI,
-    timeout: 180_000,
-  },
+  // Dos servidores: el PostgREST de mentira y, apuntando a él, la landing.
+  // Así el envío del formulario recorre el camino real —Server Action,
+  // supabase-js, POST— sin escribir en la instancia de verdad y sin necesidad
+  // de un "modo test" dentro del código que se publica.
+  webServer: [
+    {
+      command: `node e2e/supabase-stub.mjs`,
+      url: `http://localhost:${STUB_PORT}/`,
+      reuseExistingServer: !process.env.CI,
+      timeout: 20_000,
+    },
+    {
+      command: `npm run build && npm run start -- -p ${PORT}`,
+      url: BASE_URL,
+      reuseExistingServer: !process.env.CI,
+      timeout: 180_000,
+      env: {
+        SUPABASE_URL: `http://localhost:${STUB_PORT}`,
+        SUPABASE_SECRET_KEY: "clave-de-mentira-para-la-suite",
+      },
+    },
+  ],
 });

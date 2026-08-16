@@ -43,7 +43,6 @@ export function validatePilotForm(data: PilotFormData): PilotFormErrors {
   return errors;
 }
 
-// Punto único de conexión con el backend futuro. Hoy solo resuelve.
-export async function submitPilotRequest(_data: PilotFormData): Promise<void> {
-  return Promise.resolve();
-}
+// El envío vive en `pilot-actions.ts` (Server Action). Este archivo se queda
+// solo con la validación pura para que corra en los dos lados —el formulario
+// en el navegador y la acción en el servidor— y en Vitest sin montar nada.

@@ -37,6 +37,8 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# La plantilla sí se versiona: no lleva secretos, solo los nombres.
+!.env.example
 
 # vercel
 .vercel
@@ -47,3 +49,8 @@ next-env.d.ts
 
 # SDD workspace (agent scratch)
 .superpowers/
+
+# Skills y utilería de agentes (no forman parte de la landing).
+/.agents/
+/.claude/
+/skills-lock.json
