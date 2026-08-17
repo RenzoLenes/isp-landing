@@ -29,7 +29,7 @@
 //    this project's tokens — see the named constant below.
 
 import { RefObject, useEffect, useId, useState } from "react";
-import { motion, useReducedMotion } from "motion/react";
+import { useMotionAllowed } from "@/lib/useMotionAllowed";
 
 // Hex literal (SVG `stroke`/`stopColor` attributes can't take Tailwind
 // classes, same reasoning as `GradientField`'s inline gradients) — names the
@@ -91,7 +91,7 @@ export const AnimatedBeam: React.FC<AnimatedBeamProps> = ({
   endYOffset = 0,
 }) => {
   const id = useId();
-  const reduceMotion = useReducedMotion();
+  const motionAllowed = useMotionAllowed();
   const [pathD, setPathD] = useState("");
   const [svgDimensions, setSvgDimensions] = useState({ width: 0, height: 0 });
 
@@ -196,43 +196,46 @@ export const AnimatedBeam: React.FC<AnimatedBeamProps> = ({
         strokeLinecap="round"
       />
       <defs>
-        <motion.linearGradient
+        {/*
+          El destello viajero, en SMIL (`<animate>`) en vez de una librería de
+          animación en JavaScript.
+
+          Los atributos `x1`/`x2` de un `linearGradient` NO son propiedades de
+          CSS, así que esto es lo único de la página que no podía pasarse a
+          `@keyframes`. SMIL sí los anima, es nativo en todos los navegadores
+          actuales, y `keySplines` reproduce exactamente la curva que había
+          (`[0.16, 1, 0.3, 1]`, easeOutExpo).
+
+          El `<animate>` sólo se monta si el sistema permite movimiento, y esa
+          lectura viene de `useMotionAllowed`, cuya instantánea de servidor es
+          «quieto». Así el servidor y el primer render del cliente coinciden
+          —no hay nada que discrepe al hidratar— y con movimiento reducido la
+          animación no llega a existir: se apaga, no se esconde (DESIGN.md §9).
+        */}
+        <linearGradient
           className="transform-gpu"
           id={id}
-          gradientUnits={"userSpaceOnUse"}
-          initial={{
-            x1: "0%",
-            x2: "0%",
-            y1: "0%",
-            y2: "0%",
-          }}
-          animate={
-            reduceMotion
-              ? {
-                  x1: "0%",
-                  x2: "0%",
-                  y1: "0%",
-                  y2: "0%",
-                }
-              : {
-                  x1: gradientCoordinates.x1,
-                  x2: gradientCoordinates.x2,
-                  y1: gradientCoordinates.y1,
-                  y2: gradientCoordinates.y2,
-                }
-          }
-          transition={
-            reduceMotion
-              ? { duration: 0 }
-              : {
-                  delay,
-                  duration,
-                  ease: [0.16, 1, 0.3, 1], // https://easings.net/#easeOutExpo
-                  repeat: Infinity,
-                  repeatDelay: 0,
-                }
-          }
+          gradientUnits="userSpaceOnUse"
+          x1="0%"
+          x2="0%"
+          y1="0%"
+          y2="0%"
         >
+          {motionAllowed
+            ? (["x1", "x2", "y1", "y2"] as const).map((eje) => (
+                <animate
+                  key={eje}
+                  attributeName={eje}
+                  values={gradientCoordinates[eje].join(";")}
+                  dur={`${duration}s`}
+                  begin={`${delay}s`}
+                  repeatCount="indefinite"
+                  calcMode="spline"
+                  keyTimes="0;1"
+                  keySplines="0.16 1 0.3 1"
+                />
+              ))
+            : null}
           <stop stopColor={gradientStartColor} stopOpacity="0"></stop>
           <stop stopColor={gradientStartColor}></stop>
           <stop offset="32.5%" stopColor={gradientStopColor}></stop>
@@ -241,7 +244,7 @@ export const AnimatedBeam: React.FC<AnimatedBeamProps> = ({
             stopColor={gradientStopColor}
             stopOpacity="0"
           ></stop>
-        </motion.linearGradient>
+        </linearGradient>
       </defs>
     </svg>
   );

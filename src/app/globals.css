@@ -178,6 +178,153 @@
  * animar para que el raíl se pinte entero, que es justo lo que debe decir un
  * paso elegido a mano.
  */
+/*
+ * La curva del muelle que usaba `motion` (`type: spring, stiffness: 100,
+ * damping: 20, mass: 1`), muestreada en 25 puntos.
+ *
+ * Con esos valores zeta sale 1 EXACTO: críticamente amortiguado, sin rebote —
+ * una curva suave que se asienta a los 0.923s, de ahí los 0.9s de duración.
+ * `linear()` acepta la lista de puntos, así que esto no imita la curva del
+ * muelle: la reproduce. Es lo que permite quitar la librería sin que la
+ * página se mueva distinto.
+ *
+ * La diferencia conceptual, para que quede escrita: un muelle no tiene
+ * duración, termina cuando la velocidad llega a cero. Una animación de CSS sí
+ * la necesita, así que la duración es el tiempo de asiento calculado, no un
+ * número elegido a ojo.
+ */
+:root {
+  --ease-spring: linear(
+    0, 0.055, 0.1736, 0.3105, 0.4427, 0.5598, 0.6583, 0.7383, 0.8018,
+    0.8513, 0.8894, 0.9183, 0.9401, 0.9563, 0.9684, 0.9773, 0.9839,
+    0.9887, 0.9922, 0.9947, 0.9965, 0.9979, 0.9988, 0.9995, 1
+  );
+}
+
+/* Los dos muelles del acordeón del FAQ, muestreados igual que el de arriba.
+   Los dos salen SOBREamortiguados (zeta > 1): frenan antes de llegar, sin
+   rebote. `DISCLOSE` (480/40/0.6) se asienta a 0.463s y `CHEVRON`
+   (700/46/0.5) a 0.374s — de ahí las duraciones. */
+:root {
+  --ease-disclose: linear(
+    0, 0.1885, 0.448, 0.6432, 0.7733, 0.8569, 0.91, 0.9436, 0.9647,
+    0.9781, 0.9865, 0.9918, 0.9952, 0.9973, 0.9986, 0.9995, 1
+  );
+  --ease-chevron: linear(
+    0, 0.2032, 0.4667, 0.6575, 0.7825, 0.8625, 0.9132, 0.9454, 0.9658,
+    0.9786, 0.9868, 0.992, 0.9953, 0.9973, 0.9986, 0.9995, 1
+  );
+}
+
+/*
+ * El despliegue del acordeón, con `grid-template-rows` en vez de una altura
+ * medida.
+ *
+ * Antes esto necesitaba un `ResizeObserver` midiendo el panel en píxeles, un
+ * estado `ready` para no animar en el primer pintado y la librería de
+ * animación para interpolar la altura. La misma transición sale de `0fr` a
+ * `1fr`, que el navegador sí sabe interpolar — y es el truco que esta página
+ * YA usaba en el carrusel de «Cómo funciona». El `min-height: 0` y el
+ * `overflow: hidden` del hijo no son opcionales: sin ellos el contenido se
+ * niega a encogerse por debajo de su altura natural.
+ */
+[data-disclose] {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.47s var(--ease-disclose);
+}
+
+[data-disclose="open"] {
+  grid-template-rows: 1fr;
+}
+
+[data-disclose] > * {
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* El contenido funde por separado, y con tiempos distintos al entrar y al
+   salir — tal cual estaba: 0.18s para aparecer, 0.14s para irse. */
+[data-disclose-body] {
+  opacity: 0;
+  transition: opacity 0.14s cubic-bezier(0.4, 0, 1, 1);
+}
+
+[data-disclose="open"] [data-disclose-body] {
+  opacity: 1;
+  transition: opacity 0.18s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+/* El «+» que gira 45° hasta ser una «×». Un solo par de trazos rotando, no dos
+   iconos que se intercambian. */
+[data-disclose-icon] {
+  transition:
+    transform 0.38s var(--ease-chevron),
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+[data-disclose-icon="open"] {
+  transform: rotate(45deg);
+}
+
+/* Entrada al asomar en pantalla (`ui/Reveal.tsx`). El estado de reposo es el
+   de abajo, y un `IntersectionObserver` de veinte líneas pone `="in"` cuando
+   el elemento entra. Antes esto lo hacía `motion` con `whileInView`. */
+[data-reveal] {
+  opacity: 0;
+  /* 24px para una sección entera; los mensajes del hilo de WhatsApp lo bajan
+     a 12px con la propia variable, que es el valor que traía su `initial`. */
+  transform: translateY(var(--reveal-y, 24px));
+  transition:
+    opacity 0.9s var(--ease-spring),
+    transform 0.9s var(--ease-spring);
+}
+
+[data-reveal="in"] {
+  opacity: 1;
+  transform: none;
+}
+
+/* Entrada de la cabecera (`sections/Hero.tsx`), en cascada por `--beat`. No es
+   `whileInView` sino al montar: el hero ya está en pantalla. */
+@keyframes beat-in {
+  /* 16px, no 24: es el `y: 16` que traía el `initial` de `Beat`. El de
+     `Reveal` era 24, y son distintos a propósito. */
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: none; }
+}
+
+[data-beat] {
+  animation: beat-in 0.9s var(--ease-spring) both;
+  animation-delay: var(--beat, 0s);
+}
+
+/* El pulso que recorre el hilo punteado (`ui/SignalThread.tsx`). Los tramos de
+   opacidad reproducen el `[0, 1, 1, 0]` que traía `motion`, que reparte los
+   valores de un array en partes iguales — de ahí el 33% y el 66%. */
+@keyframes signal-pulse-vertical {
+  0%   { opacity: 0; transform: translateY(0); }
+  33%  { opacity: 1; }
+  66%  { opacity: 1; }
+  100% { opacity: 0; transform: translateY(100%); }
+}
+
+@keyframes signal-pulse-horizontal {
+  0%   { opacity: 0; transform: translateX(0); }
+  33%  { opacity: 1; }
+  66%  { opacity: 1; }
+  100% { opacity: 0; transform: translateX(100%); }
+}
+
+[data-signal-pulse] {
+  opacity: 0;
+  animation: 2.4s linear infinite;
+}
+
+[data-signal-pulse][data-axis="vertical"]   { animation-name: signal-pulse-vertical; }
+[data-signal-pulse][data-axis="horizontal"] { animation-name: signal-pulse-horizontal; }
+
 @keyframes flow-rail {
   from { transform: scaleY(0); }
   to   { transform: scaleY(1); }
@@ -273,8 +420,17 @@
   [data-console-rail],
   [data-console-view],
   [data-console-label],
+  [data-beat],
+  [data-signal-pulse],
   [data-typing-dot] {
     animation: none;
+  }
+
+  /* El estado final ya lo fuerza `[data-motion-settle]` con `!important` más
+     arriba; esto sólo evita que quede una transición pendiente que dispare
+     al cambiar el atributo. */
+  [data-reveal] {
+    transition: none;
   }
 
   /* El recorrido de la consola ni siquiera arranca aquí (lo decide JS con

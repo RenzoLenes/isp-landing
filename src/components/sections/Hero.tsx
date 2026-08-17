@@ -1,36 +1,30 @@
-"use client";
-
-import { motion } from "motion/react";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { LANDING } from "@/content/landing";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { ProductConsole } from "@/components/sections/ProductConsole";
 import { SkyField } from "@/components/ui/SkyField";
 import { SectionRegister } from "@/components/ui/SectionRegister";
 
-/** One step of the hero's staggered entrance: badge → headline → subtitle →
- * CTAs → console. `transform`/`opacity` only, springs at ~100/20 per
- * DESIGN.md §7.
+/*
+ * Un paso de la entrada escalonada del hero: píldora → titular → subtítulo →
+ * botones → consola.
  *
- * `initial` is now a plain, unconditional object — deliberately NOT gated on
- * `useReducedMotion()`. That hook returns `null` on the server and resolves
- * the real answer synchronously on the client's first render, so gating
- * `initial` on it made the server's HTML and the client's first render
- * disagree whenever the device actually prefers reduced motion, which React
- * treats as hydration error #418 (confirmed with a production build: this
- * fired on every load under `prefers-reduced-motion: reduce`, not just
- * intermittently — the intermittency Playwright observed was a race in
- * when React's resulting full client remount landed relative to its
- * assertions). Keeping `initial` identical on server and client removes the
- * mismatch at the source. "Fully off under reduced motion, content renders
- * already settled" is instead enforced by the `data-motion-settle` CSS rule
- * in globals.css, which the browser applies from first paint — including
- * the pre-hydration paint of the server's own HTML — and which overrides
- * whatever inline style the animation writes, so no entrance animation is
- * ever visible under `prefers-reduced-motion: reduce` regardless of
- * hydration timing. See beam-hydration-report.md for the empirical
- * comparison against the mounted-flag and `suppressHydrationWarning`
- * alternatives that were tried and rejected. */
+ * Era `motion`. Ahora son dos líneas de CSS (`[data-beat]` en globals.css) con
+ * la MISMA curva: el muelle que había (`stiffness: 100, damping: 20`) sale
+ * críticamente amortiguado y está muestreado punto por punto en
+ * `--ease-spring`. No es una aproximación con `cubic-bezier`.
+ *
+ * El cambio se lleva por delante todo el problema de hidratación que este
+ * archivo documentaba: no hay `initial` que calcular, ni hook que devuelva una
+ * cosa en el servidor y otra en el cliente, así que no hay nada que pueda
+ * discrepar. El CSS se aplica desde el primer pintado, incluso antes de
+ * hidratar. Con `prefers-reduced-motion` manda `[data-motion-settle]`, igual
+ * que antes.
+ *
+ * Y al quedarse sin `motion`, el hero deja de ser un componente de cliente:
+ * ya no lleva estado, ni efectos, ni manejadores. Es HTML servido. Eso saca
+ * del navegador no sólo la librería, sino este archivo entero.
+ */
 function Beat({
   children,
   delay,
@@ -41,15 +35,14 @@ function Beat({
   className?: string;
 }) {
   return (
-    <motion.div
+    <div
       data-motion-settle
+      data-beat
       className={className}
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ type: "spring", stiffness: 100, damping: 20, delay }}
+      style={{ "--beat": `${delay}s` } as CSSProperties}
     >
       {children}
-    </motion.div>
+    </div>
   );
 }
 

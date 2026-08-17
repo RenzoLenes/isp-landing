@@ -1,7 +1,8 @@
 "use client";
 
-import { motion } from "motion/react";
+import type { CSSProperties } from "react";
 import { LANDING, type ThreadMessage } from "@/content/landing";
+import { useRevealOnce } from "@/lib/useRevealOnce";
 import { CheckDoubleIcon, MicIcon, PaperclipIcon, SmileIcon } from "@/components/ui/console-icons";
 
 /*
@@ -133,6 +134,41 @@ export function TypingBubble({
   );
 }
 
+/**
+ * Una burbuja que entra al asomar en pantalla, escalonada tras la anterior.
+ *
+ * Era un `motion.div` con `whileInView`. Ahora es el mismo mecanismo que
+ * `ui/Reveal.tsx` —observador mínimo y la curva del muelle en CSS— con dos
+ * ajustes que traía el original: 12px de recorrido en vez de 24, y un margen
+ * de -60px en vez de -80.
+ *
+ * Va en su propio componente y no en línea dentro del `map` porque cada
+ * burbuja necesita su propio observador, y los hooks no pueden vivir dentro
+ * de un bucle.
+ */
+function StaggeredBubble({
+  message,
+  scale,
+  delay,
+}: {
+  message: ThreadMessage;
+  scale: Scale;
+  delay: number;
+}) {
+  const ref = useRevealOnce<HTMLDivElement>("-60px");
+
+  return (
+    <div
+      ref={ref}
+      data-motion-settle
+      data-reveal="out"
+      style={{ "--reveal-y": "12px", transitionDelay: `${delay}s` } as CSSProperties}
+    >
+      <Bubble message={message} scale={scale} />
+    </div>
+  );
+}
+
 function Bubble({ message, scale }: { message: ThreadMessage; scale: Scale }) {
   const isCliente = message.from === "cliente";
   const s = SCALE[scale];
@@ -217,20 +253,7 @@ export function WhatsAppThread({
         </p>
         {messages.map((message, i) =>
           stagger ? (
-            // `initial` incondicional a propósito (ver Hero.tsx `Beat`): el
-            // apagado bajo `prefers-reduced-motion` lo hace el CSS de
-            // `data-motion-settle`, no un hook que difiera entre servidor y
-            // primer render del cliente.
-            <motion.div
-              key={i}
-              data-motion-settle
-              initial={{ opacity: 0, y: 12 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-60px" }}
-              transition={{ type: "spring", stiffness: 100, damping: 20, delay: i * 0.22 }}
-            >
-              <Bubble message={message} scale={scale} />
-            </motion.div>
+            <StaggeredBubble key={i} message={message} scale={scale} delay={i * 0.22} />
           ) : popIn ? (
             <span key={i} data-flow-pop style={{ animationDelay: `${0.15 + i * 0.35}s` }}>
               <Bubble message={message} scale={scale} />

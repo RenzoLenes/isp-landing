@@ -25,14 +25,16 @@
 // aria-labelledby, aria-hidden on closed panels), `inert` on closed panels,
 // height measured via ResizeObserver, zero external dependencies.
 //
-// Hydration safety (verified): `useReducedMotion()` is used only to pick
-// `transition` (duration 0 under reduced motion). Every `initial` prop below
-// is a static, unconditional value (`false`), never derived from the reduced-
-// motion hook — so server and client render the same markup on first paint,
-// which is exactly the pattern that avoided React hydration error #418
-// elsewhere on this page (see globals.css's `data-motion-settle` comment).
-// This component doesn't need `data-motion-settle` itself: nothing here
-// depends on `initial` differing by reduced-motion state.
+// Sin librería de animación (2026-08): el despliegue pasó de una altura medida
+// con ResizeObserver a `grid-template-rows: 0fr -> 1fr` en CSS, que es el mismo
+// truco que esta página ya usaba en el carrusel de «Cómo funciona». Con eso se
+// fueron el observador, el estado `ready` para no animar en el primer pintado,
+// el hook de movimiento reducido y `motion` entera.
+//
+// La preocupación por la hidratación que documentaba este bloque desapareció
+// con la causa: no queda ningún hook cuyo valor difiera entre servidor y
+// cliente, así que no hay nada que pueda discrepar. El apagado bajo
+// `prefers-reduced-motion` lo hace el CSS.
 
 "use client";
 
@@ -40,68 +42,21 @@ import {
   useCallback,
   useEffect,
   useId,
-  useLayoutEffect,
   useMemo,
   useRef,
   useState,
 } from "react";
-import { motion, useReducedMotion } from "motion/react";
 
-const EASE = [0.23, 1, 0.32, 1] as const;
-const EXIT_EASE = [0.4, 0, 1, 1] as const;
-
-const DISCLOSE = {
-  type: "spring",
-  stiffness: 480,
-  damping: 40,
-  mass: 0.6,
-} as const;
-
-const CHEVRON = {
-  type: "spring",
-  stiffness: 700,
-  damping: 46,
-  mass: 0.5,
-} as const;
+/*
+ * Las curvas de los dos muelles que había aquí (despliegue 480/40/0.6 y giro
+ * del «+» 700/46/0.5) viven ahora muestreadas en `--ease-disclose` y
+ * `--ease-chevron` (globals.css). Los dos salían SOBREamortiguados, así que no
+ * había rebote que reproducir: son curvas de frenado, y `linear()` las clava.
+ */
 
 const NONE: readonly string[] = [];
 
-const useIsomorphicLayoutEffect =
-  typeof window === "undefined" ? useEffect : useLayoutEffect;
-
 type Inertable = HTMLElement & { inert?: boolean };
-
-export type UseAutoHeightResult = {
-  ref: React.RefObject<HTMLDivElement | null>;
-  height: number;
-  ready: boolean;
-};
-
-export function useAutoHeight(): UseAutoHeightResult {
-  const ref = useRef<HTMLDivElement>(null);
-  const [height, setHeight] = useState(0);
-  const [ready, setReady] = useState(false);
-
-  useIsomorphicLayoutEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-
-    const read = () => {
-      const next = el.getBoundingClientRect().height;
-      setHeight((prev) => (Math.abs(prev - next) < 0.5 ? prev : next));
-    };
-
-    read();
-    setReady(true);
-
-    const observer = new ResizeObserver(read);
-    observer.observe(el);
-
-    return () => observer.disconnect();
-  }, []);
-
-  return { ref, height, ready };
-}
 
 export type AccordionEntry = {
   id: string;
@@ -294,8 +249,6 @@ export function Accordion({
   headingLevel = 3,
   className = "",
 }: AccordionProps) {
-  const reduced = useReducedMotion();
-
   const entries = useMemo(() => items.map(({ id }) => ({ id })), [items]);
 
   const { isOpen, headerProps, panelProps } = useAccordion({
@@ -321,7 +274,6 @@ export function Accordion({
           key={item.id}
           item={item}
           open={isOpen(item.id)}
-          reduced={Boolean(reduced)}
           maxPanelHeight={maxPanelHeight}
           headingLevel={headingLevel}
           header={headerProps(item.id)}
@@ -335,7 +287,6 @@ export function Accordion({
 function AccordionRow({
   item,
   open,
-  reduced,
   maxPanelHeight,
   headingLevel,
   header,
@@ -343,13 +294,14 @@ function AccordionRow({
 }: {
   item: AccordionItem;
   open: boolean;
-  reduced: boolean;
   maxPanelHeight: number | undefined;
   headingLevel: number;
   header: AccordionHeaderProps;
   panel: AccordionPanelProps;
 }) {
-  const { ref, height, ready } = useAutoHeight();
+  // Sólo para marcar `inert` el panel cerrado. Antes venía de `useAutoHeight`,
+  // que además lo medía; ya no hay nada que medir.
+  const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const el = ref.current as Inertable | null;
@@ -390,14 +342,12 @@ function AccordionRow({
           {/* Botón circular con «+» que gira 45° hasta ser una «×» (referencia
               Qipeline). Es UN solo par de trazos rotando, no dos iconos que se
               intercambian: así el cambio es continuo y no da un salto. */}
-          <motion.span
+          <span
             aria-hidden="true"
-            className={`flex size-8 shrink-0 items-center justify-center rounded-full transition-colors duration-150 ${
+            data-disclose-icon={open ? "open" : "closed"}
+            className={`flex size-8 shrink-0 items-center justify-center rounded-full ${
               open ? "bg-signal/12 text-signal-deep" : "bg-sunk text-steel"
             }`}
-            initial={false}
-            animate={{ rotate: open ? 45 : 0 }}
-            transition={reduced ? { duration: 0 } : CHEVRON}
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
               <path
@@ -407,22 +357,17 @@ function AccordionRow({
                 strokeLinecap="round"
               />
             </svg>
-          </motion.span>
+          </span>
         </button>
       </div>
-      <motion.div
-        initial={false}
-        animate={ready ? { height: open ? height : 0 } : {}}
-        transition={reduced ? { duration: 0 } : DISCLOSE}
-        style={{
-          overflow: "hidden",
-          height: ready ? undefined : open ? "auto" : 0,
-        }}
-      >
+      {/* Sin altura medida: el despliegue va de `0fr` a `1fr` en CSS
+          (`[data-disclose]` en globals.css). Eso se lleva por delante el
+          `ResizeObserver`, el estado `ready` para no animar en el primer
+          pintado, y la librería de animación. */}
+      <div data-disclose={open ? "open" : "closed"}>
         <div
           {...panel}
-          ref={ref}
-          className="border-t border-whisper bg-sunk"
+          className="bg-sunk"
           style={
             maxPanelHeight
               ? {
@@ -434,22 +379,18 @@ function AccordionRow({
               : undefined
           }
         >
-          <motion.div
-            initial={false}
-            animate={{ opacity: open ? 1 : 0 }}
-            transition={
-              reduced
-                ? { duration: 0 }
-                : open
-                  ? { duration: 0.18, ease: EASE }
-                  : { duration: 0.14, ease: EXIT_EASE }
-            }
-            className="px-5 pb-5 pt-4 text-base leading-relaxed text-steel"
+          <div
+            data-disclose-body
+            /* El borde va AQUI y no en el panel de fuera: en el panel, su 1px
+               sobrevivia al `0fr` del despliegue y cada pregunta cerrada dejaba
+               una linea suelta (7 preguntas = 7px de mas, medido). Aqui queda
+               dentro de lo que se recorta, y abierto se ve en el mismo sitio. */
+            className="border-t border-whisper px-5 pb-5 pt-4 text-base leading-relaxed text-steel"
           >
             {item.content}
-          </motion.div>
+          </div>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }

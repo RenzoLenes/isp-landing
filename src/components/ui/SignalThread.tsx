@@ -1,34 +1,21 @@
-"use client";
-
-import { motion, useReducedMotion } from "motion/react";
-
 /**
- * The travelling pulse is now always mounted — never conditionally added or
- * removed based on `useReducedMotion()`. That hook returns `null` during
- * SSR and resolves the real answer synchronously on the client's first
- * render, so conditionally *mounting* the node (the earlier approach) made
- * the server's child list and the client's first-render child list disagree
- * whenever the device actually prefers reduced motion — a structural
- * hydration mismatch, which is worse than the plain attribute mismatches in
- * Hero.tsx/Reveal.tsx/WhatsAppThread.tsx/DecisionChain.tsx (see their comments):
- * React throws hydration error #418 for it and discards the whole tree for
- * a full client remount. A deferred/mounted-flag fix (matching SSR on the
- * first client render, then correcting after mount) avoids that error, but
- * under real parallel load it isn't reliably faster than this test's
- * assertion, which runs immediately after `page.goto` — confirmed
- * empirically, see beam-hydration-report.md.
+ * El hilo punteado con un pulso que lo recorre.
  *
- * `initial` stays a constant `{ opacity: 0 }` regardless of `reduceMotion`,
- * so server and client always agree on the node's starting (invisible)
- * style — no mismatch is possible there. `reduceMotion`'s raw, possibly-
- * server-differing value is only used to pick `animate`/`transition`,
- * neither of which is reflected in any SSR-rendered attribute (they're pure
- * JS configuration for a *future* tick), so using it there can't cause a
- * hydration mismatch either. When motion is reduced, `animate` matches
- * `initial` exactly, so nothing ever tweens and no `repeat: Infinity`
- * animation is ever created — the loop is fully off, not just hidden,
- * satisfying DESIGN.md §7's "apagan los loops por completo (no los
- * ralentizan)".
+ * Era `motion` con `repeat: Infinity`. Ahora son dos `@keyframes` en
+ * globals.css, y el componente se queda sin un solo hook — así que deja de ser
+ * componente de cliente y pasa a ser HTML servido, sin nada que hidratar.
+ *
+ * Eso además borra de un plumazo todo lo que este archivo documentaba sobre
+ * hidratación: no hay `useReducedMotion()` que devuelva una cosa en el
+ * servidor y otra en el cliente, así que no hay estructura que pueda
+ * discrepar. El apagado bajo `prefers-reduced-motion` lo hace el propio CSS,
+ * y lo hace de verdad —`animation: none`, no una animación lenta— como pide
+ * DESIGN.md §9.
+ *
+ * `data-signal-pulse` es el anclaje de los tests. Antes se localizaba por
+ * forma de clases y el selector acabó capturando también la capa de atmósfera
+ * de `SkyField`, igual de `aria-hidden` e igual de `absolute inset-0`. Un
+ * atributo explícito no colisiona.
  */
 export function SignalThread({
   orientation,
@@ -37,9 +24,7 @@ export function SignalThread({
   orientation: "vertical" | "horizontal";
   className?: string;
 }) {
-  const reduceMotion = useReducedMotion();
   const isVertical = orientation === "vertical";
-  const travelAxis = isVertical ? "y" : "x";
 
   return (
     <div
@@ -51,30 +36,13 @@ export function SignalThread({
           isVertical ? "border-l border-dashed" : "border-t border-dashed"
         }`}
       />
-      {/* `data-signal-pulse` es el anclaje para los tests. Antes se
-          localizaba por forma de clases (`div[aria-hidden] > div.absolute
-          .inset-0:not(.border-signal)`), un selector estructural que
-          empezó a capturar también la capa de atmósfera de `SkyField` —
-          igual de `aria-hidden` e igual de `absolute inset-0`— y hacía
-          fallar la prueba de movimiento reducido contra un elemento que no
-          era éste. Un atributo explícito no colisiona. */}
-      <motion.div
+      <div
         data-signal-pulse
+        data-axis={isVertical ? "vertical" : "horizontal"}
         className="absolute inset-0"
-        initial={{ opacity: 0 }}
-        animate={
-          reduceMotion
-            ? { opacity: 0 }
-            : { opacity: [0, 1, 1, 0], [travelAxis]: ["0%", "100%"] }
-        }
-        transition={
-          reduceMotion
-            ? { duration: 0 }
-            : { duration: 2.4, repeat: Infinity, ease: "linear" }
-        }
       >
         <span className="absolute -left-[3px] -top-[3px] block size-1.5 rounded-full bg-signal" />
-      </motion.div>
+      </div>
     </div>
   );
 }

@@ -1,22 +1,22 @@
 "use client";
 
-import { motion } from "motion/react";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
+import { useRevealOnce } from "@/lib/useRevealOnce";
 
 /**
- * `initial` is a plain, unconditional object — deliberately NOT gated on
- * `useReducedMotion()`. See Hero.tsx's `Beat` for the full rationale:
- * gating `initial` on that hook made the server's HTML and the client's
- * first render disagree whenever the device actually prefers reduced
- * motion (confirmed as React hydration error #418, not intermittent, in a
- * production build), and — separately, verified empirically — deferring
- * the hook's result with a mounted flag let the entrance animation
- * actually play once for reduced-motion users, since `initial` is only
- * ever consulted at real mount time. "Already settled, no animating in"
- * under reduced motion is instead enforced by the `data-motion-settle` CSS
- * rule in globals.css, which the browser applies from first paint
- * (including the pre-hydration paint) and which overrides whatever inline
- * style the animation writes.
+ * La entrada al asomar en pantalla, sin librería de animación.
+ *
+ * Antes era `motion` con `whileInView`. La librería entera pesaba 63 KB
+ * comprimidos —un tercio del JavaScript de la página— para hacer esto y unas
+ * pocas cosas más igual de simples, y se notaba al cargar en un móvil.
+ *
+ * El movimiento es EL MISMO, no una aproximación: el muelle que usaba
+ * (`stiffness: 100, damping: 20`) sale críticamente amortiguado, y su curva
+ * está muestreada punto por punto en `--ease-spring` (globals.css). Lo único
+ * que queda en JavaScript es decidir cuándo entra.
+ *
+ * Con `prefers-reduced-motion` manda `[data-motion-settle]`, que fuerza el
+ * estado final desde el primer pintado, incluso antes de hidratar.
  */
 export function Reveal({
   children,
@@ -27,16 +27,17 @@ export function Reveal({
   delay?: number;
   className?: string;
 }) {
+  const ref = useRevealOnce<HTMLDivElement>("-80px");
+
   return (
-    <motion.div
+    <div
+      ref={ref}
       data-motion-settle
+      data-reveal="out"
       className={className}
-      initial={{ opacity: 0, y: 24 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-80px" }}
-      transition={{ type: "spring", stiffness: 100, damping: 20, delay }}
+      style={delay ? ({ transitionDelay: `${delay}s` } as CSSProperties) : undefined}
     >
       {children}
-    </motion.div>
+    </div>
   );
 }
